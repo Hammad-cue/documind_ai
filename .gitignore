@@ -1,0 +1,23 @@
+# Secrets
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+frontend/dist/
+
+# Uploaded files and trained models (large, user data)
+media/
+ml/models/
+ml/data/
+ml/runs/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

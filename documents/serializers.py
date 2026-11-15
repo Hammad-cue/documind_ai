@@ -1,0 +1,99 @@
+from rest_framework import serializers
+
+from .models import Document, DocumentVersion, FieldEdit, RecordField
+
+
+class VersionSerializer(serializers.ModelSerializer):
+    uploaded_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DocumentVersion
+        fields = ('id', 'number', 'original_filename', 'file_type', 'file_size', 'page_count', 'marked_handwritten',
+                  'change_note', 'uploaded_by_name', 'uploaded_at', 'status', 'error', 'processing_log', 'processed_at')
+
+    def get_uploaded_by_name(self, v):
+        return v.uploaded_by.get_full_name() or v.uploaded_by.username if v.uploaded_by else None
+
+
+class FieldSerializer(serializers.ModelSerializer):
+    edit_count = serializers.IntegerField(source='edits.count', read_only=True)
+
+    class Meta:
+        model = RecordField
+        fields = ('id', 'key', 'label', 'value_text', 'value_date', 'value_number', 'confidence', 'source_page',
+                  'source_quote', 'grounded', 'status', 'updated_at', 'edit_count')
+
+
+class FieldEditSerializer(serializers.ModelSerializer):
+    edited_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FieldEdit
+        fields = ('id', 'old_value', 'new_value', 'old_status', 'new_status', 'reason', 'edited_by_name', 'edited_at')
+
+    def get_edited_by_name(self, e):
+        return (e.edited_by.get_full_name() or e.edited_by.username) if e.edited_by else 'system'
+
+
+class DocumentListSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.name', default=None, read_only=True)
+    uploaded_by_name = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    version_count = serializers.IntegerField(read_only=True, default=1)
+    file_type = serializers.SerializerMethodField()
+    needs_review = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = Document
+        fields = ('id', 'title', 'kind', 'doc_type', 'summary', 'access_level', 'department', 'department_name',
+                  'uploaded_by_name', 'status', 'version_count', 'file_type', 'needs_review', 'created_at', 'updated_at')
+
+    def _latest(self, d):
+        if not hasattr(d, '_latest_cache'):
+            d._latest_cache = d.latest_version
+        return d._latest_cache
+
+    def get_uploaded_by_name(self, d):
+        return (d.uploaded_by.get_full_name() or d.uploaded_by.username) if d.uploaded_by else None
+
+    def get_status(self, d):
+        v = self._latest(d)
+        return v.status if v else None
+
+    def get_file_type(self, d):
+        v = self._latest(d)
+        return v.file_type if v else None
+
+
+class DocumentDetailSerializer(DocumentListSerializer):
+    versions = VersionSerializer(many=True, read_only=True)
+    current_version_number = serializers.IntegerField(source='current_version.number', default=None, read_only=True)
+    record_fields = serializers.SerializerMethodField()
+    allowed_users = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+
+    class Meta(DocumentListSerializer.Meta):
+        fields = DocumentListSerializer.Meta.fields + ('kind_locked', 'versions', 'current_version_number',
+                                                       'record_fields', 'allowed_users', 'can_edit')
+
+    def get_record_fields(self, d):
+        if not d.current_version_id:
+            return []
+        return FieldSerializer(d.current_version.fields.all(), many=True).data
+
+    def get_allowed_users(self, d):
+        return [{'id': u.id, 'username': u.username, 'full_name': u.get_full_name() or u.username}
+                for u in d.allowed_users.all()]
+
+    def get_can_edit(self, d):
+        from .access import can_edit
+        return can_edit(self.context['request'].user, d)
+
+
+class DocumentUpdateSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=255, required=False)
+    doc_type = serializers.CharField(max_length=120, required=False, allow_blank=True)
+    kind = serializers.ChoiceField(choices=[Document.Kind.RECORD, Document.Kind.REFERENCE], required=False)
+    access_level = serializers.ChoiceField(choices=Document.Access.choices, required=False)
+    department = serializers.IntegerField(required=False, allow_null=True)
+    allowed_user_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
