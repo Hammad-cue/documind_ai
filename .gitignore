@@ -9,6 +9,7 @@ __pycache__/
 # Node
 node_modules/
 frontend/dist/
+.vite/
 
 # Uploaded files and trained models (large, user data)
 media/
