@@ -1,0 +1,12 @@
+.git
+.env
+venv
+node_modules
+frontend
+media
+legacy
+ml/data
+ml/runs
+**/__pycache__
+.claude
+*.pyc

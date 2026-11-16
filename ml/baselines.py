@@ -37,11 +37,13 @@ def tfidf(args):
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import accuracy_score, f1_score
     train, test, _ = load(args.eval_limit)
+    if args.train_limit:   # same subset the fine-tuning script uses (shuffle seed 42), for a like-for-like comparison
+        train = train.shuffle(seed=42).select(range(min(args.train_limit, len(train))))
     vec = TfidfVectorizer(ngram_range=(1, 2), min_df=2, max_features=200_000, sublinear_tf=True)
     X = vec.fit_transform(train['text'])
     clf = LogisticRegression(max_iter=2000, C=10, n_jobs=-1).fit(X, train['label'])
     p = clf.predict(vec.transform(test['text']))
-    save('tfidf', {'model': 'tfidf+logreg', 'test_examples': len(test), 'accuracy': accuracy_score(test['label'], p),
+    save('tfidf', {'model': 'tfidf+logreg', 'train_examples': len(train), 'test_examples': len(test), 'accuracy': accuracy_score(test['label'], p),
                    'macro_f1': f1_score(test['label'], p, average='macro'),
                    'micro_f1': f1_score(test['label'], p, average='micro')})
 
@@ -53,29 +55,38 @@ def llm_zero_shot(args):
     django.setup()
     from ai import llm
     from sklearn.metrics import accuracy_score, f1_score
+    from django.conf import settings
     _, test, names = load(args.eval_limit or 200)
     labels = ', '.join(names)
-    y, p = [], []
+    lookup = {n.lower(): i for i, n in enumerate(names)}
+    y, p, failed = [], [], 0
     for i, row in enumerate(test):
         prompt = (f'Classify this contract clause into exactly one of these categories:\n{labels}\n\n'
                   f'Clause: """{row["text"][:2000]}"""\n\nReturn JSON {{"label": "<category>"}}')
-        try:
-            out = llm.chat_json([{'role': 'user', 'content': prompt}], max_tokens=60, temperature=0)
-            guess = names.index(out.get('label')) if out.get('label') in names else -1
-        except Exception:
-            guess = -1
+        out = None
+        for attempt in range(4):
+            try:
+                out = llm.chat_json([{'role': 'user', 'content': prompt}], max_tokens=400, temperature=0)
+                break
+            except Exception:
+                time.sleep(15 * (attempt + 1))   # free-tier rate limit: back off and retry
+        time.sleep(args.pause)
+        if out is None:
+            failed += 1            # API never answered: not counted as right or wrong
+            continue
         y.append(row['label'])
-        p.append(guess)
+        p.append(lookup.get(str(out.get('label', '')).strip().lower(), -1))
         if (i + 1) % 20 == 0:
-            print(f'{i + 1}/{len(test)} acc so far {accuracy_score(y, p):.3f}')
-    save('llm-zero-shot', {'model': f'zero-shot {os.environ.get("LLM_MODEL", "default LLM")}', 'test_examples': len(test),
+            print(f'{i + 1}/{len(test)} acc so far {accuracy_score(y, p):.3f} (api failures {failed})')
+    save('llm-zero-shot', {'model': f'zero-shot {settings.LLM_PROVIDER}/{settings.LLM_MODEL}', 'test_examples': len(y),
                            'accuracy': accuracy_score(y, p), 'macro_f1': f1_score(y, p, average='macro'),
-                           'micro_f1': f1_score(y, p, average='micro'), 'unparseable': p.count(-1)})
-
+                           'micro_f1': f1_score(y, p, average='micro'), 'invalid_label': p.count(-1), 'api_failures': failed})
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('which', choices=['tfidf', 'llm'])
     ap.add_argument('--eval-limit', type=int, default=0)
+    ap.add_argument('--train-limit', type=int, default=0, help='tfidf: train on the first N shuffled examples only')
+    ap.add_argument('--pause', type=float, default=2.0, help='seconds between LLM calls (rate limits)')
     a = ap.parse_args()
     tfidf(a) if a.which == 'tfidf' else llm_zero_shot(a)

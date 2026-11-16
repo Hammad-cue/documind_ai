@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'documents',
     'assistant',
     'audit',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -94,7 +95,8 @@ TIME_ZONE = 'Asia/Karachi'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -143,5 +145,10 @@ TESSERACT_CMD = env('TESSERACT_CMD', r'C:\Program Files\Tesseract-OCR\tesseract.
 HANDWRITING_CONFIDENCE_THRESHOLD = float(env('HANDWRITING_CONFIDENCE_THRESHOLD', '70'))
 # Field confidence below this goes to the human verification queue
 REVIEW_CONFIDENCE_THRESHOLD = float(env('REVIEW_CONFIDENCE_THRESHOLD', '0.75'))
+# Reminders: in-app always; e-mail only when REMINDER_EMAILS=1 (console backend prints mails in development)
+REMINDER_EMAILS = env_bool('REMINDER_EMAILS', False)
+APP_URL = env('APP_URL', 'http://localhost:5173')
+EMAIL_BACKEND = env('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', 'DocuMind <noreply@documind.local>')
 # When True, uploads are processed inside the request (tests / demos without a worker)
 PROCESS_INLINE = env_bool('PROCESS_INLINE', False)

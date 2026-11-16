@@ -1,0 +1,2431 @@
+{
+  "name": "extraction_cuad",
+  "created": "2026-11-17 00:16",
+  "summary": {
+    "contracts_evaluated": 40,
+    "contracts_skipped": 0,
+    "model": "openai/gpt-oss-20b",
+    "micro": {
+      "precision": 0.807,
+      "recall": 0.717,
+      "f1": 0.759,
+      "tp": 142,
+      "fp": 34,
+      "fn": 56
+    },
+    "per_field": {
+      "parties": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 40,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0
+      },
+      "signed_date": {
+        "precision": 0.88,
+        "recall": 0.595,
+        "f1": 0.71,
+        "tp": 22,
+        "fp": 3,
+        "fn": 15,
+        "tn": 3
+      },
+      "effective_date": {
+        "precision": 0.771,
+        "recall": 0.844,
+        "f1": 0.806,
+        "tp": 27,
+        "fp": 8,
+        "fn": 5,
+        "tn": 4
+      },
+      "expiry_date": {
+        "precision": 1.0,
+        "recall": 0.357,
+        "f1": 0.526,
+        "tp": 10,
+        "fp": 0,
+        "fn": 18,
+        "tn": 12
+      },
+      "auto_renewal": {
+        "precision": 0.9,
+        "recall": 0.562,
+        "f1": 0.692,
+        "tp": 9,
+        "fp": 1,
+        "fn": 7,
+        "tn": 23
+      },
+      "notice_period": {
+        "precision": 0.269,
+        "recall": 0.7,
+        "f1": 0.389,
+        "tp": 7,
+        "fp": 19,
+        "fn": 3,
+        "tn": 12
+      },
+      "governing_law": {
+        "precision": 0.9,
+        "recall": 0.771,
+        "f1": 0.831,
+        "tp": 27,
+        "fp": 3,
+        "fn": 8,
+        "tn": 3
+      }
+    },
+    "grounding": {
+      "grounded_precision": 0.806,
+      "ungrounded_precision": 1.0,
+      "grounded": {
+        "right": 141,
+        "wrong": 34
+      },
+      "ungrounded": {
+        "right": 1,
+        "wrong": 0
+      }
+    },
+    "review_queue": {
+      "wrong_predictions_flagged": "2/34",
+      "right_predictions_flagged": "7/142"
+    },
+    "seconds_per_contract": 38.6
+  },
+  "skipped": [],
+  "contracts": [
+    {
+      "title": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Snotarator LLC; SMSA Ballinger Acquisition Corp.",
+          "quote": "by and between Snotarator LLC, a Texas limited liability company, ... and SMSA Ballinger Acquisition Corp., a Nevada corporation",
+          "gold": [
+            "Distributor",
+            "Snotarator LLC"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2013-08-01",
+          "quote": "IN WITNESS WHEREOF, the parties have caused this Agreement to be executed by their duly authorized officers as of the date and year indicated above.",
+          "gold": [
+            "1st day of August, 2013"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2013-08-01",
+          "quote": "THIS AGREEMENT is made this 1st day of August, 2013",
+          "gold": [
+            "1st day of August, 2013"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2015-05-31",
+          "quote": "The term of this Agreement shall terminate on May 31, 2015",
+          "gold": [
+            "The term of this Agreement shall terminate on May 31, 2015, unless sooner terminated."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The term of this Agreement may be extended for an additional two year period with the written consent of both parties."
+          ]
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "such other party has not cured the breach within (30) days",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Texas",
+          "quote": "This Agreement shall be governed by the laws of the State of Texas",
+          "gold": [
+            "This Agreement shall be governed by the laws of the State of Texas."
+          ]
+        }
+      }
+    },
+    {
+      "title": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Holiday RV Superstores, Inc.; Affinity Group, Inc.",
+          "quote": "by and between Holiday RV Superstores, Inc., d/b/a Recreation USA (the \"Company\"), ... and Affinity Group, Inc. (\"AGI\")",
+          "gold": [
+            "Affinity Group, Inc.",
+            "d/b/a Recreation USA"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2002-03-20",
+          "quote": "This Agreement is made as of the 20th day of March 2002",
+          "gold": [
+            "20th day of March 2002"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2002-03-20",
+          "quote": "This Agreement is made as of the 20th day of March 2002",
+          "gold": [
+            "Unless otherwise provided for in this Agreement, the term of this Agreement shall be three years, commencing on the date of this Agreement and expiring on the third anniversary date of this Agreement ",
+            "20th day of March 2002"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2005-03-20",
+          "quote": "the term of this Agreement shall be three years, commencing on the date of this Agreement and expiring on the third anniversary date of this Agreement",
+          "gold": [
+            "Unless otherwise provided for in this Agreement, the term of this Agreement shall be three years, commencing on the date of this Agreement and expiring on the third anniversary date of this Agreement "
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "60 days written notice",
+          "quote": "provide AGI with at least 60 days prior written notice of its intention to terminate this Agreement",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "California",
+          "quote": "This Agreement has been made in the State of California and shall be governed by and construed in accordance with the laws thereof",
+          "gold": [
+            "This Agreement has been made in the State of California and shall be governed by and construed in accordance with the laws thereof without regard to principles of conflicts of laws."
+          ]
+        }
+      }
+    },
+    {
+      "title": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "SILICON SMELTERS << Pty >> Ltd; ESPACIO INFORMATION TECHNOLOGY, SA.",
+          "quote": "SILICON SMELTERS << Pty >> Ltd, registration nr 1998/019036/07, ... represented by Benoit Emile Norbert Ollivier, Managing Director, ... AND ESPACIO INFORMATION TECHNOLOGY, SA., ... represented by Mr.",
+          "gold": [
+            "ESPACIO INFORMATION TECHNOLOGY, SA.",
+            "SILICON SMELTERS << Pty >> Ltd"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2009-01-01",
+          "quote": "executed this Agreement on the date first above written",
+          "gold": [
+            "1st day of January, 2009,"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2009-01-01",
+          "quote": "effective as from the 1st day of January, 2009",
+          "gold": [
+            "1st day of January, 2009,",
+            "The present Agreement is effective as from 1 January 2009"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "It is established by calendar year and renewed tacitly every year."
+          ]
+        },
+        "notice_period": {
+          "verdict": "WRONG",
+          "pred": "45 days",
+          "quote": "The invoices will be issued by EIT at the start of each term. Such invoice must be paid by the customer within 45 days of the date on which the invoice is issued",
+          "gold": [
+            "The Agreement rests, for all that, cancellable at any time by any of the parties before the expiry date of the Agreement or any of itsrenewals, upon three months prior written notice."
+          ]
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "Spain",
+          "quote": "This Agreement shall be governed by, and construed in accordance with the laws of Spain",
+          "gold": [
+            "This Agreement shall be governed by, and construed in accordance with the laws of Spain."
+          ]
+        }
+      }
+    },
+    {
+      "title": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "PACIFICAP ENTERTAINMENT; THE HENRY FILM AND ENTERTAINMENT CORPORATION",
+          "quote": "PACIFICAP ENTERTAINMENT' located at 12868 Via Latina, Del Mar, CA 92014\n\nLicensor: PACIFICAP ENTERTAINMENT Licensee THE HENRY FILM AND ENTERTAINMENT CORPORATION",
+          "gold": [
+            "Licensee THE HENRY FILM AND ENTERTAINMENT CORPORATION",
+            "Licensor: PACIFICAP ENTERTAINMENT"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "3rd day of November, 2005"
+          ]
+        },
+        "effective_date": {
+          "verdict": "FP",
+          "pred": "2005-11-03",
+          "quote": "made as of this 3rd day of November, 2005",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement will become effective as of the last date of signature (Effective Date) and shall, unless sooner terminated as provided below or as otherwise agreed, remain effective for an initial ter"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "automatic renewal for successive 3\u2011year periods",
+          "quote": "this Agreement will be automatically renewed for successive additional 3~year periods",
+          "gold": [
+            "After the Initial Term, this Agreement will be automatically renewed for successive additional 3~year periods (\"Extension Terms\"), unless otherwise terminated by either party by giving notice to the o"
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "60 days prior to the end of a Term",
+          "quote": "notice to the other party not less than sixty (60) days prior to the end of a Term",
+          "gold": [
+            "After the Initial Term, this Agreement will be automatically renewed for successive additional 3~year periods (\"Extension Terms\"), unless otherwise terminated by either party by giving notice to the o"
+          ]
+        },
+        "governing_law": {
+          "verdict": "FP",
+          "pred": "California",
+          "quote": "BINDING ARBITRATION ACCORDING TO THE RULES AND REGULATIONS SET FORTH BY THE AMERICAN ARBITRATION ASSOCIATION IN SAN DIEGO COUNTY , THE STATE OF CALIFORNIA",
+          "gold": []
+        }
+      }
+    },
+    {
+      "title": "VitalibisInc_20180316_8-K_EX-10.2_11100168_EX-10.2_Hosting Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "VITALIBIS INC; VOTOCAST, Inc.",
+          "quote": "\"VITALIBIS INC a Nevada C having its principal place of business at 5348 Vegas Drive, Las Vegas, NV 89108 (hereinafter, -Licensee\" and \"VOTOCAST, Inc. a California corporation (dba, newkleus), having ",
+          "gold": [
+            "VOTOCAST, Inc.",
+            "-Licensee\""
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "3-14-18"
+          ]
+        },
+        "effective_date": {
+          "verdict": "WRONG",
+          "pred": "2018-03-07",
+          "quote": "\"Agreement' dated March 7t h, 2018 (the \"Effective Date\")\"",
+          "gold": [
+            "The Effective Date of this Agreement shall be the later of the dates shown by the signatures below."
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall commence as of the Effective Date and shall continue in effect for one (I) year, unless earlier terminated as expressly provided in Sections 1.3. 10.1. or 10.2 of this Agreement ("
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall automatically renew beyond the Initial Term for successive one (I) year terms (each, a \"Renewal Term\"), unless a Party provides the other with written notice of termination at lea"
+          ]
+        },
+        "notice_period": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall automatically renew beyond the Initial Term for successive one (I) year terms (each, a \"Renewal Term\"), unless a Party provides the other with written notice of termination at lea"
+          ]
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall be governed by the laws of the State of California without giving effect to conflict or choice of law principles."
+          ]
+        }
+      }
+    },
+    {
+      "title": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "GLAMIS GOLD LTD.; WESTERN COPPER CORPORATION",
+          "quote": "GLAMIS GOLD LTD., a company incorporated under the laws of the Province of British Columbia, ... AND WESTERN COPPER CORPORATION, a company incorporated under the laws of the Province of British Columb",
+          "gold": [
+            "GLAMIS GOLD LTD.",
+            "Bach of the parties hereto agree that all of their covenants, agreements and obligations hereunder shall extend to and be binding upon and may be enforced against any and  all of their respective subs"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2006-05-03",
+          "quote": "THIS AGREEMENT is dated May 3,2006.",
+          "gold": [
+            "May 3,2006"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2006-05-03",
+          "quote": "THIS AGREEMENT is dated May 3,2006.",
+          "gold": [
+            "Effective Date means May 3, 200ri or such later date as determined under the  Arrangement Agreement,"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "for a period of 30 days from the time of delivery of the Disposition Notice",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "Province of British Columbia",
+          "quote": "This Agreement will be governed exclusively by and construed in accordance with the laws of the Province of British Columbia",
+          "gold": [
+            "4.8 This Agreement will be governed exclusively by and construed in accordance  with the laws of the Province of British Columbia, and the parties attorn to the exclusive  jurisdiction of the Courts o"
+          ]
+        }
+      }
+    },
+    {
+      "title": "BANUESTRAFINANCIALCORP_09_08_2006-EX-10.16-AGENCY AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "El Banco Financial Corporation; Sales Agent",
+          "quote": "El Banco Financial Corporation, a Georgia corporation (the \"Company\"), proposes... to engage the sales agent identified on the signature page to this Agreement (the \"Agent\" or \"you\")",
+          "gold": [
+            "Agent",
+            "sales agent"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            ", 2006"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2006-01-01",
+          "quote": ", 2006",
+          "gold": [
+            ", 2006"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall become effective on the date hereof and shall terminate upon the termination of the Offering."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "written notice",
+          "quote": "All statements, requests, notices and agreements hereunder shall be in writing and shall be sufficient in all respects if delivered or sent by reliable courier, first class mail, or facsimile transmis",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Georgia",
+          "quote": "THIS AGREEMENT IS TO BE CONSTRUED IN ACCORDANCE WITH AND GOVERNED BY THE LAWS OF THE STATE OF GEORGIA",
+          "gold": [
+            "THIS AGREEMENT IS TO BE CONSTRUED IN ACCORDANCE WITH AND GOVERNED BY THE LAWS OF THE STATE OF GEORGIA (WITHOUT REGARD TO THOSE LAWS RELATING TO CHOICE OF LAW) APPLYING TO CONTRACTS ENTERED INTO AND TO"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Columbia Laboratories, (Bermuda) Ltd. - AMEND NO. 2 TO MANUFACTURING AND SUPPLY AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Columbia Laboratories (Bermuda) Ltd.; Fleet Laboratories Limited",
+          "quote": "by and between Columbia Laboratories, (Bermuda) Ltd., ... and Fleet Laboratories Limited",
+          "gold": [
+            "Fleet Laboratories Limited",
+            "Columbia"
+          ]
+        },
+        "signed_date": {
+          "verdict": "WRONG",
+          "pred": "2018-01-01",
+          "quote": "executed this Amendment as of the Effective Date",
+          "gold": [
+            "2018"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2018-01-01",
+          "quote": "entered into on 2018 (the \"Effective Date\")",
+          "gold": [
+            "2018"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "Unless terminated earlier pursuant to Section 12.2 below, the initial term of this Agreement shall expire on 31 December 2024 (the \"Initial Term\") unless the Parties mutually agree in writing any exte"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "England",
+          "quote": "shall be governed by and construed in accordance with the laws of England",
+          "gold": [
+            "This Amendment and and any dispute or claim (including non-contractual disputes or claims) arising out of or in connection with it or its subject matter or formation shall be governed by and construed"
+          ]
+        }
+      }
+    },
+    {
+      "title": "HALITRON,INC_03_01_2005-EX-10.15-SPONSORSHIP AND DEVELOPMENT AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "TEKNIK DIGITAL ARTS INC.; RICK SMITH ENTERPRISES",
+          "quote": "TEKNIK DIGITAL ARTS INC., a Nevada corporation ... and RICK SMITH ENTERPRISES",
+          "gold": [
+            "Smith",
+            "TEKNIK DIGITAL ARTS INC."
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2004-08-06",
+          "quote": "Date: August 6, 2004",
+          "gold": [
+            "August 6, 2004"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2004-08-06",
+          "quote": "This Agreement is made as of August 6, 2004 (the \"Effective Date\")",
+          "gold": [
+            "August 6, 2004"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2007-08-05",
+          "quote": "the term of this Agreement (the \"Term\") shall commence on the Effective Date and terminate at the end of the Exclusivity Period (i.e., a three (3) year period commencing on the Effective Date).",
+          "gold": [
+            "The term of this Agreement (the \"Term\") shall commence on the Effective Date and terminate at the end of the Exclusivity Period (i.e., a three (3) year period commencing on the Effective Date)."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Arizona",
+          "quote": "This Agreement shall be governed by the laws of the State of Arizona applicable to agreements fully executed and performed therein.",
+          "gold": [
+            "This Agreement shall be governed by the laws of the State of Arizona applicable to agreements fully executed and performed therein.",
+            "This Agreement will be deemed entered into in Arizona and will be governed by and interpreted in accordance with the internal substantive laws of the State of Arizona without reference to conflicts of"
+          ]
+        }
+      }
+    },
+    {
+      "title": "AULAMERICANUNITTRUST_04_24_2020-EX-99.8.77-SERVICING AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Nationwide Fund Management LLC; American United Life Insurance Company; OneAmerica Securities, Inc.",
+          "quote": "Nationwide Fund Management LLC (\"Nationwide\"), on behalf of Nationwide Mutual Funds or its surviving entity (\"the Trust\"), and American United Life Insurance Company, and OneAmerica Securities, Inc.",
+          "gold": [
+            "American United Life Insurance Company",
+            "Nationwide"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "this day of , 20"
+          ]
+        },
+        "effective_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement will become effective on the date a fully executed copy of this Agreement is received by Nationwide"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "at least sixty (60) days written notice; at least ninety (90) days written notice",
+          "quote": "at least sixty (60) days written notice to the parties to this Agreement. In addition, either you or Nationwide may terminate this Agreement ... for any reason on at least ninety (90) days written not",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Delaware",
+          "quote": "This Agreement will be construed in accordance with the laws of the State of Delaware",
+          "gold": [
+            "This Agreement will be construed in accordance with the laws of the State of Delaware and is assignable only upon the written consent by all the parties hereto"
+          ]
+        }
+      }
+    },
+    {
+      "title": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Giggles N' Hugs, Inc.; Kiddo, Inc.",
+          "quote": "by and between Giggles N' Hugs, Inc., a Nevada corporation (the \"Company\"), and Kiddo, Inc., a Florida corporation, Inc., (\"Consultant\")",
+          "gold": [
+            "Consultant",
+            "Giggles N' Hugs, Inc."
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2016-05-17",
+          "quote": "IN WITNESS WHEREOF, the parties have entered into this Agreement as of the Effective Date.",
+          "gold": [
+            "May 17, 2016"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2016-05-17",
+          "quote": "as of May 17, 2016, (the \"Effective Date\")",
+          "gold": [
+            "May 17, 2016"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "Either party may terminate this agreement after 3 years following the effective date."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "not cured within 30 days after written notice of any such material breach",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of California",
+          "quote": "This Agreement will be governed by and construed in accordance with the laws of the State of California",
+          "gold": [
+            "This Agreement will be governed by and construed in accordance with the laws of the State of California excluding that body of law pertaining to conflict of laws, except with respect to issues governe"
+          ]
+        }
+      }
+    },
+    {
+      "title": "Principal Life Insurance Company - Broker Dealer Marketing and Servicing Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Principal Life Insurance Company; Princor Financial Services Corporation; ABC Company (Broker Dealer)",
+          "quote": "Principal Life Insurance Company   (\"Issuer\") and Princor Financial Services Corporation (\"Distributor\"), on the one hand, and _______________________ and its duly licensed insurance affiliates indica",
+          "gold": [
+            "(collectively \"Broker Dealer\")",
+            "Distributor"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "this ______ day of ________________, 2013,"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2013-01-01",
+          "quote": "effective this ______ day of ________________, 2013",
+          "gold": [
+            "this ______ day of ________________, 2013"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "any time upon prior written notice",
+          "quote": "Any Party hereto may terminate this Agreement at any time upon prior written notice",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Iowa",
+          "quote": "This Agreement shall be governed by and construed in accordance with the laws of the State of Iowa",
+          "gold": [
+            "This Agreement shall be governed by and construed in accordance with the laws of the State of Iowa."
+          ]
+        }
+      }
+    },
+    {
+      "title": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Centrack International, Inc.; i-on Interactive, Inc.",
+          "quote": "between Centrack International, a Florida corporation (\"the Customer\"), and i-on interactive, a Florida corporation (\"i-on\")",
+          "gold": [
+            "Centrack International",
+            "the Customer"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "1999-04-06",
+          "quote": "entered into this 6th day of April, 1999",
+          "gold": [
+            "6th day of April, 1999"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "1999-04-01",
+          "quote": "commence upon April 1, 1999",
+          "gold": [
+            "The term of this Agreement for the Hosted Site shall commence upon April 1, 1999 and shall continue for a period of six (6) months, unless earlier terminated in accordance with provisions hereof."
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The term of this Agreement for the Hosted Site shall commence upon April 1, 1999 and shall continue for a period of six (6) months, unless earlier terminated in accordance with provisions hereof."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "Automatically renewed for one (1) month periods unless notice given",
+          "quote": "This Agreement shall automatically be renewed for one (1) or more one (1) month periods unless either the Customer or i-on gives notice",
+          "gold": [
+            "This Agreement shall automatically be renewed for one (1) or more one (1) month periods unless either the Customer or i-on gives notice to the other party of its intention not to renew the",
+            "Agreement, which notice must be given not less than fifteen (15) days before the end of the respective initial or renewal term."
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "15 days before end of term",
+          "quote": "notice must be given not less than fifteen (15) days before the end of the respective initial or renewal term",
+          "gold": [
+            "This Agreement shall automatically be renewed for one (1) or more one (1) month periods unless either the Customer or i-on gives notice to the other party of its intention not to renew the",
+            "Agreement, which notice must be given not less than fifteen (15) days before the end of the respective initial or renewal term."
+          ]
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Florida",
+          "quote": "governed by the laws and judicial decisions of the State of Florida",
+          "gold": [
+            "This Agreement was entered into in the State of Florida, and its validity, construction, interpretation, and legal effect shall be governed by the laws and judicial decisions of the State of Florida a"
+          ]
+        }
+      }
+    },
+    {
+      "title": "AMERICANPHYSICIANSCAPITALINC_03_31_2003-EX-10.26-AGENCY AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Mutual Insurance Corporation of America; Stratton, Cheeseman & Walsh-Nevada, Inc.",
+          "quote": "Mutual Insurance Corporation of America, a Michigan insurance corporation (MICOA) and Stratton, Cheeseman & Walsh-Nevada, Inc., a Nevada corporation",
+          "gold": [
+            "MICOA",
+            "Mutual Insurance Corporation of America"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "1999-05-25",
+          "quote": "Signed and effective this 25th day of May, 1999.",
+          "gold": [
+            "25th day of May, 1999."
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "1999-05-25",
+          "quote": "Signed and effective this 25th day of May, 1999.",
+          "gold": [
+            "Signed and effective this 25th day of May, 1999."
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This agreement shall terminate:\n\n                  a.       Automatically if any public authority cancels or                            declines to renew the Agency's license or Certificate           "
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall terminate, subject to any automatic                   renewal or extension for one year as required by law, upon                   either party giving at least one hundred twenty "
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "120 days written notice",
+          "quote": "upon either party giving at least one hundred twenty (120) days advance written notice",
+          "gold": [
+            "This Agreement shall terminate, subject to any automatic                   renewal or extension for one year as required by law, upon                   either party giving at least one hundred twenty "
+          ]
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall be interpreted under the                   laws of the State of Nevada."
+          ]
+        }
+      }
+    },
+    {
+      "title": "CHEETAHMOBILEINC_04_22_2014-EX-10.43-Cooperation Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Beike Internet (Beijing) Security Technology Co., Ltd.; Baidu Online Network Technology (Beijing) Co., Ltd.",
+          "quote": "Party A: Beike Internet (Beijing) Security Technology Co., Ltd.\n\nParty B: Baidu Online Network Technology (Beijing) Co., Ltd.",
+          "gold": [
+            "Beike Internet Security Technology Co., Ltd.",
+            "Party A"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "April 2013"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2013-05-01",
+          "quote": "This Agreement is effective on the day of May 1, 2013",
+          "gold": [
+            "This Agreement is effective on the day of May 1, 2013 and the effective term is the same as the Cooperation Term.",
+            "This Agreement is effective from the date of its date of signature and chop, and any other agreement between the parties regarding to matters which are similar to the cooperation contents hereunder sh"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2015-04-30",
+          "quote": "to April 30, 2015",
+          "gold": [
+            "This Agreement is effective on the day of May 1, 2013 and the effective term is the same as the Cooperation Ter",
+            "The Cooperation Term of the parties shall be two years from May 1, 2013 to April 30, 2015."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "One month prior to the expiry of the Cooperation Term, the parties may further negotiate the cooperation forms, if fails, this Agreement will be terminated upon expiry."
+          ]
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "1 month prior to the expiry of the Cooperation Term",
+          "quote": "One month prior to the expiry of the Cooperation Term, the parties may further negotiate the cooperation forms",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "WRONG",
+          "pred": "People's Republic of China",
+          "quote": "in Haidian District, Beijing, the People's Republic of China (hereinafter referred to as \"PRC\")",
+          "gold": [
+            "The execution, validity, construction, enforcement and the settlement of any disputes herefrom shall be governed by PRC Laws."
+          ]
+        }
+      }
+    },
+    {
+      "title": "2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "I-ESCROW, INC.; 2THEMART.COM, INC.",
+          "quote": "by and between I-ESCROW, INC., with its principal place of business at 1730 S. Amphlett Blvd., Suite 233, San Mateo, California 94402 (\"i-Escrow\"), and 2THEMART.COM, INC. having its principal place of",
+          "gold": [
+            "2THEMART.COM, INC.",
+            "I-ESCROW, INC."
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "1999-06-21",
+          "quote": "Date: 6/21/99",
+          "gold": [
+            "June 21, 1999"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "1999-06-21",
+          "quote": "as of June 21, 1999 (the \"Effective Date\")",
+          "gold": [
+            "June 21, 1999"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The term of this Agreement shall continue for one (1) year following the Launch Date, unless earlier terminated as provided herein."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "A party wishing to renew this Agreement shall give the other party notice thereof no less than thirty (30) days before the expiration of the term then in effect.",
+            "In the event that either party does not give such notice, the term of this Agreement shall be automatically renewed for another one (1) year."
+          ]
+        },
+        "notice_period": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "A party wishing to renew this Agreement shall give the other party notice thereof no less than thirty (30) days before the expiration of the term then in effect.",
+            "In the event that either party does not give such notice, the term of this Agreement shall be automatically renewed for another one (1) year."
+          ]
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement will be governed and construed in accordance with the laws of the State of California without giving effect to conflict of laws principles."
+          ]
+        }
+      }
+    },
+    {
+      "title": "INTRICONCORP_03_10_2009-EX-10.22-Strategic Alliance Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "IntriCon Corporation; Dynamic Hearing Pty Ltd",
+          "quote": "IntriCon Corporation, a Pennsylvania Corporation... and Dynamic Hearing Pty Ltd a Corporation organized under the laws of Victoria, Australia",
+          "gold": [
+            "Dynamic Hearing Pty Ltd",
+            "IntriCon"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "1st day of October, 2008"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2008-10-01",
+          "quote": "effective as of the 1st day of October, 2008 (Commencement Date)",
+          "gold": [
+            "1st day of October, 2008"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The initial term of this Agreement shall be five (5) years from the date of execution and may be extended subject to satisfactory  agreement on ongoing commercial terms, to be agreed two (2) months pr"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement is governed by the laws of Victoria, Australia and the parties submit to the jurisdiction of the courts of Victoria,  Australia"
+          ]
+        }
+      }
+    },
+    {
+      "title": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Hanover Direct, Inc.; The Deerskin Companies, Inc.",
+          "quote": "made between Hanover Direct, Inc. (\"HDI\"), a New Jersey Corporation, and The Deerskin Companies, Inc. (the \"Company\"), a Nevada corporation",
+          "gold": [
+            "Hanover Direct, Inc.",
+            "HDI"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "1999-08-09",
+          "quote": "Agreement (the \"Agreement\") dated as of August 9, 1999",
+          "gold": [
+            "August 9, 1999"
+          ]
+        },
+        "effective_date": {
+          "verdict": "WRONG",
+          "pred": "1999-08-09",
+          "quote": "Agreement (the \"Agreement\") dated as of August 9, 1999",
+          "gold": [
+            "This Agreement shall be effective as of that date (the \"Effective Date\") the Site becomes fully operational as set forth in writing and executed by both Parties and shall continue for a period of one "
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall be effective as of that date (the \"Effective Date\") the Site becomes fully operational as set forth in writing and executed by both Parties and shall continue for a period of one "
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "automatically renewed for an additional one year period on each anniversary of the Effective Date, unless terminated by either Party upon ninety (90) days written notice",
+          "quote": "This Agreement shall be automatically renewed for an additional one year period on each anniversary of the Effective Date, unless terminated by either Party hereto upon ninety (90) days written notice",
+          "gold": [
+            "This Agreement shall be automatically renewed for an additional one year period on each anniversary of the Effective Date, unless terminated by either Party hereto upon ninety (90) days written notice"
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "ninety (90) days written notice",
+          "quote": "unless terminated by either Party hereto upon ninety (90) days written notice to the other",
+          "gold": [
+            "This Agreement shall be automatically renewed for an additional one year period on each anniversary of the Effective Date, unless terminated by either Party hereto upon ninety (90) days written notice"
+          ]
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of New York",
+          "quote": "This Agreement shall be governed and construed and enforced in accordance with the laws of the State of New York",
+          "gold": [
+            "This Agreement shall be governed and construed and enforced in accordance with the laws of the State of New York applicable to contracts made and to be performed exclusively in that State without givi"
+          ]
+        }
+      }
+    },
+    {
+      "title": "CURAEGISTECHNOLOGIES,INC_05_26_2010-EX-1-CORPORATE SPONSORSHIP AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Phoenix Performance, LLC; Torvec Inc.",
+          "quote": "by and between Phoenix Performance, LLC, 481  Schuylkill Road, Phoenixville, PA 19460 (\"Vendor\") and Torvec Inc.., a New York corporation",
+          "gold": [
+            "Phoenix Performance, LLC",
+            "Vendor"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2010-05-18",
+          "quote": "as of May 18, 2010, (the \"Effective Date\")",
+          "gold": [
+            "May 18, 2010"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2010-05-18",
+          "quote": "as of May 18, 2010, (the \"Effective Date\")",
+          "gold": [
+            "May 18, 2010"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2010-10-31",
+          "quote": "conclude on October 31, 2010",
+          "gold": [
+            "The term of this Agreement (the \"Term\") shall commence on the Effective Date and conclude on October 31, 2010, unless renewed by  agreement or sooner terminated in accordance with this Agreement."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of New York",
+          "quote": "This Agreement is to be governed and construed according to the laws of the State of New York",
+          "gold": [
+            "This Agreement is to be governed and construed according to the laws of the State of New York without regard to conflicts of law."
+          ]
+        }
+      }
+    },
+    {
+      "title": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "TOM WATSON; ADAMS GOLF, LTD.",
+          "quote": "This Agreement is entered into on January 13, 2005 between professional golfer, TOM WATSON, (hereinafter referred to as \"CONSULTANT\") and ADAMS GOLF, LTD.",
+          "gold": [
+            "ADAMS GOLF",
+            "CONSULTANT"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2005-01-13",
+          "quote": "By: /s/ Tom Watson     Date: January 13, 2005",
+          "gold": [
+            "January 13, 2005"
+          ]
+        },
+        "effective_date": {
+          "verdict": "WRONG",
+          "pred": "2005-01-13",
+          "quote": "This Agreement is entered into on January 13, 2005",
+          "gold": [
+            "The Term of this Agreement shall be for a period of [* ****] years and [*****] months commencing the 1st day of September 2004 and terminating the [*****] day of [*****]."
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The Term of this Agreement shall be for a period of [* ****] years and [*****] months commencing the 1st day of September 2004 and terminating the [*****] day of [*****]."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "90 days written notice",
+          "quote": "ADAMS GOLF shall have the right, in addition to its other legal and equitable remedies, to immediately terminate this Agreement, by giving written notice to CONSULTANT. ADAMS GOLF must exercise its ri",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "Kansas",
+          "quote": "Venue shall be Kansas.",
+          "gold": [
+            "This Agreement shall be governed and construed according to the laws of the State of Kansas."
+          ]
+        }
+      }
+    },
+    {
+      "title": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Dong-A ST Co., Ltd.; NeuroBo Pharmaceuticals, Inc.",
+          "quote": "Dong-A ST Co., Ltd., a corporation duly incorporated under the laws of the Republic of Korea ... and NeuroBo Pharmaceuticals, Inc., a corporation duly incorporated under the laws of the State of Delaw",
+          "gold": [
+            "Dong-A ST Co., Ltd.,",
+            "Dong-A"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2018-09-28",
+          "quote": "IN WITNESS WHEREOF, the Parties hereto have duly executed this Agreement as of the Effective Date.",
+          "gold": [
+            "September 28, 2018"
+          ]
+        },
+        "effective_date": {
+          "verdict": "WRONG",
+          "pred": "2018-09-28",
+          "quote": "Effective Date) by and between: Dong-A ST Co., Ltd. ... and NeuroBo Pharmaceuticals, Inc.",
+          "gold": [
+            "September 28, 2018"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement shall commence on the Effective Date and, unless earlier terminated, shall continue in full force and effect for a period of [***] years thereafter."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "[***] days",
+          "quote": "NeuroBo may, at its cost and expense, inspect Dong-A's manufacturing facilities ... upon [***] days' notice",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of New York",
+          "quote": "The laws of the State of New York (without giving effect to its conflicts of law principles) govern all matters arising out of or relating to this Agreement",
+          "gold": [
+            "The laws of the State of New York (without giving effect to its conflicts of law principles) govern all matters arising out of or relating to this Agreement and all of the transactions it contemplates"
+          ]
+        }
+      }
+    },
+    {
+      "title": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "BookingEntertainment.com; VNUE, Inc.",
+          "quote": "BookingEntertainment.com (\"Promoter\") of 275 Madison Avenue, 6th Floor, New York, NY 10016 and VNUE, Inc., (\"VNUE\")",
+          "gold": [
+            "BookingEntertainment.com",
+            "VNUE"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2015-09-10",
+          "quote": "effective September 10, 2015",
+          "gold": [
+            "September 10, 2015"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2015-09-10",
+          "quote": "effective September 10, 2015",
+          "gold": [
+            "September 10, 2015"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2016-09-10",
+          "quote": "This Agreement shall commence on September 10, 2015 and shall continue for One (1) Year",
+          "gold": [
+            "This Agreement shall commence on September 10, 2015 and shall continue for One (1) Year (the \"Term\")."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "May be extended for successive One (1) Year periods by written agreement",
+          "quote": "at any time prior to the end of the Term, the Parties may agree in writing to extend the Agreement for successive One (1) Year periods",
+          "gold": [
+            "At any time prior to the end of the Term, the Parties may agree in writing to extend the Agreement for successive One (1) Year periods (the \"Renewal Terms\") under the same conditions set forth herein."
+          ]
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "payment due to Promoter within Thirty (30) Days from the date on which each such contract is countersigned",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Nevada",
+          "quote": "This Agreement shall be governed by and construed in accordance with the laws of the State of Nevada",
+          "gold": [
+            "This Agreement shall be governed by and construed in accordance with the laws of the State of Nevada without giving effect to choice of law doctrine."
+          ]
+        }
+      }
+    },
+    {
+      "title": "ScansourceInc_20190509_10-Q_EX-10.2_11661422_EX-10.2_Distributor Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Zebra Technologies International, LLC; Zebra Technologies do Brasil - Com\u00e9rcio de Produtos de Inform\u00e5tica Ltda.; Xplore Technologies Corporation of America; ScanSource, Inc.; ScanSource Latin America, Inc.; ScanSource Brazil Distribuidora de Technologias, Ltda.; SCANSOURCE DE MEXICO S. DE R.L. DE C.V.",
+          "quote": "\"Zebra Technologies International, LLC, with an office at 3 Overlook Point, Lincolnshire IL 60069 (\"Zebra\"); Zebra Technologies do Brasil - Com\u00e9rcio de Produtos de Inform\u00e5tica Ltda., a company incorpo",
+          "gold": [
+            "ScanSource Brazil Distribuidora de Technologias, Ltda.",
+            "\"Zebra\" and the \"Distributor\" are referred to collectively as 'Parties\" and individually as a \"Party\"."
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "4th day of February 2019"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2019-02-04",
+          "quote": "\"This Addendum is made on the 4th day of February 2019 (\"Effective Date\")\"",
+          "gold": [
+            "4th day of February 2019"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The terms of the Governing Law and Dispute Resolution provisions of the Distribution Agreement will apply to this Addendum."
+          ]
+        }
+      }
+    },
+    {
+      "title": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "City of Fort Stockton, Texas; STW Resources Holding Corp.",
+          "quote": "City of Fort Stockton, Texas, a Texas Type A-General Law city (\"COFS\") and STW Resources Holding Corp., a Nevada corporation (\"STW\")",
+          "gold": [
+            "(\"STW\")",
+            "STW and COFS are sometimes individually referred to as a \"Party\" and collectively referred to as the \"Parties.\""
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2014-01-01",
+          "quote": "This instrument was acknowledged before me on the day of , 2014, by Stanley T. Weiner, CEO of STW Resources Holding Corp.",
+          "gold": [
+            "day of , 2014"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2014-01-01",
+          "quote": "effective as of the last date of signature on the signature pages below",
+          "gold": [
+            "effective as of the last date of signature on the signature pages below",
+            "day of , 2014"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "Subject to the other provisions contained herein, this AGREEMENT shall be for a term of thirty (30) years from the Effective Date, which shall automatically renew from year-to-year thereafter unless t"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "automatically renew from year-to-year thereafter unless terminated by a Party upon sixty (60) days' written notice after the end of the term",
+          "quote": "which shall automatically renew from year-to-year thereafter unless terminated by a Party upon sixty (60) days' written notice after the end of the term",
+          "gold": [
+            "Subject to the other provisions contained herein, this AGREEMENT shall be for a term of thirty (30) years from the Effective Date, which shall automatically renew from year-to-year thereafter unless t"
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "sixty (60) days written notice",
+          "quote": "unless terminated by a Party upon sixty (60) days' written notice after the end of the term",
+          "gold": [
+            "Subject to the other provisions contained herein, this AGREEMENT shall be for a term of thirty (30) years from the Effective Date, which shall automatically renew from year-to-year thereafter unless t"
+          ]
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This AGREEMENT is controlled by the laws of the State of Texas, and venue for any actions brought to enforce this AGREEMENT shall be brought exclusively in a court of competent jurisdiction in Pecos C"
+          ]
+        }
+      }
+    },
+    {
+      "title": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Southern Racing Promotions, Inc.; Logan's Roadhouse, Inc.",
+          "quote": "Southern Racing Promotions, Inc., (\"SRP\") a Tennessee corporation, and Logan's Roadhouse, Inc., a Tennessee corporation",
+          "gold": [
+            "(\"Logan's\"",
+            "Logan's Roadhouse, Inc.,"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "1998-02-24",
+          "quote": "the 24th day of February, 1998",
+          "gold": [
+            "24th day of February, 1998,"
+          ]
+        },
+        "effective_date": {
+          "verdict": "FP",
+          "pred": "1998-02-24",
+          "quote": "the 24th day of February, 1998",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "1998-11-30",
+          "quote": "continue through November 30, 1998",
+          "gold": [
+            "The term of this Agreement shall commence on the date hereof  and, unless terminated as provided herein, shall continue through November 30, 1998."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "fails to cure said breach within 30 days of written notice to the Defaulting Party",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Tennessee",
+          "quote": "governed by the laws of the State of Tennessee",
+          "gold": [
+            "This Agreement shall be constructed under and  governed by the laws of the State of Tennessee."
+          ]
+        }
+      }
+    },
+    {
+      "title": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement4",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "KIOSK CONCEPTS, INC.; THE GRILLED CHEESE TRUCK, INC.",
+          "quote": "KIOSK CONCEPTS, INC.:  By:   Witness   Name:   Title:                     MASTER FRANCHISEE: THE GRILLED CHEESE TRUCK, INC.  By:           Name:   Title:               Witness",
+          "gold": [
+            "THE GRILLED CHEESE TRUCK, INC.",
+            "KIOSK CONCEPTS, INC."
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2015-__-__",
+          "quote": "Addendum dated this ______ day of ______________, 2015.",
+          "gold": [
+            "______ day of ______________, 2015."
+          ]
+        },
+        "effective_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        }
+      }
+    },
+    {
+      "title": "FTENETWORKS,INC_02_18_2016-EX-99.4-STRATEGIC ALLIANCE AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "EDGE Communications Solutions, LLC; FTE Networks, Inc.",
+          "quote": "EDGE Communications Solutions, LLC, with its principal place of business at 6505 Windcrest Drive, Suite 200, Plano, TX 75024 (hereinafter referred to as \"EDGE\"), and FTE Networks, Inc. with its princi",
+          "gold": [
+            "FTE Networks, Inc.",
+            "FTE"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "17t h day of February 2016"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2016-02-17",
+          "quote": "made effective this 17th day of February 2016",
+          "gold": [
+            "17t h day of February 2016"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2019-02-16",
+          "quote": "through February 16, 2019 (the \"Initial Term\")",
+          "gold": [
+            "THIS STRATEGIC ALLIANCE AGREEMENT (the \"Agreement\"), made effective this 17t h day of February 2016, through February 16, 2019 (the \"Initial Term\") i"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "month-to-month after Initial Term",
+          "quote": "After the Initial Term, this Agreement shall continue on a month to month basis",
+          "gold": [
+            "After the Initial Term, this Agreement shall continue on a month to month basis until terminated by either party upon thirty (30) days prior written notice to the other setting forth the effective dat"
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "30 days prior written notice",
+          "quote": "upon thirty (30) days prior written notice to the other",
+          "gold": [
+            "After the Initial Term, this Agreement shall continue on a month to month basis until terminated by either party upon thirty (30) days prior written notice to the other setting forth the effective dat"
+          ]
+        },
+        "governing_law": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The construction, interpretation, and performance of this Agreement and all transactions under it shall be governed by the laws of the State of Texas, irrespective of its conflict of law principles."
+          ]
+        }
+      }
+    },
+    {
+      "title": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "PC Financial Services Private Limited; Mobimagic Co., Ltd.",
+          "quote": "PC Financial Services Private Limited, a India company ...; and Mobimagic Co., Ltd.",
+          "gold": [
+            "PC Financial",
+            "Mobimagic"
+          ]
+        },
+        "signed_date": {
+          "verdict": "WRONG",
+          "pred": "2019-04-01",
+          "quote": "IN WITNESS WHEREOF, the Parties have executed this Agreement as of the Effective Date.",
+          "gold": [
+            "April. 1st 2019"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2019-04-01",
+          "quote": "entered into on April. 1st 2019 (\"Effective Date\")",
+          "gold": [
+            "April. 1st 2019"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2020-03-30",
+          "quote": "Service Period means April. 1st 2019 through to March 30, 2020.",
+          "gold": [
+            "The Agreement shall commence on the Effective Date and continue in effect for the Service Period, unless terminated earlier as provided in this Section.",
+            "\"Service Period\" means April. 1st 2019 through to March 30, 2020"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "4.7 Data protection. Each Party agrees to comply with all applicable data protection and privacy laws arising from its obligations, if any, under the Agreement and to reasonably co-operate with the ot",
+            "knowingly use the Services in violation of this Agreement."
+          ]
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "such breach la not remedied for a period of thirty (30) days after the Party in breach has been notified In writing",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "India",
+          "quote": "This Agreement (and any question about its subsistence, effect or termination) is to be interpreted in accordance with the laws of India",
+          "gold": [
+            "This Agreement (and any question about its subsistence, effect or termination) is to be interpreted in accordance with the laws of India, save for that body of law which governs the conflict of laws."
+          ]
+        }
+      }
+    },
+    {
+      "title": "InnerscopeHearingTechnologiesInc_20181109_8-K_EX-10.6_11419704_EX-10.6_Distributor Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Erchonia Corporation; InnerScope Hearing Technologies Inc",
+          "quote": "Erchonia Corporation. (\"Erchonia\") whose address is 650 Atlantis Rd., Melbourne, Florida, USA, 32904 and InnerScope Hearing Technologies Inc, (\"Distributor\") whose address is 2151 Professional Drive, ",
+          "gold": [
+            "Distributor",
+            "Erchonia"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "effective_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "Unless terminated earlier as provided in this agreement, this Agreement shall have an initial term of three (3) years."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "automatically renew for a period of three (3) years",
+          "quote": "this Agreement shall automatically renew for a period of three (3) years",
+          "gold": [
+            "This agreement shall automatically renew for a period of three (3) years and upon the parties mutual agreement on new minimum performance goals for the renewal period."
+          ]
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "10 days after written notice of breach",
+          "quote": "If the breach is not cured within ten days of such notice",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "United States and the State of Florida",
+          "quote": "This Agreement shall be governed in all respects by the laws of the United States and the State of Florida",
+          "gold": [
+            "This Agreement shall be governed in all respects by the laws of the United States and the State of Florida, except for conflict of laws provisions."
+          ]
+        }
+      }
+    },
+    {
+      "title": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "CCA INDUSTRIES, INC.; EMERSON HEALTHCARE, LLC",
+          "quote": "Between CCA INDUSTRIES, INC. (\"Company\") And EMERSON HEALTHCARE, LLC (\"Contractor\")",
+          "gold": [
+            "CCA Industries, Inc.",
+            "Emerson HealthCare, LLC"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2014-01-20",
+          "quote": "IN WITNESS WHEREOF, the parties have executed or caused this Agreement to be executed as of the date first written above.",
+          "gold": [
+            "January 20, 2014"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2014-01-20",
+          "quote": "This Services Outsourcing Agreement (this \"Agreement\") is made as of January 20, 2014 (Date)",
+          "gold": [
+            "This agreement shall commence on January 20, 2014 (the \"Effective Date\") and shall continue in effect for six (6) months (the \"Initial Term\")."
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This agreement shall commence on January 20, 2014 (the \"Effective Date\") and shall continue in effect for six (6) months (the \"Initial Term\")."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "successive six (6) month periods unless written notice is provided of either party's intent not to renew at least six (6) months before the end of the then-current term",
+          "quote": "This agreement shall automatically renew for successive six (6) month periods unless written notice is provided of either party's intent not to renew at least six (6) months before the end of the then",
+          "gold": [
+            "This agreement shall automatically renew for successive six (6) month periods unless written notice is provided of either party's intent not to renew at least six (6) months before the end of the then"
+          ]
+        },
+        "notice_period": {
+          "verdict": "TP",
+          "pred": "six (6) months before the end of the then-current term",
+          "quote": "unless written notice is provided of either party's intent not to renew at least six (6) months before the end of the then-current term",
+          "gold": [
+            "This agreement shall automatically renew for successive six (6) month periods unless written notice is provided of either party's intent not to renew at least six (6) months before the end of the then"
+          ]
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of New Jersey",
+          "quote": "This Agreement shall be deemed to have been entered into in the State of New Jersey",
+          "gold": [
+            "This Agreement shall be deemed to have been entered into in the State of New Jersey, and shall be construed and interpreted in accordance with the laws of that State applicable to agreements made and "
+          ]
+        }
+      }
+    },
+    {
+      "title": "ArconicRolledProductsCorp_20191217_10-12B_EX-2.7_11923804_EX-2.7_Trademark License Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "ARCONIC INC.; ARCONIC ROLLED PRODUCTS CORP.",
+          "quote": "by and between ARCONIC INC., a corporation organized under the laws of Delaware (\"Licensee\") and ARCONIC ROLLED PRODUCTS CORP., a corporation organized under the laws of Delaware (\"Licensor\")",
+          "gold": [
+            "ARCONIC ROLLED PRODUCTS CORP.",
+            "Licensor"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "[ ] day of [ ], 2020 ("
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2020-??-??",
+          "quote": "as of the [ ] day of [ ], 2020 (the \"Effective Date\")",
+          "gold": [
+            "[ ] day of [ ], 2020"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The Term of this Agreement will commence on the Effective Date and shall continue for the time periods set forth in Schedules 1 and 2 unless sooner terminated in accordance with the terms of this Agre"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "120 days after notice",
+          "quote": "fail to remedy any such default within one hundred twenty (120) days after notice thereof by the non-breaching party",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Delaware",
+          "quote": "This Agreement shall be governed by and interpreted in accordance with the laws of the State of Delaware",
+          "gold": [
+            "This Agreement shall be governed by and interpreted in accordance with the laws of the State of Delaware without regard to its conflicts of law principles."
+          ]
+        }
+      }
+    },
+    {
+      "title": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement2",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Franchisor; Master Franchisee; Guarantors",
+          "quote": "As an introduction to Kiosk Concepts, Inc. (\"Franchisor\") to enter into a Master Franchise Agreement with __N/A____________________ (\"Master Franchisee\") dated __________________, 20____",
+          "gold": [
+            "Guarantors",
+            "F ranch i so r"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "effective_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "FP",
+          "pred": "State in which Franchisor has its principal place of business at the time the action is initiated",
+          "quote": "This Guarantee shall be interpreted and construed under the laws of the state in which Franchisor has its principal place of business at the time the action is initiated",
+          "gold": []
+        }
+      }
+    },
+    {
+      "title": "CardlyticsInc_20180112_S-1_EX-10.16_11002987_EX-10.16_Maintenance Agreement2",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Bank of America, N.A.; <<enter Company Name>>",
+          "quote": "\"executed by and between Bank of America, N.A. (\\\"Bank of America\\\") and <<enter Company Name>> (\\\"Supplier\\\")\"",
+          "gold": [
+            "Bank of America, N.A.",
+            "<<enter Company Name>>"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "effective_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        }
+      }
+    },
+    {
+      "title": "PREMIERBIOMEDICALINC_05_14_2020-EX-10.2-INTELLECTUAL PROPERTY AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Marv Enterprises, LLC; Premier Biomedical, Inc.; Technology Health, Inc.",
+          "quote": "by and between:   Marv Enterprises, LLC, a Limited Liability Company organized under the laws of the Commonwealth of Pennsylvania (\"Marv\"),   Premier Biomedical, Inc. (OTC Pink: BIEI), a Nevada corpor",
+          "gold": [
+            "Marv Enterprises, LLC",
+            "Marv"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2020-05-12",
+          "quote": "IN WITNESS WHEREOF, the Parties hereto, agreeing to be bound hereby, execute this Agreement upon the date first set forth above.",
+          "gold": [
+            "May 12, 2020"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2020-05-12",
+          "quote": "entered into on May 12, 2020 (\"Effective Date\")",
+          "gold": [
+            "May 12, 2020"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "Commonwealth of Pennsylvania",
+          "quote": "governed by and construed in accordance with the laws of the Commonwealth of Pennsylvania",
+          "gold": [
+            "This Agreement and the rights of the Parties hereunder shall be governed by and construed in accordance with the laws of the Commonwealth of Pennsylvania including all matters of construction, validit"
+          ]
+        }
+      }
+    },
+    {
+      "title": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "WPT Enterprises, Inc.; ZYNGA INC.; ZYNGA GAME IRELAND LIMITED",
+          "quote": "WPT Enterprises, Inc., a Delaware corporation, with offices located at 1920 Main Street, Suite 1150, Irvine, CA 92614 (\"WPT\"), and ZYNGA INC., a Delaware corporation with offices located at 699 8th St",
+          "gold": [
+            "ZYNGA GAME IRELAND LIMITED",
+            "WPT"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "February 1, 2018"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2018-02-01",
+          "quote": "dated February 1, 2018 (the \"Effective Date\")",
+          "gold": [
+            "February 1, 2018"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "This Agreement will be in effect for three (3) years from the Effective Date (\"Initial Term\") unless terminated earlier in accordance with this Agreement."
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TP",
+          "pred": "Yes, automatically extends for an additional two (2) years on the same terms if payments > $12,000,000 within Initial Term",
+          "quote": "automatically extend for an additional two (2) years on the same terms herein",
+          "gold": [
+            "This Agreement shall automatically extend for an additional two (2) years on the same terms herein (\"Renewal Term\") provided WPT receives payments greater than twelve million U.S. dollars ($12,000,000"
+          ]
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "Notice shall be deemed given as follows: upon delivery if sent by courier service, express mail or personal delivery; and five (5) days after the date of mailing",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of California",
+          "quote": "This Agreement will for all purposes be governed by and interpreted in accordance with the laws of the State of California",
+          "gold": [
+            "This Agreement will for all purposes be governed by and interpreted in accordance with the laws of the State of California without giving effect to any conflict of laws principles that require the app"
+          ]
+        }
+      }
+    },
+    {
+      "title": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "UTEK Corporation; World Energy Solutions",
+          "quote": "by and between UTEK Corporation (\"UTK\"), 202 South Wheeler Street, Plant City, Florida 33566 a Delaware corporation, and World Energy Solutions, (\"AVDU\"), 3900A 31st Street North, St. Petersburg, Flor",
+          "gold": [
+            "UTK",
+            "UTEK Corporation"
+          ]
+        },
+        "signed_date": {
+          "verdict": "WRONG",
+          "pred": "2005-09-09",
+          "quote": "Date: September 9, 2005",
+          "gold": [
+            "9th day of September 200"
+          ]
+        },
+        "effective_date": {
+          "verdict": "FP",
+          "pred": "2005-09-09",
+          "quote": "this 9th day of September 2005",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "The term of the Agreement will be for 12 months unless terminated sooner.",
+            "The term of the Agreement will be for 12 months unless terminated sooner"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "FP",
+          "pred": "upon mutual, written agreement of the parties",
+          "quote": "This Agreement may be renewed upon mutual, written agreement of the parties.",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "30 days written notice",
+          "quote": "Either party may terminate this agreement at any time with 30 days written notice.",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        }
+      }
+    },
+    {
+      "title": "TcPipelinesLp_20160226_10-K_EX-99.12_9454048_EX-99.12_Transportation Agreement",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Great Lakes Gas Transmission Limited Partnership; ANR PIPELINE COMPANY",
+          "quote": "This Transportation Service Agreement (Agreement) is entered into by Great Lakes Gas Transmission Limited Partnership (Transporter) and ANR PIPELINE COMPANY (Shipper).",
+          "gold": [
+            "ANR PIPELINE COMPANY",
+            "Great Lakes Gas Transmission Limited Partnership"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2015-12-14",
+          "quote": "Dated: December 14, 2015",
+          "gold": [
+            "December 14, 2015"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2016-11-01",
+          "quote": "1. EFFECTIVE DATE: November 01, 2016",
+          "gold": [
+            "EFFECTIVE DATE: November 01, 2016"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TP",
+          "pred": "2017-10-31",
+          "quote": "6. TERM: November 01, 2014 to October 31, 2017",
+          "gold": [
+            "TERM: November 01, 2014 to October 31, 2017"
+          ]
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Michigan",
+          "quote": "Any controversy between the parties arising under this Agreement and not resolved by the parties shall be determined in accordance with the laws of the State of Michigan.",
+          "gold": [
+            "Any controversy between the parties arising under this Agreement and not resolved by the parties shall be determined in accordance with the laws of the State of Michigan."
+          ]
+        }
+      }
+    },
+    {
+      "title": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "Hyatt Franchising Latin America, L.L.C.; Playa Hotels & Resorts, B.V.",
+          "quote": "by and between Hyatt Franchising Latin America, L.L.C., ... and Playa Hotels & Resorts, B.V.",
+          "gold": [
+            "Hyatt Franchising Latin America, L.L.C.",
+            "Playa"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2016-12-14",
+          "quote": "as of December 14, 2016 (the \"Effective Date\")",
+          "gold": [
+            "December 14, 2016"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2016-12-14",
+          "quote": "as of December 14, 2016 (the \"Effective Date\")",
+          "gold": [
+            "December 14, 2016"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "FP",
+          "pred": "ten (10) business days",
+          "quote": "The Receiving Party will have ten (10) business days after receiving the Offer Notice to notify the Offering Party",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Illinois, U.S.A.",
+          "quote": "will be governed by the laws of the State of Illinois (U.S.A.)",
+          "gold": [
+            "Except to the extent governed by the Federal Arbitration Act or other federal law, this Agreement and all claims arising from the relationship between Hyatt (and/or any of its Affiliates) and Playa (a"
+          ]
+        }
+      }
+    },
+    {
+      "title": "VERSOTECHNOLOGIESINC_12_28_2007-EX-99.3-INTELLECTUAL PROPERTY AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "NMS COMMUNICATIONS CORP.; VERSO BACKHAUL SOLUTIONS, INC.",
+          "quote": "made by and between NMS COMMUNICATIONS CORP., a Delaware corporation (\"Seller\"), and VERSO BACKHAUL SOLUTIONS, INC., a Georgia corporation (\"Backhaul\")",
+          "gold": [
+            "VERSO BACKHAUL SOLUTIONS, INC.",
+            "Seller"
+          ]
+        },
+        "signed_date": {
+          "verdict": "TP",
+          "pred": "2007-12-20",
+          "quote": "dated as of December 20, 2007",
+          "gold": [
+            "December 20, 2007"
+          ]
+        },
+        "effective_date": {
+          "verdict": "FP",
+          "pred": "2007-12-20",
+          "quote": "dated as of December 20, 2007",
+          "gold": []
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Georgia",
+          "quote": "shall be construed and interpreted according to the laws of the State of Georgia",
+          "gold": [
+            "This Intellectual Property Agreement shall be construed and interpreted according to the laws of the State of Georgia, applicable contracts to be wholly performed within the State of Georgia."
+          ]
+        }
+      }
+    },
+    {
+      "title": "PRIMEENERGYRESOURCESCORP_04_02_2007-EX-10.28-COMPLETION AND LIQUIDITY MAINTENANCE AGREEMENT",
+      "fields": {
+        "parties": {
+          "verdict": "TP",
+          "pred": "PRIMEEVERG'CORPORATION; GUARANTY BANK, FSB; PRIME OFFSHORE L.L.C.",
+          "quote": "made and entered into effective as of June 29, 2006 between PRIMEEVERG'CORPORATION ... GUARANTY BANK, FSB ... PRIME OFFSHORE L.L.C.",
+          "gold": [
+            "PRIME OFFSHORE L.L.C.",
+            "PRIMEEVERGY CORPORATION"
+          ]
+        },
+        "signed_date": {
+          "verdict": "FN",
+          "pred": null,
+          "quote": "",
+          "gold": [
+            "June 29, 2006"
+          ]
+        },
+        "effective_date": {
+          "verdict": "TP",
+          "pred": "2006-06-29",
+          "quote": "effective as of June 29, 2006",
+          "gold": [
+            "June 29, 2006"
+          ]
+        },
+        "expiry_date": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "auto_renewal": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "notice_period": {
+          "verdict": "TN",
+          "pred": null,
+          "quote": "",
+          "gold": []
+        },
+        "governing_law": {
+          "verdict": "TP",
+          "pred": "State of Texas",
+          "quote": "governed by the laws of the State of Texas and that actions arising out of this Agreement may be litigated in courts having situs in Harris County, Texas",
+          "gold": [
+            "This Agreement shad be deemed a contract made under and shall be construed in accordance with and governed by the laws ofthe State ofTexas  and that actions arising out ofthis Agreement may be litigat"
+          ]
+        }
+      }
+    }
+  ]
+}

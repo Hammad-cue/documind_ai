@@ -51,20 +51,24 @@ def scoped_documents(user, document_ids=None, kinds=None):
     return docs
 
 
-def hybrid_search(user, text, document_ids=None, kinds=None, k=8, candidates=40):
+def hybrid_search(user, text, document_ids=None, kinds=None, k=8, candidates=40, mode='hybrid'):
+    """mode: 'hybrid' (default, RRF of both), 'dense' (embeddings only) or 'sparse' (full-text only) — the
+    last two exist for the evaluation's ablation study."""
     docs = scoped_documents(user, document_ids, kinds)
     base = Chunk.objects.filter(version_id__in=docs.values('current_version_id'))
 
-    qv = embed_query(text)
-    with transaction.atomic():
-        with connection.cursor() as cur:
-            cur.execute('SET LOCAL hnsw.ef_search = 100')
-            cur.execute('SET LOCAL hnsw.iterative_scan = relaxed_order')
-        dense = list(base.annotate(distance=CosineDistance('embedding', qv))
-                     .order_by('distance').values_list('id', flat=True)[:candidates])
+    dense = []
+    if mode in ('hybrid', 'dense'):
+        qv = embed_query(text)
+        with transaction.atomic():
+            with connection.cursor() as cur:
+                cur.execute('SET LOCAL hnsw.ef_search = 100')
+                cur.execute('SET LOCAL hnsw.iterative_scan = relaxed_order')
+            dense = list(base.annotate(distance=CosineDistance('embedding', qv))
+                         .order_by('distance').values_list('id', flat=True)[:candidates])
 
     sparse = []
-    terms = query_terms(text)
+    terms = query_terms(text) if mode in ('hybrid', 'sparse') else []
     if terms:
         sq = None
         for t in terms:

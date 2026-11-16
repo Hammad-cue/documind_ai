@@ -1,0 +1,29 @@
+{
+  "name": "clauses_ledgar",
+  "created": "2026-11-17 01:23",
+  "rows": [
+    {
+      "model": "TF-IDF + logistic regression (baseline)",
+      "train_examples": 10000,
+      "test_examples": 10000,
+      "accuracy": 0.8166,
+      "macro_f1": 0.7230544091253168
+    },
+    {
+      "model": "TF-IDF + logistic regression (baseline)",
+      "train_examples": 60000,
+      "test_examples": 10000,
+      "accuracy": 0.8773,
+      "macro_f1": 0.8253108024881499
+    },
+    {
+      "model": "Fine-tuned all-MiniLM-L6-v2 (ours)",
+      "test_examples": 10000,
+      "accuracy": 0.7119,
+      "macro_f1": 0.4586706314470125,
+      "train_examples": 10000,
+      "epochs": 3.0,
+      "train_minutes": 36.7
+    }
+  ]
+}

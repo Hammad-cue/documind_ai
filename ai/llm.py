@@ -44,7 +44,7 @@ def is_configured(provider=None):
 
 
 def chat(messages, *, provider=None, model=None, json_mode=False, temperature=0.1,
-         max_tokens=1500, timeout=90, retries=3):
+         max_tokens=1500, timeout=90, retries=5):
     provider = provider or settings.LLM_PROVIDER
     model = model or settings.LLM_MODEL
     base, key = _endpoint(provider)

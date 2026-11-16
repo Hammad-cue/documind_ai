@@ -106,6 +106,20 @@
               <button class="btn-ghost w-11 shrink-0 px-0" aria-label="Add fact" :disabled="!newField.key || !newField.value"><Plus :size="17" /></button>
             </form>
 
+            <div v-if="doc.clauses?.length" class="mt-6">
+              <div class="mb-2 flex items-baseline justify-between">
+                <h2 class="text-[15px] font-semibold">Clauses found</h2>
+                <span class="text-xs text-muted">by the fine-tuned clause model</span>
+              </div>
+              <div class="stagger flex flex-wrap gap-1.5">
+                <button v-for="c in doc.clauses" :key="c.label" type="button" @click="jump(c.pages[0], c.snippet)"
+                        :title="`${Math.round(c.confidence * 100)}% confidence · page ${c.pages.join(', ')}`"
+                        class="chip min-h-8 border border-white bg-white/70 px-3 text-[12.5px] text-ink-2 transition hover:bg-white hover:text-ink">
+                  {{ c.label }}<span class="text-muted">p.{{ c.pages[0] }}</span>
+                </button>
+              </div>
+            </div>
+
             <div v-if="doc.record_fields.length" class="mt-5 flex items-center gap-3 rounded-[16px] bg-white/60 p-3.5 text-[13px] text-ink-2">
               <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok-soft text-ok" aria-hidden="true"><Check :size="16" :stroke-width="2.4" /></span>
               <span><b>{{ verifiedCount }} of {{ doc.record_fields.length }} facts confirmed by a person.</b> Each one links to the page it came from.</span>

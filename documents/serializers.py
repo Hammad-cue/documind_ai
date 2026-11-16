@@ -69,12 +69,27 @@ class DocumentDetailSerializer(DocumentListSerializer):
     versions = VersionSerializer(many=True, read_only=True)
     current_version_number = serializers.IntegerField(source='current_version.number', default=None, read_only=True)
     record_fields = serializers.SerializerMethodField()
+    clauses = serializers.SerializerMethodField()
     allowed_users = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
     class Meta(DocumentListSerializer.Meta):
         fields = DocumentListSerializer.Meta.fields + ('kind_locked', 'versions', 'current_version_number',
-                                                       'record_fields', 'allowed_users', 'can_edit')
+                                                       'record_fields', 'clauses', 'allowed_users', 'can_edit')
+
+    def get_clauses(self, d):
+        """Clause types found by the fine-tuned classifier, grouped: [{label, count, pages, snippet, confidence}]."""
+        if not d.current_version_id:
+            return []
+        groups = {}
+        for c in d.current_version.chunks.exclude(clause_label='').order_by('sequence'):
+            g = groups.setdefault(c.clause_label, {'label': c.clause_label, 'count': 0, 'pages': [], 'snippet': c.text[:300],
+                                                   'confidence': c.clause_confidence or 0})
+            g['count'] += 1
+            if c.page_start not in g['pages']:
+                g['pages'].append(c.page_start)
+            g['confidence'] = max(g['confidence'], c.clause_confidence or 0)
+        return sorted(groups.values(), key=lambda g: g['pages'][0])
 
     def get_record_fields(self, d):
         if not d.current_version_id:

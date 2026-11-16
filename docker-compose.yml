@@ -1,0 +1,55 @@
+# DocuMind AI — whole system in one command:
+#   copy .env.example .env   (fill in GROQ_API_KEY / GEMINI_API_KEY and a real DJANGO_SECRET_KEY)
+#   docker compose up --build
+#   open http://localhost:8080
+# Optional demo data:  docker compose exec backend python manage.py seed_demo
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: docuvault_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mysecretpassword}
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d docuvault_db"]
+      interval: 5s
+      retries: 20
+
+  backend:
+    build: .
+    env_file: .env
+    environment: &backend-env
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: docuvault_db
+      DJANGO_DEBUG: "0"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      CORS_ORIGINS: http://localhost:8080
+      APP_URL: http://localhost:8080
+    command: sh -c "python manage.py migrate --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    volumes: [media:/app/media, models:/app/ml/models, hf-cache:/data/hf-cache]
+    depends_on: { db: { condition: service_healthy } }
+    restart: unless-stopped
+
+  worker:
+    build: .
+    env_file: .env
+    environment: *backend-env
+    command: python manage.py run_worker
+    volumes: [media:/app/media, models:/app/ml/models, hf-cache:/data/hf-cache]
+    depends_on: { db: { condition: service_healthy }, backend: { condition: service_started } }
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports: ["8080:80"]
+    depends_on: [backend]
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  media:
+  models:
+  hf-cache:

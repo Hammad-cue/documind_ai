@@ -59,34 +59,55 @@ cd frontend && npm install && npm run dev   # http://localhost:5173
 Demo users created by `seed_demo`: `demo_admin`, `demo_manager`, `demo_employee`, `demo_hr`, `demo_auditor`.
 Their password is set in `documents/management/commands/seed_demo.py` (or the `DEMO_PASSWORD` env var).
 
+## Run everything with Docker
+
+```bash
+copy .env.example .env      # add GROQ_API_KEY / GEMINI_API_KEY and a real DJANGO_SECRET_KEY
+docker compose up --build   # database, API, worker and web app
+# open http://localhost:8080
+docker compose exec backend python manage.py seed_demo   # optional demo data
+```
+
+## Reminders
+
+The worker checks every hour for agreements that are about to expire (90 / 30 / 7 days and on the day) and for the
+**last day to give notice** (expiry date minus the extracted notice period, e.g. "thirty (30) days written notice").
+The uploader, admins and the department's managers get an in-app notification (the bell in the sidebar), but only if
+they can open the document. Set `REMINDER_EMAILS=1` to also send e-mails. Run on demand with
+`python manage.py send_reminders`. People are also notified when an upload finishes, fails, or has facts to review.
+
 ## Tests
 
 ```bash
-venv\Scripts\python manage.py test documents assistant
+venv\Scripts\python manage.py test documents assistant notifications
 ```
 Covers: the RBAC visibility matrix, retrieval never returning forbidden chunks, forbidden document ids being ignored,
 file endpoint protection, upload validation (extension + magic bytes), the PDF pipeline with page numbers,
-structure-aware chunking, versioning and comparison, field correction history, append-only audit log, query routing.
+structure-aware chunking, versioning and comparison, field correction history, append-only audit log, query routing,
+reminder windows, notice-deadline parsing, de-duplication and reminder visibility.
 
-## Fine-tuning and evaluation (`ml/`)
+## Fine-tuning
 
-| Script | Purpose |
+`ml/train_clause_classifier.py` fine-tunes a transformer on **LEDGAR** (80k contract clauses, 100 clause types) and saves
+it to `ml/models/clause-classifier/`. The pipeline then labels every clause of every record, the document page lists the
+clauses it found, and search uses the labels ("contracts with a confidentiality clause").
+
+```bash
+venv\Scripts\python ml/train_clause_classifier.py --train-limit 10000 --epochs 3 --batch-size 32 --max-length 128 --lr 1e-4  # CPU, ~70 min
+venv\Scripts\python manage.py label_clauses      # label documents that were processed before the model existed
+venv\Scripts\python ml/baselines.py tfidf         # classic baseline
+venv\Scripts\python ml/baselines.py llm --eval-limit 200   # zero-shot LLM baseline
+```
+On a GPU (Colab/Kaggle) drop `--train-limit` and raise `--epochs` for the best score.
+
+## Evaluation (`evaluation/`)
+
+| Command | What it measures |
 |---|---|
-| `ml/train_clause_classifier.py` | Fine-tune Legal-BERT on LEDGAR (100 clause types). Run on Colab/Kaggle GPU; copy the output to `ml/models/clause-classifier/` and the pipeline labels every clause automatically. |
-| `ml/baselines.py tfidf` / `llm` | TF-IDF + logistic regression and zero-shot LLM baselines for the same task. |
-| `ml/eval_handwriting.py` | Tesseract vs vision model on your handwritten set: CER / WER / latency. |
+| `python -m evaluation.eval_retrieval --n 60` | Retrieval on CUAD contracts: semantic vs keyword vs hybrid, section-aware vs fixed chunks (Hit@k, MRR) |
+| `python -m evaluation.eval_extraction --n 40` | Record-field extraction on CUAD vs lawyers' annotations (P/R/F1), grounding check, review-queue catch rate |
+| `python -m evaluation.eval_router` | Routing accuracy on 100 labelled questions, LLM vs keyword fallback |
+| `python -m evaluation.eval_handwriting [--folder scans]` | Tesseract vs vision model CER/WER (synthetic set by default; pass real scans) |
+| `python -m evaluation.report` | Writes every result into **[docs/EVALUATION.md](docs/EVALUATION.md)** |
 
-## Status
-
-**Done (≈60%)**: everything above, running end-to-end with the real models.
-
-**Remaining (≈40%)**
-1. Run the fine-tuning on a GPU, record metrics against both baselines, and show clause labels in the UI.
-2. Evaluation datasets and runs:
-   - handwriting: about 30 forms you write and transcribe yourself, plus an IAM sample
-   - field extraction: F1 on about 50 CUAD contracts
-   - query routing: accuracy on about 100 labelled questions
-   - law-book answers: answer and citation accuracy on about 50 questions
-3. Expiry/renewal reminders (email or in-app notifications).
-4. Search scoped to selected documents in the UI (the API already supports `document_ids`).
-5. UI polish, a deployment configuration, and the report chapters.
+Raw results are kept in `evaluation/results/*.json`.

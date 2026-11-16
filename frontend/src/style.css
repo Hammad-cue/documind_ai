@@ -40,6 +40,8 @@
 html, body, #app { height: 100%; }
 body { @apply bg-canvas font-sans text-ink antialiased; font-feature-settings: "cv11", "ss01"; }
 ::selection { background: rgb(47 75 224 / 0.18); }
+:focus-visible { outline: 2px solid rgb(47 75 224 / 0.55); outline-offset: 2px; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; }
 
 /* ---------- surfaces ---------- */
 /* Frosted glass: translucent white + the same fine grain as the page, a bright top edge and layered soft shadows. */
@@ -118,6 +120,7 @@ body { @apply bg-canvas font-sans text-ink antialiased; font-feature-settings: "
 .toast-enter-from { opacity: 0; transform: translateY(-12px) scale(0.96); }
 .toast-leave-to { opacity: 0; transform: translateX(24px); }
 kbd { font-family: inherit; }
+@keyframes ring { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(14deg); } 40% { transform: rotate(-12deg); } 60% { transform: rotate(8deg); } 80% { transform: rotate(-4deg); } }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-word { opacity: 1; animation: none; }

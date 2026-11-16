@@ -1,5 +1,7 @@
 import time
 
+from notifications.service import run_reminders
+
 from django.core.management.base import BaseCommand
 
 from documents.pipeline import queue
@@ -17,7 +19,16 @@ class Command(BaseCommand):
         if n:
             self.stdout.write(f'Re-queued {n} stale job(s).')
         self.stdout.write(self.style.SUCCESS('Worker started. Waiting for documents...'))
+        last_reminders = 0.0
         while True:
+            if time.time() - last_reminders > 3600:  # expiry / notice reminders, hourly
+                last_reminders = time.time()
+                try:
+                    sent = run_reminders()
+                    if sent:
+                        self.stdout.write(f'   sent {sent} reminder(s)')
+                except Exception as exc:
+                    self.stdout.write(self.style.WARNING(f'   reminders failed: {exc}'))
             job = queue.claim_next()
             if job is None:
                 if opts['once']:

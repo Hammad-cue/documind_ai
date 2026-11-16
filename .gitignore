@@ -22,3 +22,5 @@ ml/runs/
 .idea/
 Thumbs.db
 .DS_Store
+staticfiles/
+evaluation/logs/

@@ -84,6 +84,26 @@ HANDBOOK = [
 ]
 
 
+def courier_agreement(today):
+    """A contract whose dates are relative to the seeding day, so expiry / notice reminders always show in a demo."""
+    from datetime import timedelta
+    signed = today - timedelta(days=340)
+    start = signed + timedelta(days=5)
+    end = today + timedelta(days=40)   # 30 days notice -> the notice deadline is 10 days away
+    fmt = lambda d: d.strftime('%d %B %Y').lstrip('0')
+    return [
+        'COURIER SERVICES AGREEMENT\n\nThis Courier Services Agreement is made between Khan & Associates, Lahore ("Client")\n'
+        'and FastTrack Logistics (Private) Limited, Lahore ("Courier").\n\n'
+        '1. Services\nThe Courier shall collect and deliver court filings and client documents within Lahore\n'
+        'on the same business day.\n\n2. Fees\nThe Client shall pay PKR 85,000 per month, invoiced monthly.',
+        f'3. Term\nThis Agreement takes effect on {fmt(start)} and ends on {fmt(end)}.\n'
+        'It renews automatically for further one-year terms unless either party objects in writing.\n\n'
+        '4. Termination\nEither party may prevent renewal or terminate this Agreement by giving\n'
+        'thirty (30) days written notice.\n\n5. Governing Law\nThis Agreement is governed by the laws of Pakistan.\n\n'
+        f'Signed at Lahore on {fmt(signed)}.\nFor the Client: Ali Khan, Managing Partner\nFor the Courier: Kamran Malik, Director',
+    ]
+
+
 def handwritten_note_png():
     """A 'handwritten' receipt rendered with a script font (for demonstrating the handwriting path)."""
     from io import BytesIO
@@ -115,6 +135,7 @@ class Command(BaseCommand):
             Organization.objects.filter(slug=ORG_SLUG).delete()
             User.objects.filter(username__startswith='demo_').delete()
         if Organization.objects.filter(slug=ORG_SLUG).exists():
+            self.add_extras(Organization.objects.get(slug=ORG_SLUG))
             self.stdout.write('Demo organization already exists (use --reset to recreate).')
             return
 
@@ -143,19 +164,33 @@ class Command(BaseCommand):
             ('Security Deposit Receipt (handwritten)', 'deposit_receipt.png', handwritten_note_png(), Document.Access.ORG, None, None, True, 'demo_admin'),
         ]
         for title, filename, content, access, dept, kind, handwritten, uploader in files:
-            doc = Document.objects.create(organization=org, title=title, access_level=access, department=dept,
-                                          uploaded_by=users[uploader], kind=kind or Document.Kind.UNKNOWN,
-                                          kind_locked=bool(kind))
-            v = DocumentVersion(document=doc, number=1, original_filename=filename,
-                                file_type='IMAGE' if filename.endswith('.png') else 'PDF', file_size=len(content),
-                                sha256=hashlib.sha256(content).hexdigest(), uploaded_by=users[uploader],
-                                marked_handwritten=handwritten)
-            v.file.save(filename, ContentFile(content), save=False)
-            v.save()
-            enqueue(v)
-            self.stdout.write(f'  queued {title}')
+            self.add_document(org, title, filename, content, access, dept, kind, handwritten, users[uploader])
+        self.add_extras(org)
 
         self.stdout.write(self.style.SUCCESS(
             'Demo organization created. Users: demo_admin, demo_manager, demo_employee, demo_hr, demo_auditor '
             '(password: DEMO_PASSWORD env var or the default in documents/management/commands/seed_demo.py). '
             'Make sure `python manage.py run_worker` is running to process the documents.'))
+
+    def add_document(self, org, title, filename, content, access, dept, kind, handwritten, uploader):
+        doc = Document.objects.create(organization=org, title=title, access_level=access, department=dept,
+                                      uploaded_by=uploader, kind=kind or Document.Kind.UNKNOWN, kind_locked=bool(kind))
+        v = DocumentVersion(document=doc, number=1, original_filename=filename,
+                            file_type='IMAGE' if filename.endswith('.png') else 'PDF', file_size=len(content),
+                            sha256=hashlib.sha256(content).hexdigest(), uploaded_by=uploader, marked_handwritten=handwritten)
+        v.file.save(filename, ContentFile(content), save=False)
+        v.save()
+        enqueue(v)
+        self.stdout.write(f'  queued {title}')
+
+    def add_extras(self, org):
+        """Documents added after the first demo release; safe to run again (adds only what is missing)."""
+        from django.utils import timezone
+        title = 'Courier Services Agreement - FastTrack Logistics'
+        if Document.objects.filter(organization=org, title=title).exists():
+            return
+        manager = User.objects.filter(username='demo_manager').first()
+        legal = org.departments.filter(name='Legal').first()
+        self.add_document(org, title, 'courier_agreement.pdf', make_pdf(courier_agreement(timezone.localdate())),
+                          Document.Access.ORG, legal, None, False, manager)
+

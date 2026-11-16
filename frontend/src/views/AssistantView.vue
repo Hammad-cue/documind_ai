@@ -123,14 +123,20 @@
     <!-- docked search bar -->
     <div class="pointer-events-none absolute inset-x-0 bottom-0 px-4 pb-5">
       <form class="glass-strong pointer-events-auto mx-auto flex max-w-[760px] items-center gap-2 rounded-[30px] py-2 pr-2 pl-5" @submit.prevent="ask()">
-        <Search :size="20" class="shrink-0 text-muted" aria-hidden="true" />
-        <span v-if="scope" class="chip shrink-0 bg-accent-soft py-1 text-accent">
-          <FileText :size="13" aria-hidden="true" /><span class="max-w-[160px] truncate">{{ scope.title }}</span>
+        <button type="button" :aria-label="scope.length ? 'Change which documents to search' : 'Choose documents to search'"
+                :title="scope.length ? 'Change documents' : 'Search only some documents'"
+                class="-ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted transition hover:bg-black/5 hover:text-ink" @click="openPicker">
+          <Files v-if="!scope.length" :size="19" />
+          <Search v-else :size="19" />
+        </button>
+        <span v-if="scope.length" class="chip animate-pop shrink-0 bg-accent-soft py-1 text-accent">
+          <FileText :size="13" aria-hidden="true" />
+          <button type="button" class="max-w-[160px] truncate" @click="openPicker">{{ scope.length === 1 ? scope[0].title : `${scope.length} documents` }}</button>
           <button type="button" aria-label="Search all documents instead" class="-mr-1 rounded-full p-0.5 hover:bg-accent/15" @click="clearScope"><X :size="13" /></button>
         </span>
         <label for="ask-input" class="sr-only">Ask the records</label>
         <input id="ask-input" ref="inputEl" v-model="input" :disabled="busy" autocomplete="off"
-               :placeholder="scope ? 'Ask about this document…' : 'Ask about a contract, a date or a clause…'"
+               :placeholder="scope.length === 1 ? 'Ask about this document…' : scope.length ? 'Ask about these documents…' : 'Ask about a contract, a date or a clause…'"
                class="min-h-11 min-w-0 flex-1 bg-transparent text-[17px] text-ink outline-none placeholder:text-muted/80" />
         <kbd class="hidden shrink-0 rounded-md border border-line px-1.5 py-0.5 text-xs text-muted sm:block" title="Press / to type here">/</kbd>
         <button type="submit" aria-label="Ask" :disabled="busy || !input.trim()"
@@ -139,16 +145,45 @@
         </button>
       </form>
     </div>
+
+    <Modal :open="pickerOpen" title="Which documents should I search?" description="Answers will only use the documents you tick. Leave all unticked to search everything you can open." wide @close="pickerOpen = false">
+      <div class="glass-soft flex min-h-11 items-center gap-2 rounded-[14px] px-3.5">
+        <Search :size="16" class="text-muted" aria-hidden="true" />
+        <label for="pick-filter" class="sr-only">Filter documents</label>
+        <input id="pick-filter" v-model="pickFilter" placeholder="Filter by title or type" class="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+      </div>
+      <ul class="mt-3 max-h-[46vh] space-y-1 overflow-y-auto pr-1 scroll-thin">
+        <li v-for="d in pickable" :key="d.id">
+          <label :class="['flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] px-3 transition', picked.has(d.id) ? 'bg-accent-soft' : 'hover:bg-white/70']">
+            <input type="checkbox" :checked="picked.has(d.id)" class="h-4 w-4 accent-[#2F4BE0]" @change="togglePick(d)" />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-semibold">{{ d.title }}</span>
+              <span class="block truncate text-xs text-muted">{{ d.doc_type || d.kind.toLowerCase() }}</span>
+            </span>
+            <span class="chip bg-black/5 text-ink-2">{{ d.kind === 'REFERENCE' ? 'Reference' : 'Record' }}</span>
+          </label>
+        </li>
+        <li v-if="!pickable.length" class="py-8 text-center text-sm text-muted">No documents match.</li>
+      </ul>
+      <div class="mt-5 flex items-center justify-between gap-2">
+        <span class="text-[13px] text-muted">{{ picked.size ? `${picked.size} selected` : 'Searching everything' }}</span>
+        <div class="flex gap-2">
+          <button type="button" class="btn-ghost" @click="picked = new Map()">Clear</button>
+          <button type="button" class="btn-primary" @click="applyPick">Done</button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
 <script setup>
-import { ArrowRight, ArrowUp, CalendarClock, Check, ChevronRight, Copy, FileSearch, FileText, ScrollText, Search, Table2, X } from '@lucide/vue'
+import { ArrowRight, ArrowUp, CalendarClock, Check, ChevronRight, Copy, FileSearch, FileText, Files, ScrollText, Search, Table2, X } from '@lucide/vue'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { errorText } from '../api'
+import Modal from '../components/Modal.vue'
 import PageThumb from '../components/PageThumb.vue'
 import StatusPill from '../components/StatusPill.vue'
 import { loadRecent, session } from '../session'
@@ -192,7 +227,33 @@ const pending = ref('')
 const error = ref('')
 const thread = ref(null)
 const inputEl = ref(null)
-const scope = ref(route.query.doc ? { id: Number(route.query.doc), title: route.query.title || 'Selected document' } : null)
+const scope = ref(route.query.doc ? [{ id: Number(route.query.doc), title: route.query.title || 'Selected document' }] : [])
+
+/* ---- choose which documents to search ---- */
+const pickerOpen = ref(false)
+const pickFilter = ref('')
+const allDocs = ref([])
+const picked = ref(new Map())
+const pickable = computed(() => {
+  const f = pickFilter.value.trim().toLowerCase()
+  return allDocs.value.filter(d => d.status === 'READY' && (!f || d.title.toLowerCase().includes(f) || (d.doc_type || '').toLowerCase().includes(f)))
+})
+async function openPicker() {
+  picked.value = new Map(scope.value.map(d => [d.id, d]))
+  pickFilter.value = ''
+  pickerOpen.value = true
+  if (!allDocs.value.length) allDocs.value = (await api.get('/documents/')).data
+}
+function togglePick(d) {
+  const m = new Map(picked.value)
+  m.has(d.id) ? m.delete(d.id) : m.set(d.id, { id: d.id, title: d.title })
+  picked.value = m
+}
+function applyPick() {
+  scope.value = [...picked.value.values()]
+  pickerOpen.value = false
+  nextTick(() => inputEl.value?.focus())
+}
 
 const INTENT = {
   LOOKUP: { label: 'From the records register', dot: 'bg-[#7C5CFF]' },
@@ -277,7 +338,7 @@ async function ask(text) {
   scrollDown()
   try {
     const { data } = await api.post('/assistant/ask/', {
-      query: q, conversation_id: convId.value, document_ids: scope.value ? [scope.value.id] : [],
+      query: q, conversation_id: convId.value, document_ids: scope.value.map(d => d.id),
     })
     queries.value.push({ ...data, _fresh: true })
     if (convId.value !== data.conversation_id) {
@@ -331,7 +392,7 @@ function askFromRoute() {
 }
 
 function clearScope() {
-  scope.value = null
+  scope.value = []
   const { doc, title, ...rest } = route.query
   router.replace({ query: rest })
 }

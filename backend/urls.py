@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from accounts.views import DepartmentViewSet, LoginView, MemberViewSet, MeView, RegisterOrganizationView
 from assistant.views import AskView, ConversationDetailView, ConversationListView
 from audit.views import AuditListView
+from notifications.views import NotificationListView, NotificationReadView
 from documents.views import (DocumentViewSet, FieldCreateView, FieldHistoryView, FieldView, RecordListView,
                              ReviewQueueView)
 
@@ -35,6 +36,9 @@ urlpatterns = [
     path('api/assistant/conversations/<int:pk>/', ConversationDetailView.as_view()),
     # audit
     path('api/audit/', AuditListView.as_view()),
+    # notifications
+    path('api/notifications/', NotificationListView.as_view()),
+    path('api/notifications/read/', NotificationReadView.as_view()),
     path('api/', include(router.urls)),
 ]
 

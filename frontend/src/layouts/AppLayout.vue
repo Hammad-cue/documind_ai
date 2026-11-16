@@ -3,7 +3,10 @@
     <!-- floating glass sidebar -->
     <aside :class="['glass fixed inset-y-3 left-3 z-40 flex w-[248px] flex-col rounded-[26px] px-3.5 py-5 transition-transform duration-300 lg:static lg:inset-auto lg:translate-x-0',
                     open ? 'translate-x-0' : '-translate-x-[110%]']">
-      <router-link to="/app/ask" class="px-2" @click="open = false"><Logo /></router-link>
+      <div class="flex items-center justify-between pr-0.5 pl-2">
+        <router-link to="/app/ask" @click="open = false"><Logo /></router-link>
+        <NotificationBell />
+      </div>
 
       <button type="button" class="glass-soft mt-6 flex min-h-10 items-center gap-2.5 rounded-[12px] px-3 text-left text-[13px] text-muted transition hover:bg-white/80 hover:text-ink"
               @click="paletteOpen = true; open = false">
@@ -78,6 +81,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CommandPalette from '../components/CommandPalette.vue'
 import Logo from '../components/Logo.vue'
+import NotificationBell from '../components/NotificationBell.vue'
 import { loadRecent, loadReviewCount, logout, session } from '../session'
 
 const router = useRouter()

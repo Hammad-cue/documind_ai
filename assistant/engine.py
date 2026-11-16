@@ -2,7 +2,7 @@
 from django.db.models import Q
 
 from ai import llm
-from documents.models import Document, RecordField
+from documents.models import Chunk, Document, RecordField
 from documents.schema import DOC_TYPE_ALIASES, FIELD_LABELS, FIELD_PHRASES, FIELD_TYPES
 
 from . import retrieval, router
@@ -35,7 +35,7 @@ def _source_from_hit(i, hit):
     c = hit.chunk
     doc = c.version.document
     return {
-        'id': i, 'type': 'chunk', 'document_id': doc.id, 'document_title': doc.title,
+        'id': i, 'type': 'chunk', 'chunk_id': c.id, 'document_id': doc.id, 'document_title': doc.title,
         'version': c.version.number, 'page': c.page_start, 'page_end': c.page_end,
         'section': c.section_path, 'snippet': c.text[:700], 'score': hit.score,
     }
@@ -154,12 +154,28 @@ def run_search(user, plan, text, document_ids):
                                              'kind': doc.kind, 'page': 1, 'snippet': doc.summary, 'score': 0,
                                              'summary': doc.summary})
             entry['score'] += 0.05
+        # boost documents containing a clause the fine-tuned classifier labelled with a query word
+        cq = Q()
+        for t in terms:
+            if len(t) >= 6:
+                cq |= Q(clause_label__icontains=t.rstrip('s'))
+        if cq:
+            docs = retrieval.scoped_documents(user, document_ids)
+            for c in (Chunk.objects.filter(cq, version_id__in=docs.values('current_version_id'))
+                      .select_related('version__document')[:30]):
+                doc = c.version.document
+                entry = best.setdefault(doc.id, {'document_id': doc.id, 'document_title': doc.title, 'doc_type': doc.doc_type,
+                                                 'kind': doc.kind, 'page': c.page_start, 'snippet': c.text[:300], 'score': 0,
+                                                 'summary': doc.summary})
+                if not entry.get('clause'):
+                    entry.update(score=entry['score'] + 0.04, clause=c.clause_label, page=c.page_start, snippet=c.text[:300])
     results = sorted(best.values(), key=lambda r: r['score'], reverse=True)[:10]
     if not results:
         return NOT_FOUND, [], []
     answer = f'I found **{len(results)}** document(s) that match.'
     sources = [{'id': i + 1, 'type': 'document', 'document_id': r['document_id'], 'document_title': r['document_title'],
-                'page': r['page'], 'page_end': r['page'], 'section': r['doc_type'], 'snippet': r['snippet']}
+                'page': r['page'], 'page_end': r['page'],
+                'section': f"{r['clause']} clause · {r['doc_type']}" if r.get('clause') else r['doc_type'], 'snippet': r['snippet']}
                for i, r in enumerate(results)]
     return answer, sources, results
 

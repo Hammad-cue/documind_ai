@@ -1,0 +1,79 @@
+{
+  "name": "retrieval_cuad",
+  "created": "2026-11-16 23:58",
+  "contracts": 60,
+  "questions_per_category": {
+    "Governing Law": "Which law governs this agreement?",
+    "Termination For Convenience": "Can a party terminate the agreement without cause or for convenience?",
+    "Non-Compete": "Is there a restriction on competing with the other party?",
+    "Exclusivity": "Is this an exclusive arrangement?",
+    "Cap On Liability": "Is liability limited or capped to an amount?",
+    "Anti-Assignment": "Can the agreement be assigned or transferred to someone else?",
+    "Audit Rights": "Does a party have the right to audit books and records?",
+    "Insurance": "What insurance must a party maintain?",
+    "Renewal Term": "Does the agreement renew automatically after the initial term?",
+    "Notice Period To Terminate Renewal": "How much notice is required to prevent renewal?",
+    "Expiration Date": "When does the agreement expire or end?",
+    "License Grant": "What license is granted under the agreement?",
+    "Warranty Duration": "How long does the warranty last?",
+    "Change Of Control": "What happens if a party undergoes a change of control or merger?",
+    "Post-Termination Services": "What obligations continue after the agreement ends?",
+    "Minimum Commitment": "Is there a minimum purchase or order commitment?"
+  },
+  "results": {
+    "structure": {
+      "chunks": 1548,
+      "avg_chunks_per_contract": 25.8,
+      "modes": {
+        "dense": {
+          "queries": 344,
+          "hit@1": 0.535,
+          "hit@3": 0.77,
+          "hit@5": 0.846,
+          "mrr@10": 0.668
+        },
+        "sparse": {
+          "queries": 344,
+          "hit@1": 0.517,
+          "hit@3": 0.802,
+          "hit@5": 0.858,
+          "mrr@10": 0.665
+        },
+        "hybrid": {
+          "queries": 344,
+          "hit@1": 0.616,
+          "hit@3": 0.86,
+          "hit@5": 0.93,
+          "mrr@10": 0.746
+        }
+      }
+    },
+    "fixed": {
+      "chunks": 1959,
+      "avg_chunks_per_contract": 32.6,
+      "modes": {
+        "dense": {
+          "queries": 344,
+          "hit@1": 0.497,
+          "hit@3": 0.724,
+          "hit@5": 0.828,
+          "mrr@10": 0.634
+        },
+        "sparse": {
+          "queries": 344,
+          "hit@1": 0.494,
+          "hit@3": 0.738,
+          "hit@5": 0.843,
+          "mrr@10": 0.637
+        },
+        "hybrid": {
+          "queries": 344,
+          "hit@1": 0.613,
+          "hit@3": 0.823,
+          "hit@5": 0.887,
+          "mrr@10": 0.733
+        }
+      }
+    }
+  }
+}

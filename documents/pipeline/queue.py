@@ -36,8 +36,9 @@ def claim_next():
 
 
 def run_job(job_id):
+    from notifications.service import document_processed
     from .runner import process_version
-    job = ProcessingJob.objects.get(pk=job_id)
+    job = ProcessingJob.objects.select_related('version').get(pk=job_id)
     try:
         process_version(job.version_id)
         job.status = ProcessingJob.Status.DONE
@@ -48,6 +49,12 @@ def run_job(job_id):
         job.status = ProcessingJob.Status.QUEUED if retryable and job.attempts < MAX_ATTEMPTS else ProcessingJob.Status.FAILED
     job.finished_at = timezone.now()
     job.save(update_fields=['status', 'error', 'finished_at'])
+    if job.status in (ProcessingJob.Status.DONE, ProcessingJob.Status.FAILED):
+        job.version.refresh_from_db()
+        try:
+            document_processed(job.version)
+        except Exception as exc:  # a notification problem must never fail processing
+            print(f'[notifications] {exc}')
     return job
 
 
