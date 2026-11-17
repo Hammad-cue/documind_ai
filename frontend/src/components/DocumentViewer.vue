@@ -95,14 +95,53 @@ onMounted(() => {
 
 const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
 
+/** [start, end) of the cited passage inside the page text, or null. The passage may run past the page or differ
+ * slightly (hyphenation, page breaks), so when it is not found whole, its first and last words are used as anchors. */
+function findRegion(full, target) {
+  if (!full || target.length < 4) return null
+  const whole = full.indexOf(target)
+  if (whole >= 0) return [whole, whole + target.length]
+  const words = target.split(' ')
+  for (const n of [8, 6, 4]) {
+    if (words.length < n) continue
+    const head = words.slice(0, n).join(' ')
+    const start = full.indexOf(head)
+    if (start < 0) continue
+    const tail = words.slice(-n).join(' ')
+    const tailAt = full.indexOf(tail, start + head.length)
+    const end = tailAt >= 0 ? tailAt + tail.length : Math.min(full.length, start + target.length)
+    return [start, end]
+  }
+  for (const n of [8, 6]) {   // passage started on the previous page: anchor on its last words
+    if (words.length < n) continue
+    const tail = words.slice(-n).join(' ')
+    const at = full.indexOf(tail)
+    if (at >= 0) return [Math.max(0, at + tail.length - target.length), at + tail.length]
+  }
+  return null
+}
+
 /** Mark text-layer spans that belong to the cited passage. */
 function applyHighlight() {
   if (!props.highlight || !scroller.value) return
   const target = norm(props.highlight)
-  let first = null
-  scroller.value.querySelectorAll('.textLayer span').forEach(span => {
+  // Join the text layer into one string, remember where each span sits in it, then find the cited passage as a
+  // whole. Matching span by span would light up every short word ("this", "void") that also occurs in the quote.
+  const spans = [...scroller.value.querySelectorAll('.textLayer span')]
+  let full = ''
+  const ranges = spans.map(span => {
     const t = norm(span.textContent)
-    const hit = t.length >= 4 && (target.includes(t) || (target.length >= 10 && t.includes(target)))
+    if (!t) return null
+    if (full) full += ' '
+    const start = full.length
+    full += t
+    return [start, full.length]
+  })
+  const region = findRegion(full, target)
+  let first = null
+  spans.forEach((span, i) => {
+    const r = ranges[i]
+    const hit = !!(region && r && r[0] < region[1] && r[1] > region[0])
     span.style.backgroundColor = hit ? 'rgba(255, 214, 102, 0.55)' : ''
     span.style.borderRadius = hit ? '3px' : ''
     if (hit) first = first || span
