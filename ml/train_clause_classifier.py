@@ -75,7 +75,16 @@ def main():
     enc = lambda b: tok(b['text'], truncation=True, max_length=args.max_length)
     train, val, test = (d.map(enc, batched=True, remove_columns=['text']) for d in (train, val, test))
 
-    model = AutoModelForSequenceClassification.from_pretrained(args.model, num_labels=len(label_names))
+    # Always load full-precision weights: some checkpoints (e.g. DeBERTa-v3) are stored in fp16, and fp16
+    # mixed-precision training fails on fp16 master weights ("Attempting to unscale FP16 gradients").
+    torch = __import__('torch')
+    try:
+        model = AutoModelForSequenceClassification.from_pretrained(args.model, num_labels=len(label_names),
+                                                                   dtype=torch.float32)
+    except TypeError:   # older transformers call it torch_dtype
+        model = AutoModelForSequenceClassification.from_pretrained(args.model, num_labels=len(label_names),
+                                                                   torch_dtype=torch.float32)
+    model = model.float()
     # set the clause names explicitly so the saved model reports "Governing Laws", not "LABEL_43"
     model.config.id2label = dict(enumerate(label_names))
     model.config.label2id = {n: i for i, n in enumerate(label_names)}
