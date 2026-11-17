@@ -1,0 +1,9 @@
+build.out
+*.log
+*.aux
+*.toc
+*.lof
+*.lot
+*.out
+*.xdv
+main.pdf

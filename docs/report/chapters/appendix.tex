@@ -1,0 +1,8 @@
+\chapter{Source Code and Reproduction}
+The source code is available at \url{https://github.com/Hammad-cue/documind_ai}.
+
+\noindent Run the tests: \code{python manage.py test}\\
+Create demo data: \code{python manage.py seed\_demo}\\
+Train the clause classifier: \code{python ml/train\_clause\_classifier.py}\\
+Run the evaluations and write the results: \code{python -m evaluation.run\_all} then \code{python -m evaluation.report}\\
+Deploy: \code{docker compose up --build}

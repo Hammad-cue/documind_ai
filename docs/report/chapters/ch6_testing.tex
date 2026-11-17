@@ -1,0 +1,287 @@
+\chapter{Testing and Evaluation}
+This chapter presents how \sysname{} was tested and how well its AI components perform. Testing
+checks that the software does what the requirements say (unit, integration, system, performance and
+security testing). Evaluation measures the quality of the AI components on public, expert-labelled
+datasets, because an AI system can pass every functional test and still give wrong answers.
+
+\section{Testing Strategy}
+\begin{itemize}
+\item \textbf{Unit and integration tests} are automated with Django's test framework and run with
+\code{python manage.py test} against a temporary PostgreSQL database with pgvector. They run without any
+LLM (the LLM is switched off in the test settings), so they are fast, free and repeatable; the language
+model is evaluated separately.
+\item \textbf{System (black-box) tests} exercise complete use cases through the user interface or its REST API.
+\item \textbf{Performance tests} measure response and processing times on the development machine.
+\item \textbf{Security tests} check authentication, the role $\times$ access-level matrix, file access and
+the audit log.
+\item \textbf{AI evaluation} uses CUAD~\cite{hendrycks2021cuad}, LEDGAR~\cite{tuggener2020ledgar}, a
+labelled set of 100 routing questions and a handwriting set (Section~\ref{sec:eval}).
+\end{itemize}
+
+\section{Unit Testing}
+All automated tests pass (26 tests, 99.5 seconds). Table~\ref{tab:unit} lists the unit tests.
+
+\begin{longtable}{|p{1.15cm}|p{3.1cm}|p{4.1cm}|p{4.5cm}|p{1.2cm}|}
+\caption{Unit Test Cases}\label{tab:unit}\\ \hline
+\textbf{ID} & \textbf{Module / Function} & \textbf{Input} & \textbf{Expected Output} & \textbf{Result} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Module / Function} & \textbf{Input} & \textbf{Expected Output} & \textbf{Result} \\ \hline
+\endhead
+UT-01 & \code{parse\_date} & ``2025-03-12'', ``12th day of March, 2025'', ``March 12, 2025'', ``12/03/2025'', ``sometime next year'' & First four parse to 12 March 2025 (day-first); the last returns none & Pass \\ \hline
+UT-02 & \code{ground} & Page ``The parties signed this agreement on 12 March 2025 in Lahore.''; a real and an invented quote & Real quote grounded; ``signed on 1 January 2020 in Karachi'' rejected & Pass \\ \hline
+UT-03 & \code{chunk\_pages} & Two Contract Act pages with ``CHAPTER II'' and numbered sections 10 and 11 & Section 11 chunk starts on page 2 and its path contains ``CHAPTER II'' and ``11. Who are competent'' & Pass \\ \hline
+UT-04 & \code{visible\_documents} & Every role $\times$ ORG / DEPARTMENT / RESTRICTED documents & Each user sees exactly the allowed set & Pass \\ \hline
+UT-05 & Documents API & Employee of another department requests a department-only document & Not listed; detail and file return 404 & Pass \\ \hline
+UT-06 & Documents API & Admin deletes a document & Document is archived (row kept) and disappears from other users' lists & Pass \\ \hline
+UT-07 & \code{can\_edit} & Employee edits someone else's document & HTTP 403 & Pass \\ \hline
+UT-08 & Upload permission & Auditor uploads a file & HTTP 403 & Pass \\ \hline
+UT-09 & Upload validation & \code{virus.exe}; a \code{.pdf} file whose content is not a PDF & Both rejected with HTTP 400 & Pass \\ \hline
+UT-10 & Versions \& compare & Upload version 2, compare with version 1 & Two versions kept; added and removed lines returned & Pass \\ \hline
+UT-11 & Field correction & Manager corrects a field value & Value and status change; FieldEdit with old and new value & Pass \\ \hline
+UT-12 & Verify permission & Employee verifies a field & HTTP 403 & Pass \\ \hline
+UT-13 & AuditEvent & Update and delete an existing event & Both raise an error; event unchanged & Pass \\ \hline
+UT-14 & \code{heuristic\_plan} & ``When was the NDA with Acme signed?'' & LOOKUP, field signed\_date, party Acme & Pass \\ \hline
+UT-15 & \code{\_clean} & ``null'', `` None '', ``Acme'' & None, None, ``Acme'' & Pass \\ \hline
+UT-16 & \code{heuristic\_plan} & ``Find the lease for the Lahore office''; ``What makes an agreement void under the law?'' & SEARCH; KNOWLEDGE & Pass \\ \hline
+UT-17 & \code{answer} (lookup) & ``When was the NDA with Acme signed?'' & Answer contains ``12 March 2025''; source is the NDA & Pass \\ \hline
+UT-18 & Ask API \& history & Two questions in one conversation; another user opens it & Conversation has 2 queries; other user gets 404 & Pass \\ \hline
+UT-19 & \code{notice\_days} & ``thirty (30) days written notice'', ``60 days'', ``one month'', ``2 weeks'', ``reasonable notice'' & 30, 60, 30, 14, none & Pass \\ \hline
+UT-20 & \code{run\_reminders} & Lease expiring in 25 days with 30 days' notice & ``expires in 25 days'' and ``notice deadline 5 days ago'' reminders, including for the admin & Pass \\ \hline
+UT-21 & \code{run\_reminders} & Contracts expiring in 400 and 60 days; check run twice & No reminder for the far one; exactly one per person for the near one & Pass \\ \hline
+UT-22 & \code{people\_to\_remind} & HR department-only contract expiring in 5 days & Admin and uploader notified; legal employee and outsider not & Pass \\ \hline
+UT-23 & Notifications API & List and mark as read & Unread count drops to 0 & Pass \\ \hline
+\end{longtable}
+
+\section{Integration Testing}
+Integration tests check that modules work together. IT-01, IT-03 and IT-04 are automated; IT-02 and
+IT-05 were run against the running system.
+
+\begin{longtable}{|p{1.15cm}|p{3.4cm}|p{4.0cm}|p{4.4cm}|p{1.3cm}|}
+\caption{Integration Testing Summary}\label{tab:integration}\\ \hline
+\textbf{ID} & \textbf{Modules Integrated} & \textbf{Input} & \textbf{Expected Result} & \textbf{Result} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Modules Integrated} & \textbf{Input} & \textbf{Expected Result} & \textbf{Result} \\ \hline
+\endhead
+IT-01 & Upload API $\rightarrow$ job queue $\rightarrow$ extraction $\rightarrow$ chunking $\rightarrow$ embeddings $\rightarrow$ PostgreSQL & A generated multi-page PDF & Version READY; pages, chunks with embeddings and search vectors stored & Pass \\ \hline
+IT-02 & Vue Assistant $\rightarrow$ Ask API $\rightarrow$ router $\rightarrow$ retrieval $\rightarrow$ LLM $\rightarrow$ viewer & ``When is a contract voidable under the Contract Act?'' on the 65-page Contract Act 1872 & Answer citing the Contract Act with pages; source opens the page & Pass (13.6\,s) \\ \hline
+IT-03 & Access control $\rightarrow$ hybrid retrieval & A secret document visible only to the legal department; searches by an HR employee, an outsider and a legal employee & HR employee and outsider never receive its chunks; legal employee gets it first & Pass \\ \hline
+IT-04 & Ask API $\rightarrow$ engine with explicit document ids & HR employee passes the secret document's id & Id ignored; no sources from it & Pass \\ \hline
+IT-05 & LLM gateway $\rightarrow$ fallback provider & Main provider's daily quota exhausted (HTTP 429, retry after 20 min) & Gateway switches to the fallback at once and answers; later calls skip the main provider & Pass \\ \hline
+\end{longtable}
+
+\section{System Testing}
+Black-box tests follow the use cases of Chapter~3, signed in as the demo users of each role. BB-08 to
+BB-11 were run in the user interface; the others were run through the same REST API the interface calls,
+using a script that only sees requests and responses (no access to the code or database). During BB-10 a
+defect was found: for long passages, every short word of the passage was highlighted all over the page. The
+viewer was changed to locate the passage as a whole in the page text, and the test was repeated.
+
+\begin{longtable}{|p{1.15cm}|p{2.0cm}|p{4.6cm}|p{5.0cm}|p{1.3cm}|}
+\caption{System (Black Box) Test Cases}\label{tab:blackbox}\\ \hline
+\textbf{ID} & \textbf{Use Case} & \textbf{Steps} & \textbf{Expected Result} & \textbf{Result} \\ \hline
+\endfirsthead
+\hline
+\textbf{ID} & \textbf{Use Case} & \textbf{Steps} & \textbf{Expected Result} & \textbf{Result} \\ \hline
+\endhead
+BB-01 & UC-1.1 Register & Register a new organization with its admin; sign in & Organization created (201); signed-in user has the Admin role & Pass \\ \hline
+BB-02 & UC-1.2 Login & Sign in with a wrong, then the correct password & 401, then tokens issued; LOGIN events in the audit log & Pass \\ \hline
+BB-03 & UC-1.3 Members & Admin creates HR and Legal departments, adds an HR Employee, uploads an organization-wide and a Legal-only document & Member created (201); the HR employee sees only the organization-wide document & Pass \\ \hline
+BB-04 & UC-2.1 Upload & Upload an image-only (scanned) PDF and a handwritten page marked handwritten & Both READY (46 s and 6 s); pages read by OCR and by handwriting recognition & Pass \\ \hline
+BB-05 & UC-2.2 Versions & Upload a lease, then version 2 with a new rent, and compare & Two versions listed; comparison shows the new rent & Pass \\ \hline
+BB-06 & UC-3.1 Register & Filter the records register by ``lease'' & Only leases listed, with expiry dates (31 Dec 2026, 30 Jun 2027) & Pass \\ \hline
+BB-07 & UC-3.2 Review & Manager corrects the first field in the review queue with a reason; Employee tries to verify & Field leaves the queue; history stores the reason; Employee gets 403 & Pass \\ \hline
+BB-08 & UC-4.1 Lookup & Ask ``Which contracts expire in 2027?'' & Office lease listed with expiry 30 June 2027 and evidence & Pass (1.5\,s) \\ \hline
+BB-09 & UC-4.2 Law book & Ask ``What does the Contract Act say about agreements without consideration?'' & Section 25 rule and its exceptions with citations & Pass \\ \hline
+BB-10 & UC-4.3 Source & Open the first source of a Contract Act answer & Page 22 opens with only the cited passage highlighted (Figure~\ref{fig:scr-source}) & Pass \\ \hline
+BB-11 & UC-4.4 History & Reopen an earlier conversation & Questions, answers and sources shown & Pass \\ \hline
+BB-12 & UC-5.1 Audit & Download a file; Auditor filters the audit log by DOWNLOAD; Employee opens the audit log & Only DOWNLOAD events listed; Employee gets 403 & Pass \\ \hline
+\end{longtable}
+
+\section{Performance Testing}
+Measurements were taken on the development laptop (CPU only) with the free tiers of the LLM providers.
+During the measurement the main provider's daily token quota had been used by the evaluation runs, so
+generated answers came from the fallback provider (Gemini).
+
+\begin{table}[H]\centering
+\caption{Performance Metrics}\label{tab:perf}
+\begin{tabularx}{\textwidth}{|p{4.4cm}|p{3.2cm}|X|}\hline
+\textbf{Metric} & \textbf{Requirement} & \textbf{Observed Result} \\ \hline
+Lookup answer time & $\leq$ 3 s (PER-1) & 1.5 s (``Which contracts expire in 2027?'') \\ \hline
+Knowledge answer time & $\leq$ 35 s (PER-2) & 11.5--13.6 s with a warm server; 22.8 s for the first question after a restart (model loading) \\ \hline
+Upload response & Immediate (PER-3) & Returns after storing the file; processing continues in the background \\ \hline
+Digital page extraction & -- & About 10 ms per page (65-page Contract Act read in 1.2 s) \\ \hline
+Handwritten page reading & -- & 6.8 s for one handwritten receipt (vision model) \\ \hline
+Classification / field extraction & -- & 1.1--1.8 s / 1.4--2.0 s per short document; 38.6 s per long CUAD contract \\ \hline
+Chunking and embedding & -- & 0.1--0.2 s for 1--3 page documents; 26 s for the 65-page Contract Act (190 chunks, CPU) \\ \hline
+Automated test suite & -- & 26 tests in 99.5 s \\ \hline
+\end{tabularx}
+\end{table}
+
+\noindent\textbf{Observation.} On free LLM tiers the main limit is the provider's token quota, not the
+system: when the quota was exhausted, answers first took up to 45 seconds while the system waited for
+retries. The gateway was then changed to switch provider immediately when a provider reports a long
+wait, and to skip that provider until its quota resets, which produced the times above (IT-05).
+
+\section{Security Testing}
+\begin{table}[H]\centering
+\caption{Security Verification Summary}\label{tab:security}
+\begin{tabularx}{\textwidth}{|p{4.5cm}|X|p{2.1cm}|}\hline
+\textbf{Check} & \textbf{Method} & \textbf{Result} \\ \hline
+Unauthenticated access & API calls without a token return 401 & Pass \\ \hline
+Role $\times$ access-level matrix & UT-04 checks every role against every access level & Pass \\ \hline
+Retrieval leakage & IT-03 / IT-04: forbidden chunks never returned, even when their ids are sent & Pass \\ \hline
+File access & UT-05: files of invisible documents return 404 from the permission-checked endpoint & Pass \\ \hline
+Privilege escalation & UT-07, UT-08, UT-12: edit, upload and verify blocked for the wrong roles & Pass \\ \hline
+Audit integrity & UT-13: events cannot be updated or deleted & Pass \\ \hline
+Password storage & Django PBKDF2 salted hashes; plain passwords never stored & Pass \\ \hline
+Rate limiting & DRF throttling: 20 questions/min, 600 requests/hour per user & Configured \\ \hline
+Secrets & API keys only in \code{.env}, which is git-ignored & Pass \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{AI Evaluation}\label{sec:eval}
+The AI components were evaluated with scripts in \code{evaluation/} on public datasets labelled by
+experts. Each experiment ID (EV-$n$) is referenced in the traceability matrix.
+
+\subsection{EV-1: Clause Classification (LEDGAR)}\label{sec:eval-clauses}
+Test set: 10,000 provisions, 100 clause types. Macro-F1 averages over all types, so rare types count as
+much as common ones.
+
+\begin{table}[H]\centering
+\caption{Clause Classification Results on LEDGAR}\label{tab:ev-clauses}
+\begin{tabularx}{\textwidth}{|X|r|r|r|r|}\hline
+\textbf{Model} & \textbf{Training provisions} & \textbf{Test provisions} & \textbf{Accuracy} & \textbf{Macro-F1} \\ \hline
+TF-IDF + logistic regression (baseline) & 10,000 & 10,000 & 81.7\% & 72.3\% \\ \hline
+TF-IDF + logistic regression (baseline) & 60,000 & 10,000 & 87.7\% & 82.5\% \\ \hline
+Fine-tuned all-MiniLM-L6-v2 (ours, CPU, 3 epochs) & 10,000 & 10,000 & 71.2\% & 45.9\% \\ \hline
+Fine-tuned all-MiniLM-L6-v2 (ours, GPU, full data) & 60,000 & 10,000 & \pending{Colab} & \pending{Colab} \\ \hline
+Zero-shot LLM (\code{gpt-oss-120b}, no training) & 0 & 198 & 65.2\% & 44.0\% \\ \hline
+\end{tabularx}
+\end{table}
+
+The zero-shot LLM was tested on a random sample of 198 test provisions because of the free-tier rate limit; 2 calls that failed at the API were excluded. It needs no training data, but with 100 closely related labels it is less accurate than both trained models, which supports fine-tuning a small local model for this task: it is also free and fast at inference time.
+
+The CPU-trained model is under-trained: its validation score was still rising at every epoch, and with
+only 10,000 examples many of the 100 classes have very few training examples, which explains the low
+macro-F1 (several rare classes are never predicted). The strong TF-IDF baseline shows that clause types
+are largely signalled by vocabulary. The full-data GPU run in the provided Colab notebook is the
+configuration to compare with the 60,000-example baseline.
+
+\subsection{EV-2: Retrieval (CUAD)}
+For 60 CUAD contracts, 344 questions were asked about clauses that lawyers had marked. A result is a
+hit when the returned passage contains the lawyers' answer span. Two chunking methods and three
+retrieval methods were compared (an ablation study).
+
+\begin{table}[H]\centering
+\caption{Retrieval Results on CUAD (60 contracts, 344 questions)}\label{tab:ev-retrieval}
+\begin{tabularx}{\textwidth}{|X|l|r|r|r|r|}\hline
+\textbf{Chunking} & \textbf{Retrieval} & \textbf{Hit@1} & \textbf{Hit@3} & \textbf{Hit@5} & \textbf{MRR@10} \\ \hline
+Fixed 1,000 characters (v1) & Semantic only & 49.7\% & 72.4\% & 82.8\% & 0.634 \\ \hline
+Fixed 1,000 characters (v1) & Keyword only & 49.4\% & 73.8\% & 84.3\% & 0.637 \\ \hline
+Fixed 1,000 characters (v1) & Hybrid RRF & 61.3\% & 82.3\% & 88.7\% & 0.733 \\ \hline
+Section-aware (ours) & Semantic only & 53.5\% & 77.0\% & 84.6\% & 0.668 \\ \hline
+Section-aware (ours) & Keyword only & 51.7\% & 80.2\% & 85.8\% & 0.665 \\ \hline
+\textbf{Section-aware (ours)} & \textbf{Hybrid RRF} & \textbf{61.6\%} & \textbf{86.0\%} & \textbf{93.0\%} & \textbf{0.746} \\ \hline
+\end{tabularx}
+\end{table}
+Compared with the design of the first version (fixed chunks, semantic search only), the final design
+raises Hit@1 from 49.7\% to 61.6\% and Hit@5 from 82.8\% to 93.0\%. Both changes help on their own:
+hybrid retrieval adds about 10 points of Hit@1, and section-aware chunking adds about 4 points of Hit@5.
+
+\subsection{EV-3: Record Field Extraction (CUAD)}
+Forty CUAD contracts were processed by the extraction step (model \code{gpt-oss-20b}, 38.6 s per
+contract). A prediction is correct when its quoted evidence overlaps the lawyers' span or its value
+matches (same date, parties or jurisdiction).
+
+\begin{table}[H]\centering
+\caption{Field Extraction Results on CUAD (40 contracts)}\label{tab:ev-extract}
+\begin{tabular}{|l|r|r|r|}\hline
+\textbf{Field} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\ \hline
+Parties & 100.0\% & 100.0\% & 100.0\% \\ \hline
+Signing date & 88.0\% & 59.5\% & 71.0\% \\ \hline
+Effective date & 77.1\% & 84.4\% & 80.6\% \\ \hline
+Expiry date & 100.0\% & 35.7\% & 52.6\% \\ \hline
+Auto-renewal & 90.0\% & 56.2\% & 69.2\% \\ \hline
+Notice period & 26.9\% & 70.0\% & 38.9\% \\ \hline
+Governing law & 90.0\% & 77.1\% & 83.1\% \\ \hline
+\textbf{All fields (micro)} & \textbf{80.7\%} & \textbf{71.7\%} & \textbf{75.9\%} \\ \hline
+\end{tabular}
+\end{table}
+\begin{itemize}
+\item \textbf{Evidence is real.} 175 of 176 quotes (99.4\%) were found word-for-word on the cited page,
+so every value can be checked against its source.
+\item \textbf{Label differences.} CUAD's \emph{Notice Period To Terminate Renewal} covers only notice to
+stop a renewal, while our notice period is any termination notice, so many correct values count as false
+positives. CUAD's \emph{Expiration Date} is often a duration (``continues for five years''), while the
+system stores an explicit date only when one is written, which lowers recall.
+\item \textbf{Limitation of the review rule.} Only 2 of the 34 wrong predictions were sent to review,
+because most wrong values carry a real quote that answers a slightly different question. Confidence and
+grounding do not catch these; a second checking model is listed as future work.
+\end{itemize}
+
+\subsection{EV-4: Query Routing}
+A set of 100 questions (40 LOOKUP, 35 KNOWLEDGE, 25 SEARCH) labelled by hand was routed by the keyword
+rules and by the LLM router. ``Correct field'' is the share of lookup questions for which the right record
+field (e.g.\ signing date) was chosen.
+\begin{table}[H]\centering\footnotesize
+\caption{Query Routing Results (100 questions)}\label{tab:ev-router}
+\begin{tabular}{|l|r|r|r|r|r|r|}\hline
+\textbf{Router} & \textbf{Accuracy} & \textbf{Lookup F1} & \textbf{Knowl.\ F1} & \textbf{Search F1} & \textbf{Right field} & \textbf{Time} \\ \hline
+Keyword rules (fallback) & 77.0\% & 74.0\% & 73.2\% & 88.9\% & 60.0\% & $<$1 ms \\ \hline
+LLM router (\code{gpt-oss-20b}) & 94.0\% & 96.4\% & 94.4\% & 88.9\% & 100.0\% & 1163 ms \\ \hline
+\end{tabular}
+\end{table}
+The LLM router is correct on 94 of 100 questions against 77 for the
+keyword rules, and it chooses the right field for every lookup (100.0\% against
+60.0\%). Every LOOKUP question was routed correctly; most remaining errors are
+search requests treated as lookups or knowledge questions (2 and 3 of 25), which still
+return the right documents as sources. During the run, 11 of the 100 calls hit the free-tier rate limit and were
+answered by the keyword fallback, so the LLM figures are a slight underestimate. A routing call takes about
+1.2 s.
+
+\subsection{EV-5: Handwriting Recognition}
+Character and word error rates (lower is better) of Tesseract, the vision model, and the pipeline's rule
+(vision model only when Tesseract is unsure).
+\begin{table}[H]\centering
+\caption{Handwriting Recognition Results}\label{tab:ev-hand}
+\begin{tabular}{|l|r|r|r|}\hline
+\textbf{Reader} & \textbf{CER} & \textbf{WER} & \textbf{Time per page} \\ \hline
+Tesseract OCR & \pending{run} & \pending{run} & \pending{run} \\ \hline
+Vision-language model & \pending{run} & \pending{run} & \pending{run} \\ \hline
+Pipeline (vision only when needed) & \pending{run} & -- & -- \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{EV-6: Answer Quality}
+CUAD questions are asked through the full answer engine. Measures: answer judged correct against the
+lawyers' annotation, citation hit rate, and abstention (saying ``not in the document'') when the clause
+is absent.
+\begin{table}[H]\centering
+\caption{Answer Quality Results}\label{tab:ev-answers}
+\begin{tabular}{|l|r|}\hline
+\textbf{Measure} & \textbf{Result} \\ \hline
+Answer judged correct & \pending{run} \\ \hline
+At least one citation contains the lawyers' span & \pending{run} \\ \hline
+Answers that cite their sources & \pending{run} \\ \hline
+Correctly says ``not in the document'' when absent & \pending{run} \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Testing Summary}
+\begin{table}[H]\centering
+\caption{Test Summary}\label{tab:testsummary}
+\begin{tabular}{|l|r|r|r|}\hline
+\textbf{Test type} & \textbf{Cases} & \textbf{Passed} & \textbf{Failed} \\ \hline
+Unit (automated) & 23 & 23 & 0 \\ \hline
+Integration (3 automated, 2 manual) & 5 & 5 & 0 \\ \hline
+System (black box) & 12 & 12 & 0 \\ \hline
+Security checks & 9 & 9 & 0 \\ \hline
+\end{tabular}
+\end{table}
+All automated unit and integration tests pass, and the security checks confirm that access rules hold at
+every layer, including retrieval. The evaluation shows that the redesigned retrieval clearly outperforms
+the first version's design and that extracted values are backed by real evidence, while it also
+identifies honest limitations (the under-trained CPU clause model and the review rule's blind spot)
+that are discussed in the next chapter.

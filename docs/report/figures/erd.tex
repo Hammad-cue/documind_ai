@@ -1,0 +1,52 @@
+% Entity relationship diagram (Figure 4.14)
+\begin{tikzpicture}[
+  e/.style={draw,fill=gray!10,font=\small\bfseries,minimum width=26mm,minimum height=8mm},
+  r/.style={draw,diamond,aspect=2,font=\scriptsize,inner sep=1pt,fill=white},
+  c/.style={font=\scriptsize,inner sep=1pt}]
+\node[e] (org) at (0,0) {Organization};
+\node[e] (dep) at (0,-3.4) {Department};
+\node[e] (usr) at (7,0) {User};
+\node[e] (doc) at (7,-3.4) {Document};
+\node[e] (ver) at (7,-6.8) {DocumentVersion};
+\node[e] (pag) at (2,-10.2) {Page};
+\node[e] (chk) at (7,-10.2) {Chunk};
+\node[e] (fld) at (12,-10.2) {RecordField};
+\node[e] (fed) at (12,-13.4) {FieldEdit};
+\node[e] (job) at (1.5,-6.8) {ProcessingJob};
+\node[e] (con) at (12.8,0) {Conversation};
+\node[e] (qry) at (12.8,-3.4) {Query};
+\node[e] (aud) at (12.8,2.6) {AuditEvent};
+\node[e] (ntf) at (2.5,2.6) {Notification};
+
+\node[r] (r1) at (0,-1.7) {has};
+\node[r] (r2) at (3.5,0) {membership};
+\node[r] (r3) at (3.5,-3.4) {owns};
+\node[r] (r4) at (7,-1.7) {uploads};
+\node[r] (r5) at (7,-5.1) {has};
+\node[r] (r6) at (4.5,-8.5) {has};
+\node[r] (r7) at (7,-8.5) {has};
+\node[r] (r8) at (9.5,-8.5) {has};
+\node[r] (r9) at (12,-11.8) {has};
+\node[r] (r10) at (4.25,-6.8) {queues};
+\node[r] (r11) at (9.9,0) {asks};
+\node[r] (r12) at (12.8,-1.7) {contains};
+\node[r] (r13) at (9.9,1.6) {performs};
+\node[r] (r14) at (4.8,1.6) {receives};
+\node[r] (r15) at (10.3,-2.2) {shared with};
+
+\draw (org) -- node[c,right,pos=0.1]{1} (r1) -- node[c,right,pos=0.9]{N} (dep);
+\draw (org) -- node[c,above,pos=0.1]{1} (r2) -- node[c,above,pos=0.9]{N} (usr);
+\draw (dep) -- node[c,above,pos=0.1]{1} (r3) -- node[c,above,pos=0.9]{N} (doc);
+\draw (usr) -- node[c,right,pos=0.1]{1} (r4) -- node[c,right,pos=0.9]{N} (doc);
+\draw (doc) -- node[c,right,pos=0.1]{1} (r5) -- node[c,right,pos=0.9]{N} (ver);
+\draw (ver) -- node[c,above,pos=0.1]{1} (r6) -- node[c,left,pos=0.9]{N} (pag);
+\draw (ver) -- node[c,right,pos=0.1]{1} (r7) -- node[c,right,pos=0.9]{N} (chk);
+\draw (ver) -- node[c,above,pos=0.1]{1} (r8) -- node[c,right,pos=0.9]{N} (fld);
+\draw (fld) -- node[c,right,pos=0.1]{1} (r9) -- node[c,right,pos=0.9]{N} (fed);
+\draw (ver) -- node[c,above,pos=0.1]{1} (r10) -- node[c,above,pos=0.9]{N} (job);
+\draw (usr) -- node[c,above,pos=0.1]{1} (r11) -- node[c,above,pos=0.9]{N} (con);
+\draw (con) -- node[c,right,pos=0.1]{1} (r12) -- node[c,right,pos=0.9]{N} (qry);
+\draw (usr) -- node[c,above,pos=0.1]{1} (r13) -- node[c,above,pos=0.9]{N} (aud);
+\draw (usr) -- node[c,above,pos=0.1]{1} (r14) -- node[c,above,pos=0.9]{N} (ntf);
+\draw (usr.south east) -- node[c,right,pos=0.1]{M} (r15) -- node[c,below,pos=0.9]{N} (doc.east);
+\end{tikzpicture}

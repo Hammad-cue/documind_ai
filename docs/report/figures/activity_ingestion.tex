@@ -1,0 +1,42 @@
+% Activity diagram: document ingestion (Figure 4.3)
+\begin{tikzpicture}[node distance=5mm]
+\node[startnode] (s) {};
+\node[act,below=of s] (a1) {User selects file(s), access level, kind, handwritten flag};
+\node[dec,below=of a1] (d1) {Type and size\\ valid?};
+\node[act=30mm,right=12mm of d1] (r1) {Show error; nothing stored};
+\node[act,below=of d1] (a2) {Store file as version $n$, hash, queue job, log UPLOAD};
+\node[act,below=of a2] (a3) {Worker claims job (FOR UPDATE SKIP LOCKED)};
+\node[dec,below=of a3] (d2) {Page has a\\ text layer?};
+\node[act=30mm,left=10mm of d2] (a4) {Use digital text};
+\node[act,below=of d2] (a5) {Render at 300 dpi and run Tesseract OCR};
+\node[dec,below=of a5] (d3) {Confidence $<70$ or\\ marked handwritten?};
+\node[act=30mm,right=10mm of d3] (a6) {Transcribe with vision-language model};
+\node[act,below=of d3] (a7) {Classify RECORD / REFERENCE, type, summary};
+\node[act,below=of a7] (a8) {Structure-aware chunking, embeddings, full-text vectors};
+\node[dec,below=of a8] (d4) {RECORD?};
+\node[act=42mm,right=10mm of d4] (a9) {Label clauses; extract 11 fields with page + quote; ground quotes; set AUTO / NEEDS\_REVIEW};
+\node[act,below=8mm of d4] (a10) {Mark version READY, make it current, notify uploader};
+\node[endnode,below=of a10] (e) {};
+\node[endnode,below=4mm of r1] (e2) {};
+
+\draw[flow] (s) -- (a1);
+\draw[flow] (a1) -- (d1);
+\draw[flow] (d1) -- node[lbl,above]{no} (r1);
+\draw[flow] (r1) -- (e2);
+\draw[flow] (d1) -- node[lbl,right]{yes} (a2);
+\draw[flow] (a2) -- (a3);
+\draw[flow] (a3) -- (d2);
+\draw[flow] (d2) -- node[lbl,above]{yes} (a4);
+\draw[flow] (d2) -- node[lbl,right]{no} (a5);
+\draw[flow] (a5) -- (d3);
+\draw[flow] (d3) -- node[lbl,above]{yes} (a6);
+\draw[flow] (d3) -- node[lbl,right]{no} (a7);
+\draw[flow] (a4.south) |- ($(a7.west)+(0,1.5mm)$);
+\draw[flow] (a6.south) |- (a7.east);
+\draw[flow] (a7) -- (a8);
+\draw[flow] (a8) -- (d4);
+\draw[flow] (d4) -- node[lbl,above]{yes} (a9);
+\draw[flow] (d4) -- node[lbl,right]{no} (a10);
+\draw[flow] (a9.south) |- (a10.east);
+\draw[flow] (a10) -- (e);
+\end{tikzpicture}

@@ -1,0 +1,16 @@
+% Context diagram (Figure 4.1). Label above a line = data flowing into the system, below = flowing out.
+\begin{tikzpicture}[lab/.style={font=\scriptsize,align=center,inner sep=1.5pt}]
+\node[proc,minimum size=30mm,font=\small] (sys) at (0,0) {\textbf{0}\\ \sysname{}};
+\node[extent] (adm) at (-7.2,3.3) {Admin};
+\node[extent] (mgr) at (-7.2,0) {Manager};
+\node[extent] (emp) at (-7.2,-3.3) {Employee};
+\node[extent] (aud) at (7.2,3.3) {Auditor};
+\node[extent,align=center] (llm) at (7.2,0) {LLM / VLM provider\\ \scriptsize (Groq, Gemini)};
+\node[extent] (mail) at (7.2,-3.3) {E-mail server};
+\draw[<->,thick] (adm.east) -- node[lab,above,sloped]{members, roles, settings $\rightarrow$} node[lab,below,sloped]{$\leftarrow$ audit log, team list} (sys.150);
+\draw[<->,thick] (mgr.east) -- node[lab,above]{uploads, verifications $\rightarrow$} node[lab,below]{$\leftarrow$ review queue, reminders} (sys.west);
+\draw[<->,thick] (emp.east) -- node[lab,above,sloped]{uploads, questions $\rightarrow$} node[lab,below,sloped]{$\leftarrow$ answers, sources, documents} (sys.210);
+\draw[<->,thick] (sys.30) -- node[lab,above,sloped]{$\leftarrow$ audit queries} node[lab,below,sloped]{audit events, documents $\rightarrow$} (aud.west);
+\draw[<->,thick] (sys.east) -- node[lab,above]{prompts, page images $\rightarrow$} node[lab,below]{$\leftarrow$ plans, fields, answers, text} (llm.west);
+\draw[->,thick] (sys.330) -- node[lab,below,sloped]{reminder e-mails $\rightarrow$} (mail.west);
+\end{tikzpicture}

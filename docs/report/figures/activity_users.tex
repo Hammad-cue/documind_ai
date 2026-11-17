@@ -1,0 +1,28 @@
+% Activity diagram: organization and member management (Figure 4.6)
+\begin{tikzpicture}[node distance=5mm]
+\node[startnode] (s) {};
+\node[dec,below=of s] (d0) {Has an\\ account?};
+\node[act=36mm,left=10mm of d0] (r1) {Register organization; become Admin};
+\node[act,below=of d0] (a1) {Log in with username and password};
+\node[dec,below=of a1] (d1) {Credentials\\ valid?};
+\node[act=30mm,right=10mm of d1] (r2) {Show error};
+\node[act,below=of d1] (a2) {Issue JWT tokens; log LOGIN; load role and organization};
+\node[dec,below=of a2] (d2) {Role is\\ Admin?};
+\node[act=36mm,right=10mm of d2] (a3) {Use the system within the role's permissions};
+\node[act,below=of d2] (a4) {Open Team: add member, set role and department, create departments};
+\node[act,below=of a4] (a5) {Save membership; log MEMBER\_ADD / MEMBER\_UPDATE};
+\node[endnode,below=of a5] (e) {};
+\draw[flow] (s) -- (d0);
+\draw[flow] (d0) -- node[lbl,above]{no} (r1);
+\draw[flow] (r1) |- (a2);
+\draw[flow] (d0) -- node[lbl,right]{yes} (a1);
+\draw[flow] (a1) -- (d1);
+\draw[flow] (d1) -- node[lbl,above]{no} (r2);
+\draw[flow] (r2) |- (a1);
+\draw[flow] (d1) -- node[lbl,right]{yes} (a2);
+\draw[flow] (a2) -- (d2);
+\draw[flow] (d2) -- node[lbl,above]{no} (a3);
+\draw[flow] (d2) -- node[lbl,right]{yes} (a4);
+\draw[flow] (a4) -- (a5);
+\draw[flow] (a5) -- (e);
+\end{tikzpicture}

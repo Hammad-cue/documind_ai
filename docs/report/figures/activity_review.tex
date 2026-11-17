@@ -1,0 +1,23 @@
+% Activity diagram: review and verification (Figure 4.5)
+\begin{tikzpicture}[node distance=5mm]
+\node[startnode] (s) {};
+\node[act,below=of s] (a1) {Manager / Admin opens the Review queue};
+\node[act,below=of a1] (a2) {System lists NEEDS\_REVIEW fields of visible documents};
+\node[act,below=of a2] (a3) {Reviewer opens a field: value, confidence, quote; page opens with the quote highlighted};
+\node[dec,below=of a3] (d1) {Value correct?};
+\node[act=34mm,left=10mm of d1] (a4) {Select Verify};
+\node[act=34mm,right=10mm of d1] (a5) {Enter correct value and reason};
+\node[act,below=9mm of d1] (a6) {Save status (VERIFIED / CORRECTED), FieldEdit row and audit event};
+\node[act,below=of a6] (a7) {Field leaves the queue; lookups now use the reviewed value};
+\node[endnode,below=of a7] (e) {};
+\draw[flow] (s) -- (a1);
+\draw[flow] (a1) -- (a2);
+\draw[flow] (a2) -- (a3);
+\draw[flow] (a3) -- (d1);
+\draw[flow] (d1) -- node[lbl,above]{yes} (a4);
+\draw[flow] (d1) -- node[lbl,above]{no} (a5);
+\draw[flow] (a4) |- (a6);
+\draw[flow] (a5) |- (a6);
+\draw[flow] (a6) -- (a7);
+\draw[flow] (a7) -- (e);
+\end{tikzpicture}

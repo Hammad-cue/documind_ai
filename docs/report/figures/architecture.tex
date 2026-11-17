@@ -1,0 +1,43 @@
+% System architecture diagram (Figure 4.2)
+\begin{tikzpicture}[node distance=4mm]
+% presentation tier
+\node[box,text width=30mm] (v1) {Views\\ \scriptsize Assistant, Documents, Records, Review, Team, Audit};
+\node[box,right=of v1,text width=30mm] (v2) {Components\\ \scriptsize PDF viewer, Upload, Command palette, Notifications};
+\node[box,right=of v2,text width=30mm] (v3) {API client\\ \scriptsize axios + JWT refresh};
+\node[tier,fit=(v1)(v2)(v3),inner ysep=9pt,yshift=3pt] (t1) {};
+\node[tierlabel,anchor=south west] at (t1.north west) {Presentation tier (Vue.js 3 SPA)};
+
+% application tier
+\node[box,below=17mm of v1,text width=30mm] (a1) {accounts\\ \scriptsize auth, members, roles};
+\node[box,right=of a1,text width=30mm] (a2) {documents\\ \scriptsize upload, versions, records, review};
+\node[box,right=of a2,text width=30mm] (a3) {assistant\\ \scriptsize router, engines, retrieval};
+\node[box,below=4mm of a1,text width=30mm] (a4) {audit\\ \scriptsize append-only events};
+\node[box,below=4mm of a2,text width=30mm] (a5) {notifications\\ \scriptsize reminders};
+\node[box,below=4mm of a3,text width=30mm,fill=gray!8] (a6) {ai gateway\\ \scriptsize LLM, embeddings, OCR, clauses};
+\node[tier,fit=(a1)(a3)(a4)(a6),inner ysep=9pt,yshift=3pt] (t2) {};
+\node[tierlabel,anchor=south west] at (t2.north west) {Application tier (Django REST API)};
+
+% worker
+\node[box,right=14mm of a3,text width=30mm] (w1) {Job queue\\ \scriptsize SKIP LOCKED};
+\node[box,below=4mm of w1,text width=30mm] (w2) {Pipeline\\ \scriptsize extract $\rightarrow$ classify $\rightarrow$ chunk $\rightarrow$ embed $\rightarrow$ clauses $\rightarrow$ fields};
+\node[tier,fit=(w1)(w2),inner ysep=9pt,yshift=3pt] (t3) {};
+\node[tierlabel,anchor=south west] at (t3.north west) {Background worker};
+
+% data tier
+\node[db,below=24mm of a4] (d1) {Relational\\ tables};
+\node[db,right=6mm of d1] (d2) {HNSW vector\\ index};
+\node[db,right=6mm of d2] (d3) {GIN full-text\\ index};
+\node[db,right=6mm of d3] (d4) {Media files\\ (versions)};
+\node[tier,fit=(d1)(d4),inner ysep=9pt,yshift=3pt] (t4) {};
+\node[tierlabel,anchor=south west] at (t4.north west) {Data tier (PostgreSQL 16 + pgvector, file storage)};
+
+% external
+\node[box,fill=gray!8,text width=30mm] (x1) at (w1 |- v2) {Groq / Gemini\\ \scriptsize LLM \& vision model};
+
+\draw[<->,thick] ([xshift=-18mm]t1.south east) -- node[lbl,left] {HTTPS, JSON, Bearer JWT} ([xshift=-18mm]t1.south east |- t2.north);
+\draw[<->,thick] ([xshift=-18mm]t2.south east) -- node[lbl,right] {SQL (Django ORM)} ([xshift=-18mm]t2.south east |- t4.north);
+\draw[<->,thick] (t3.south) |- (t4.east);
+\draw[->,thick,dashed] (w2.west) -- node[lbl,above]{uses} (a6.east);
+\draw[->,thick,dashed] (t3.north) -- node[lbl,left]{HTTPS} (x1.south);
+\draw[->,thick,dashed] (t2.north east) -- (x1.south west);
+\end{tikzpicture}

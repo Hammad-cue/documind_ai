@@ -1,0 +1,36 @@
+% Level 1 DFD (Figure 4.12)
+\begin{tikzpicture}[proc/.append style={minimum size=21mm},lab/.style={lbl,font=\scriptsize}]
+\node[extent] (usr) at (0,0) {Members};
+\node[proc] (p1) at (4.2,3.8) {1.0\\ Manage\\ access};
+\node[proc] (p2) at (4.2,-3.8) {2.0\\ Ingest\\ documents};
+\node[proc] (p5) at (8.6,3.8) {5.0\\ Audit \&\\ notify};
+\node[proc] (p4) at (8.6,0) {4.0\\ Answer\\ questions};
+\node[proc] (p3) at (8.6,-3.8) {3.0\\ Verify\\ records};
+\node[extent] (llm) at (13.2,1.1) {LLM / VLM};
+\node[store] (d1) at (4.2,6.2) {D1\ \ Users \& memberships};
+\node[store] (d6) at (8.6,6.2) {D6\ \ Audit events};
+\node[store] (d7) at (13.2,3.8) {D7\ \ Notifications};
+\node[store] (d2) at (4.2,-6.2) {D2\ \ Documents \& versions};
+\node[store] (d3) at (6.2,-1.7) {D3\ \ Pages \& chunks};
+\node[store] (d5) at (13.2,-0.7) {D5\ \ Conversations};
+\node[store] (d4) at (13.2,-3.8) {D4\ \ Record fields \& edits};
+
+\draw[->,thick] (usr) -- node[lab,sloped,above]{credentials, members} (p1);
+\draw[<->,thick] (p1) -- (d1);
+\draw[->,thick] (usr) -- node[lab,sloped,below]{files} (p2);
+\draw[->,thick] (p2) -- (d2);
+\draw[->,thick] (p2) -- node[lab,sloped,above]{chunks} (d3);
+\draw[->,thick] (d3) -- (p4);
+\draw[->,thick] (p2) -- node[lab,below]{extracted fields} (p3);
+\draw[<->,thick] (p3) -- (d4);
+\draw[->,thick] (d4.north west) -- node[lab,sloped,above]{record facts} (p4);
+\draw[->,thick] (usr) -- node[lab,above,pos=0.3]{question} (p4);
+\draw[<->,thick] (p4) -- (d5);
+\draw[<->,thick] (p4) -- node[lab,sloped,above]{prompt / answer} (llm);
+\draw[->,thick] (p1) -- node[lab,above]{events} (p5);
+\draw[->,thick] (p4) -- node[lab,right]{events} (p5);
+\draw[->,thick] (p5) -- (d6);
+\draw[->,thick] (p5) -- (d7);
+\draw[->,thick] (p5) -- node[lab,sloped,above,pos=0.4]{notifications} (usr);
+\draw[<->,thick] (p2.south east) -- ++(0.6,-0.6) |- (15.4,-7.2) |- node[lab,right,pos=0.25]{page images / text} (llm.east);
+\end{tikzpicture}

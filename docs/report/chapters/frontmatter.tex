@@ -1,0 +1,107 @@
+% ---------------- Dedication ----------------
+\chapter*{Dedication}
+We dedicate this work to our parents, whose unwavering support, sacrifices, and prayers have
+been the foundation of our success. Their encouragement, patience, and belief in our abilities
+have guided us throughout this journey.
+
+We also dedicate this to our teachers and mentors who inspired us to pursue knowledge with
+dedication and integrity.
+
+% ---------------- Acknowledgement ----------------
+\chapter*{Acknowledgement}
+All praise and gratitude are due for the successful completion of this project. The authors
+would like to express their sincere appreciation to their supervisor for continuous guidance, valuable
+suggestions, and constructive feedback throughout the development of this thesis. The supervision
+and mentorship provided significant support in completing this work successfully.
+
+Special thanks are extended to the faculty members of the Department of Computer Science
+for their academic support and encouragement during the degree program.
+
+The authors are also deeply grateful to their parents and families for their unwavering support,
+motivation, and prayers, which have been a constant source of strength.
+
+Finally, appreciation is extended to everyone who directly or indirectly contributed to the
+successful completion of this project.
+
+% ---------------- Executive summary ----------------
+\chapter*{Executive Summary}
+\addcontentsline{toc}{chapter}{Executive Summary}
+Organizations keep their contracts, non-disclosure agreements, leases, employment letters and
+affidavits as a mix of digital PDFs, scanned pages and handwritten documents, next to the laws and
+policies those documents depend on. Simple questions such as \emph{``When was the NDA with Acme
+signed?''} or \emph{``Which agreements expire this year?''} usually mean opening files one by one,
+and scanned or handwritten pages cannot be searched at all. General ``chat with your PDF'' tools do not
+solve this: they treat every file as loose text, keep no structured record of dates and parties,
+do not control which employee may see which document, and keep no history.
+
+\sysname{} is a web-based legal records intelligence system for an organization. Employees
+upload documents into one shared, access-controlled repository. A background pipeline reads every
+page (digital text, Tesseract OCR for printed scans, and a vision-language model for handwriting),
+decides whether the document is a \emph{record} (a contract between parties) or \emph{reference}
+material (a law book or policy), splits it along its own section structure, and indexes it for
+both keyword and semantic search. For records, a language model extracts eleven structured fields
+(parties, signing, effective and expiry dates, notice period, governing law, value and others); every
+value carries the page and the exact quote that proves it, and values that cannot be verified go to a
+human review queue.
+
+A query router sends each question down one of three paths: \emph{lookup} questions are answered
+directly from the structured records table, \emph{knowledge} questions (for example about the
+Contract Act 1872) are answered from retrieved passages with numbered citations, and
+\emph{search} questions return the matching documents. Every answer opens the source document at
+the cited page with the evidence highlighted. Role-based access control (Admin, Manager, Employee,
+Auditor) together with department and named-person sharing is enforced \emph{before} any
+retrieval, so the assistant can never quote a document the user may not open. Four kinds of history
+are kept: query history, document versions with comparison, a field-edit history, and an
+append-only audit log. Reminders warn the right people before agreements expire or notice
+deadlines pass.
+
+A clause classifier was fine-tuned on the LEDGAR dataset (100 clause types) and the system was
+evaluated on the public CUAD contract dataset. Section-aware chunking with hybrid retrieval raised
+Hit@5 from 82.8\% (the previous fixed-size, semantic-only design) to 93.0\%; field extraction reached a
+micro-F1 of 75.9\% with 99.4\% of evidence quotes found word-for-word on the cited page. All 26
+automated tests, which include the full role and access-level matrix, pass.
+
+The system is built with Vue.js 3, Django 6 with Django REST Framework, and PostgreSQL 16 with the
+pgvector extension, and can be deployed with Docker Compose.
+
+% ---------------- Abbreviations ----------------
+\chapter*{Abbreviations}
+\addcontentsline{toc}{chapter}{Abbreviations}
+\begin{longtable}{p{3.2cm}p{11.5cm}}
+\toprule
+\textbf{Abbreviation} & \textbf{Full Form} \\ \midrule
+\endhead
+API & Application Programming Interface \\
+BM25 & Best Matching 25 (keyword ranking function) \\
+CER / WER & Character Error Rate / Word Error Rate \\
+CUAD & Contract Understanding Atticus Dataset \\
+DFD & Data Flow Diagram \\
+DRF & Django REST Framework \\
+ERD & Entity Relationship Diagram \\
+FR / NFR & Functional Requirement / Non-Functional Requirement \\
+FTS & Full-Text Search \\
+GIN & Generalized Inverted Index \\
+HNSW & Hierarchical Navigable Small World \\
+JWT & JSON Web Token \\
+LEDGAR & Labeled EDGAR contract-provision dataset \\
+LLM & Large Language Model \\
+MRR & Mean Reciprocal Rank \\
+NDA & Non-Disclosure Agreement \\
+OCR & Optical Character Recognition \\
+PK / FK & Primary Key / Foreign Key \\
+RAG & Retrieval-Augmented Generation \\
+RBAC & Role-Based Access Control \\
+REST & Representational State Transfer \\
+RRF & Reciprocal Rank Fusion \\
+SDD & Software Design Document \\
+SPA & Single-Page Application \\
+SRS & Software Requirements Specification \\
+TF-IDF & Term Frequency--Inverse Document Frequency \\
+TPM / TPD & Tokens Per Minute / Tokens Per Day (LLM API quotas) \\
+UC & Use Case \\
+UI & User Interface \\
+UML & Unified Modeling Language \\
+VLM & Vision-Language Model \\
+3NF & Third Normal Form \\
+\bottomrule
+\end{longtable}

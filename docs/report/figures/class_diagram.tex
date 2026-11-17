@@ -1,0 +1,71 @@
+% Class diagram (Figure 4.7)
+\begin{tikzpicture}[
+  cls/.style={draw,rectangle split,rectangle split parts=3,font=\scriptsize,align=left,fill=white,
+              rectangle split part fill={gray!15,white,white},inner sep=2.5pt,text width=36mm},
+  assoc/.style={thick},
+  mult/.style={font=\scriptsize,inner sep=1pt}]
+
+\node[cls] (org) at (0,0) {\centering\textbf{Organization}
+\nodepart{second} name: str\\ slug: str
+\nodepart{third} +departments()};
+\node[cls] (dep) at (0,-3.1) {\centering\textbf{Department}
+\nodepart{second} name: str
+\nodepart{third} };
+\node[cls] (mem) at (4.6,0) {\centering\textbf{Membership}
+\nodepart{second} role: Role\\ job\_title: str
+\nodepart{third} +sees\_everything()\\ +can\_upload()\\ +can\_verify()\\ +can\_view\_audit()};
+\node[cls] (usr) at (9.2,0) {\centering\textbf{User}
+\nodepart{second} username, email\\ password (hash)
+\nodepart{third} +check\_password()};
+
+\node[cls] (doc) at (4.6,-4.4) {\centering\textbf{Document}
+\nodepart{second} title, kind, doc\_type\\ summary, access\_level\\ kind\_locked, is\_archived
+\nodepart{third} +latest\_version()\\ visible\_documents(user)\\ can\_edit(user)};
+\node[cls] (ver) at (4.6,-8.9) {\centering\textbf{DocumentVersion}
+\nodepart{second} number, file, sha256\\ file\_type, page\_count\\ status, processing\_log
+\nodepart{third} +process()};
+\node[cls] (job) at (0,-8.9) {\centering\textbf{ProcessingJob}
+\nodepart{second} status, attempts\\ error
+\nodepart{third} +claim\_next()\\ +run()};
+\node[cls] (pag) at (0,-12.6) {\centering\textbf{Page}
+\nodepart{second} number, text\\ source, ocr\_confidence
+\nodepart{third} };
+\node[cls] (chk) at (4.6,-12.9) {\centering\textbf{Chunk}
+\nodepart{second} section\_path, heading\\ text, page\_start/end\\ clause\_label\\ embedding: vector(384)
+\nodepart{third} hybrid\_search()};
+\node[cls] (fld) at (9.2,-8.9) {\centering\textbf{RecordField}
+\nodepart{second} key, value\_text\\ value\_date, value\_number\\ confidence, source\_page\\ source\_quote, grounded\\ status
+\nodepart{third} +verify()\\ +correct()};
+\node[cls] (fed) at (9.2,-12.9) {\centering\textbf{FieldEdit}
+\nodepart{second} old/new value\\ old/new status, reason
+\nodepart{third} };
+
+\node[cls] (con) at (9.2,-4.4) {\centering\textbf{Conversation}
+\nodepart{second} title
+\nodepart{third} };
+\node[cls] (qry) at (13.6,-4.4) {\centering\textbf{Query}
+\nodepart{second} text, intent, plan\\ answer, sources\\ latency\_ms
+\nodepart{third} answer(user, text)};
+\node[cls] (aud) at (13.6,0) {\centering\textbf{AuditEvent}
+\nodepart{second} action, target\\ metadata, ip\_address
+\nodepart{third} +save() append-only\\ +delete() forbidden};
+\node[cls] (ntf) at (13.6,-8.9) {\centering\textbf{Notification}
+\nodepart{second} kind, title, body, link\\ dedupe\_key, read\_at
+\nodepart{third} run\_reminders()};
+
+\draw[assoc] (org) -- node[mult,pos=0.15,right]{1} node[mult,pos=0.85,right]{*} (dep);
+\draw[assoc] (org) -- node[mult,pos=0.15,above]{1} node[mult,pos=0.85,above]{*} (mem);
+\draw[assoc] (mem) -- node[mult,pos=0.15,above]{1} node[mult,pos=0.85,above]{1} (usr);
+\draw[assoc] (dep.east) -- ++(0.5,0) |- node[mult,pos=0.9,above]{*} (doc.west);
+\draw[assoc,{Diamond[fill=black]}-] (doc) -- node[mult,pos=0.85,right]{1..*} (ver);
+\draw[assoc,{Diamond[fill=black]}-] (ver) -- node[mult,pos=0.8,above]{*} (job);
+\draw[assoc,{Diamond[fill=black]}-] (ver.south west) -- node[mult,pos=0.8,above]{*} (pag.north east);
+\draw[assoc,{Diamond[fill=black]}-] (ver) -- node[mult,pos=0.8,right]{*} (chk);
+\draw[assoc,{Diamond[fill=black]}-] (ver) -- node[mult,pos=0.8,above]{0..11} (fld);
+\draw[assoc,{Diamond[fill=black]}-] (fld) -- node[mult,pos=0.8,right]{*} (fed);
+\draw[assoc,{Diamond[fill=black]}-] (con) -- node[mult,pos=0.8,above]{*} (qry);
+\draw[assoc] (usr) -- node[mult,pos=0.85,right]{*} (con);
+\draw[assoc] (usr) -- node[mult,pos=0.85,above]{*} (aud);
+\draw[assoc] (usr.south east) -- ++(0.4,-0.4) |- node[mult,pos=0.95,above]{*} (ntf.west);
+\draw[assoc] (doc) -- node[mult,pos=0.5,above]{uploaded\_by} (usr.south west);
+\end{tikzpicture}

@@ -1,0 +1,34 @@
+% Level 2 DFD for process 4.0 Answer questions (Figure 4.13)
+\begin{tikzpicture}[proc/.append style={minimum size=21mm},lab/.style={lbl,font=\scriptsize}]
+\node[extent] (usr) at (0,0) {Member};
+\node[proc] (p1) at (3.4,0) {4.1\\ Plan\\ query};
+\node[proc] (p2) at (6.9,0) {4.2\\ Restrict to\\ visible\\ documents};
+\node[proc] (p3) at (11.4,2.8) {4.3\\ Look up\\ records};
+\node[proc] (p4) at (11.4,0) {4.4\\ Hybrid\\ retrieval};
+\node[proc] (p5) at (11.4,-2.8) {4.5\\ Rank\\ documents};
+\node[proc] (p6) at (15.0,0) {4.6\\ Compose\\ answer};
+\node[proc] (p7) at (6.9,-4.3) {4.7\\ Save \&\\ log};
+\node[extent] (llm) at (3.4,3.3) {LLM};
+\node[store] (d1) at (6.9,3.3) {D2\ \ Documents, access rules};
+\node[store] (d4) at (14.6,2.6) {D4\ \ Record fields};
+\node[store] (d3) at (14.6,-2.8) {D3\ \ Chunks (vector, FTS)};
+\node[store] (d5) at (2.4,-4.3) {D5\ \ Queries \& audit};
+
+\draw[->,thick] (usr) -- node[lab,above]{question} (p1);
+\draw[<->,thick] (p1) -- node[lab,left]{plan JSON} (llm);
+\draw[->,thick] (p1) -- node[lab,above]{plan} (p2);
+\draw[->,thick] (d1) -- (p2);
+\draw[->,thick] (p2) -- node[lab,above,sloped]{LOOKUP} (p3);
+\draw[->,thick] (p2) -- node[lab,above]{KNOWLEDGE} (p4);
+\draw[->,thick] (p2) -- node[lab,below,sloped]{SEARCH} (p5);
+\draw[->,thick] (d4) -- (p3);
+\draw[->,thick] (d3.west) -- (p4);
+\draw[->,thick] (d3) -- (p5);
+\draw[->,thick] (p3) -- (p6);
+\draw[->,thick] (p4) -- (p6);
+\draw[->,thick] (p5) -- (p6);
+\draw[<->,thick] (p6.north east) -- ++(0.6,0.6) |- node[lab,above,pos=0.6]{sources / answer} (3.4,4.7) -- (llm.north);
+\draw[->,thick] (p6.east) -- ++(0.9,0) |- (p7.east);
+\draw[->,thick] (p7) -- (d5);
+\draw[->,thick] (p7.south) -- ++(0,-0.6) -| node[lab,pos=0.25,below]{answer + sources} (usr.south);
+\end{tikzpicture}

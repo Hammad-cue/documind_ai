@@ -1,0 +1,50 @@
+% Database schema diagram (Figure 4.15)
+\begin{tikzpicture}[t/.style={ent,text width=44mm},fk/.style={->,thick,gray!70!black}]
+\node[t] (org) at (0,0) {\textbf{accounts\_organization}
+\nodepart{second} PK id\\ name\\ slug (unique)\\ created\_at};
+\node[t] (dep) at (0,-3.3) {\textbf{accounts\_department}
+\nodepart{second} PK id\\ FK organization\_id\\ name\\ unique(organization, name)};
+\node[t] (mem) at (5,0) {\textbf{accounts\_membership}
+\nodepart{second} PK id\\ FK user\_id (unique)\\ FK organization\_id\\ FK department\_id\\ role, job\_title, avatar};
+\node[t] (usr) at (10,0) {\textbf{auth\_user}
+\nodepart{second} PK id\\ username (unique)\\ email, password\\ first\_name, last\_name};
+\node[t] (doc) at (5,-4.6) {\textbf{documents\_document}
+\nodepart{second} PK id\\ FK organization\_id, department\_id\\ FK uploaded\_by\_id\\ FK current\_version\_id\\ title, kind, kind\_locked\\ doc\_type, summary\\ access\_level, is\_archived};
+\node[t] (shr) at (10,-4.6) {\textbf{document\_allowed\_users}
+\nodepart{second} PK id\\ FK document\_id\\ FK user\_id};
+\node[t] (ver) at (5,-9.6) {\textbf{documents\_documentversion}
+\nodepart{second} PK id\\ FK document\_id, uploaded\_by\_id\\ number, file, original\_filename\\ file\_type, file\_size, sha256\\ page\_count, marked\_handwritten\\ status, error, processing\_log\\ unique(document, number)};
+\node[t] (job) at (0,-9.6) {\textbf{documents\_processingjob}
+\nodepart{second} PK id\\ FK version\_id\\ status (indexed)\\ attempts, error\\ started\_at, finished\_at};
+\node[t] (pag) at (0,-14.2) {\textbf{documents\_page}
+\nodepart{second} PK id\\ FK version\_id\\ number, text\\ source, ocr\_confidence};
+\node[t] (chk) at (5,-14.6) {\textbf{documents\_chunk}
+\nodepart{second} PK id\\ FK version\_id\\ sequence, section\_path\\ heading, text\\ page\_start, page\_end\\ clause\_label, clause\_confidence\\ embedding vector(384) [HNSW]\\ search\_vector tsvector [GIN]};
+\node[t] (fld) at (10,-9.6) {\textbf{documents\_recordfield}
+\nodepart{second} PK id\\ FK version\_id\\ key, label\\ value\_text, value\_date\\ value\_number, confidence\\ source\_page, source\_quote\\ grounded, status\\ unique(version, key)};
+\node[t] (fed) at (10,-14.6) {\textbf{documents\_fieldedit}
+\nodepart{second} PK id\\ FK field\_id, edited\_by\_id\\ old\_value, new\_value\\ old\_status, new\_status\\ reason, edited\_at};
+\node[t] (con) at (15,0) {\textbf{assistant\_conversation}
+\nodepart{second} PK id\\ FK organization\_id, user\_id\\ title, created\_at};
+\node[t] (qry) at (15,-4.6) {\textbf{assistant\_query}
+\nodepart{second} PK id\\ FK conversation\_id\\ text, intent, plan\\ scope\_document\_ids\\ answer, sources, results\\ latency\_ms};
+\node[t] (aud) at (15,-9.6) {\textbf{audit\_auditevent}
+\nodepart{second} PK id\\ FK organization\_id, actor\_id\\ actor\_name, action\\ target\_type, target\_id\\ target\_label, metadata\\ ip\_address, created\_at};
+\node[t] (ntf) at (15,-14.6) {\textbf{notifications\_notification}
+\nodepart{second} PK id\\ FK recipient\_id, organization\_id\\ FK document\_id\\ kind, title, body, link\\ dedupe\_key, read\_at, emailed\\ unique(recipient, dedupe\_key)};
+\draw[fk] (dep) -- (org);
+\draw[fk] (mem) -- (org);
+\draw[fk] (mem) -- (usr);
+\draw[fk] (doc.west) -- (dep.east);
+\draw[fk] (doc.north east) -- (usr.south west);
+\draw[fk] (shr) -- (doc);
+\draw[fk] (shr) -- (usr);
+\draw[fk] (ver) -- (doc);
+\draw[fk] (job) -- (ver);
+\draw[fk] (pag.north east) -- (ver.south west);
+\draw[fk] (chk) -- (ver);
+\draw[fk] (fld) -- (ver);
+\draw[fk] (fed) -- (fld);
+\draw[fk] (con) -- (usr);
+\draw[fk] (qry) -- (con);
+\end{tikzpicture}

@@ -1,0 +1,609 @@
+\chapter{Requirement Analysis}
+
+\section{Introduction to Requirement Analysis}
+This chapter specifies what \sysname{} must do (functional requirements) and how well it must do it
+(non-functional requirements). The requirements were refined over several iterations: the first
+version of the project was a general document chat tool, and the requirements below are the result of
+re-scoping it into a legal records system for organizations.
+
+\section{Requirement Elicitation Techniques}
+\begin{itemize}
+\item \textbf{Supervisor interviews.} The supervisor described the expected capabilities: uploading and
+querying documents, holding all the records of an organization, looking up facts such as when an NDA
+was signed, extracting records from handwritten documents, answering questions from a long law book,
+role-based access with a shared document database, opening the source document for each answer, and
+maintaining history.
+\item \textbf{Review of the previous version.} Weaknesses of the first version (generic scope, no roles,
+no structured data, no history, fixed-size chunks) were listed and turned into requirements.
+\item \textbf{Document analysis.} Sample NDAs, leases, service agreements, employment letters, affidavits
+and the Contract Act 1872 were studied to decide which fields to extract and how legal documents are
+structured (parts, chapters, sections, numbered clauses).
+\item \textbf{Analysis of existing systems.} The tools in Section~1.3 were studied to identify gaps.
+\item \textbf{Prototyping.} Interface prototypes were reviewed and refined iteratively.
+\end{itemize}
+
+\section{User Classes and Characteristics}
+\begin{table}[H]\centering
+\caption{User Classes and Characteristics}\label{tab:userclasses}
+\begin{tabularx}{\textwidth}{|p{2.6cm}|X|X|}\hline
+\textbf{User Class} & \textbf{Characteristics} & \textbf{Permissions} \\ \hline
+Admin & Owner or IT/legal lead of the organization; registers the organization. &
+Everything: manage members, roles and departments; see all documents; verify fields; view audit log. \\ \hline
+Manager & Department head or legal officer; responsible for the accuracy of records. &
+Upload; edit documents of their department; verify and correct extracted fields. \\ \hline
+Employee & Regular staff member with basic computer skills. &
+Upload; ask questions and open documents they are allowed to see; edit their own uploads. \\ \hline
+Auditor & Internal or external auditor; must not change anything. &
+Read-only access to all documents of the organization and to the audit log; cannot upload. \\ \hline
+Background Worker (system) & Process that runs the processing pipeline. &
+Reads queued versions and writes pages, chunks, fields and notifications. \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{System Overview}
+Users interact with \sysname{} through a browser. After signing in, they land on the Assistant, where
+they ask questions about the organization's documents. From the Documents screen they upload files,
+open documents, see their versions, extracted facts, clauses and activity, and change who can see
+them. The Records screen lists every record with its key fields; the Review screen lists values waiting
+for human confirmation. Administrators manage members and departments, and Admins and Auditors can read
+the audit log. All processing happens in the background and users are notified when it finishes.
+
+\section{Use Case Model}
+\subsection{Use Case Diagram}
+Figure~\ref{fig:usecase} shows the actors and the main use cases. Managers and Admins inherit all
+Employee use cases; Auditors have read-only use cases and the audit log.
+
+\begin{figure}[H]\centering
+\begin{tikzpicture}[x=1cm,y=1cm]
+\node[draw,rounded corners=4pt,minimum width=9.6cm,minimum height=15.6cm,label={[font=\small\bfseries]north:\sysname{}}] (sys) at (0,0) {};
+\foreach \n/\y/\t in {
+  u11/7.0/Register organization, u12/6.0/Log in, u13/5.0/Manage members \& departments,
+  u21/4.0/Upload document, u22/3.0/Upload new version \& compare, u23/2.0/Change document access,
+  u31/1.0/Browse records register, u32/0.0/Verify / correct field,
+  u41/-1.0/Ask fact lookup, u42/-2.0/Ask question from law book, u43/-3.0/Search \& open source document,
+  u44/-4.0/View query history, u51/-5.0/View audit log, u52/-6.0/Receive reminders}
+  {\node[usecase,minimum width=62mm] (\n) at (0,\y) {\t};}
+\actor{adm}{(-7,4.6)}{Admin}
+\actor{mgr}{(-7,0.6)}{Manager}
+\actor{emp}{(-7,-3.4)}{Employee}
+\actor{aud}{(7,-1.4)}{Auditor}
+\actor{wrk}{(7,3.4)}{Background\\Worker}
+\foreach \u in {u11,u12,u13,u23,u51} \draw ([shift={(0.32,0.15)}]adm) -- (\u.west);
+\foreach \u in {u12,u22,u31,u32} \draw ([shift={(0.32,0.15)}]mgr) -- (\u.west);
+\foreach \u in {u12,u21,u41,u42,u43,u44,u52} \draw ([shift={(0.32,0.15)}]emp) -- (\u.west);
+\foreach \u in {u12,u31,u43,u51} \draw ([shift={(-0.32,0.15)}]aud) -- (\u.east);
+\foreach \u in {u21,u22,u52} \draw[dashed] ([shift={(-0.32,0.15)}]wrk) -- (\u.east);
+\draw[-{Triangle[open]}] (-7,0.1) ++(0,-0.55) -- (-7,-2.7);
+\draw[-{Triangle[open]}] (-7,4.1) ++(0,-0.55) -- (-7,1.3);
+\end{tikzpicture}
+\caption{Use Case Diagram of the Proposed System}\label{fig:usecase}
+\end{figure}
+
+\subsection{Use Case Descriptions}
+
+\subsubsection{Module 1: Organization and Access Management}
+\begin{spec}{UC-1.1: Register Organization}{tab:uc11}
+\row{Use Case ID}{UC-1.1}
+\row{Use Case Name}{Register Organization}
+\row{Actors}{Admin (new)}
+\row{Description}{A person creates a new organization in \sysname{} and becomes its first administrator.}
+\row{Trigger}{The user selects ``Get started'' on the landing page.}
+\row{Preconditions}{The username and e-mail are not already registered.}
+\row{Postconditions}{An Organization, a User and an Admin Membership are created; the user is signed in.}
+\row{Normal Flow}{\begin{steps}
+\item User enters organization name, full name, username, e-mail and password.
+\item System validates the fields and password strength.
+\item System creates the organization, the user and the Admin membership in one transaction.
+\item System returns tokens and opens the Assistant.
+\end{steps}}
+\row{Alternative Flow}{If validation fails or the username exists, the system shows the error next to the field and nothing is created.}
+\end{spec}
+
+\begin{spec}{UC-1.2: Log In}{tab:uc12}
+\row{Use Case ID}{UC-1.2}
+\row{Use Case Name}{Log In}
+\row{Actors}{Admin, Manager, Employee, Auditor}
+\row{Description}{A registered member signs in to access the organization's documents.}
+\row{Trigger}{The user opens the Login page and submits credentials.}
+\row{Preconditions}{The user has an active account and an organization membership.}
+\row{Postconditions}{An access token (8 hours) and refresh token (7 days) are issued; a LOGIN audit event is written.}
+\row{Normal Flow}{\begin{steps}
+\item User enters username and password.
+\item System verifies the password hash.
+\item System issues JWT tokens and records the login.
+\item System opens the Assistant with the user's name, role and organization.
+\end{steps}}
+\row{Alternative Flow}{Wrong credentials: the system shows ``Invalid username or password'' and issues no token.}
+\end{spec}
+
+\begin{spec}{UC-1.3: Manage Members and Departments}{tab:uc13}
+\row{Use Case ID}{UC-1.3}
+\row{Use Case Name}{Manage Members and Departments}
+\row{Actors}{Admin}
+\row{Description}{The administrator adds members, assigns roles and departments, and creates departments.}
+\row{Trigger}{Admin opens the Team screen.}
+\row{Preconditions}{The user is an Admin.}
+\row{Postconditions}{Membership changes are saved and recorded as MEMBER\_ADD / MEMBER\_UPDATE / DEPARTMENT\_CHANGE audit events.}
+\row{Normal Flow}{\begin{steps}
+\item Admin selects ``Add member'' and enters name, username, e-mail, temporary password, role and department.
+\item System creates the user and membership in the admin's organization.
+\item Admin may later change a member's role or department.
+\end{steps}}
+\row{Alternative Flow}{A non-admin calling the API receives HTTP 403. Duplicate usernames are rejected.}
+\end{spec}
+
+\subsubsection{Module 2: Document Ingestion and Processing}
+\begin{spec}{UC-2.1: Upload Document}{tab:uc21}
+\row{Use Case ID}{UC-2.1}
+\row{Use Case Name}{Upload Document}
+\row{Actors}{Employee, Manager, Admin; Background Worker}
+\row{Description}{A user adds a document to the shared repository; the worker processes it.}
+\row{Trigger}{User selects ``Upload'' and chooses one or more files.}
+\row{Preconditions}{User's role can upload. File is PDF, DOCX, PNG or JPG and at most 25\,MB.}
+\row{Postconditions}{Document and version 1 exist; a processing job is queued; when finished the version is READY with pages, chunks and (for records) fields; the uploader is notified.}
+\row{Normal Flow}{\begin{steps}
+\item User chooses files, optionally a title, department, access level, document kind and the ``handwritten'' flag.
+\item System validates type and size, stores the file and computes its SHA-256 hash.
+\item System creates the document, version 1 and a queued job, and writes an UPLOAD audit event.
+\item Worker extracts text, classifies, chunks, embeds, labels clauses and extracts fields.
+\item Status changes to Ready and a notification is sent.
+\end{steps}}
+\row{Alternative Flow}{Invalid type or size: rejected with a message. Processing error: the job is retried up to 3 times, then the version is marked FAILED and the uploader is notified.}
+\end{spec}
+
+\begin{spec}{UC-2.2: Upload New Version and Compare}{tab:uc22}
+\row{Use Case ID}{UC-2.2}
+\row{Use Case Name}{Upload New Version and Compare}
+\row{Actors}{Manager, Admin, uploader of the document}
+\row{Description}{A signed or amended copy replaces the current one while older versions are kept.}
+\row{Trigger}{User selects ``New version'' on a document.}
+\row{Preconditions}{User may edit the document.}
+\row{Postconditions}{Version $n+1$ is stored and processed; when ready it becomes the current version; earlier versions remain viewable.}
+\row{Normal Flow}{\begin{steps}
+\item User uploads the new file with a change note.
+\item System stores it as the next version and queues processing.
+\item User selects two versions and ``Compare''.
+\item System shows added and removed lines and the field values that changed.
+\end{steps}}
+\row{Alternative Flow}{If the user may not edit the document, HTTP 403 is returned.}
+\end{spec}
+
+\begin{spec}{UC-2.3: Change Document Access}{tab:uc23}
+\row{Use Case ID}{UC-2.3}
+\row{Use Case Name}{Change Document Access}
+\row{Actors}{Admin, Manager (own department), uploader}
+\row{Description}{The user sets who may see a document: everyone, one department, or named people.}
+\row{Trigger}{User opens the document's settings.}
+\row{Preconditions}{User may edit the document.}
+\row{Postconditions}{Access level and shared users are saved; an ACCESS\_CHANGE audit event is written; search results change immediately.}
+\row{Normal Flow}{\begin{steps}
+\item User chooses Organization, Department or Restricted, and selects people for Restricted.
+\item System saves the setting and logs it.
+\end{steps}}
+\row{Alternative Flow}{Unauthorized users do not see the settings button; the API returns 403.}
+\end{spec}
+
+\subsubsection{Module 3: Records Register and Verification}
+\begin{spec}{UC-3.1: Browse Records Register}{tab:uc31}
+\row{Use Case ID}{UC-3.1}
+\row{Use Case Name}{Browse Records Register}
+\row{Actors}{All roles}
+\row{Description}{The user sees every visible record with its key fields in one table.}
+\row{Trigger}{User opens the Records screen.}
+\row{Preconditions}{User is signed in.}
+\row{Postconditions}{None (read-only).}
+\row{Normal Flow}{\begin{steps}
+\item System lists visible records with type, parties, signing, effective and expiry dates and status.
+\item User filters by text or type and sorts by a column.
+\item User opens a record to see each field with its evidence quote.
+\end{steps}}
+\row{Alternative Flow}{If no records exist, an empty state explains how to upload.}
+\end{spec}
+
+\begin{spec}{UC-3.2: Verify or Correct Field}{tab:uc32}
+\row{Use Case ID}{UC-3.2}
+\row{Use Case Name}{Verify or Correct Extracted Field}
+\row{Actors}{Manager, Admin}
+\row{Description}{A reviewer confirms or corrects a value the system was not sure about.}
+\row{Trigger}{Reviewer opens the Review queue or a field on a document.}
+\row{Preconditions}{User can verify; the field belongs to a document they can see.}
+\row{Postconditions}{Field status becomes VERIFIED or CORRECTED; a FieldEdit history row and an audit event are written.}
+\row{Normal Flow}{\begin{steps}
+\item System shows the value, its confidence and the quote, and opens the page with the quote highlighted.
+\item Reviewer selects ``Verify'' or enters the correct value and a reason.
+\item System saves the change and removes the field from the queue.
+\end{steps}}
+\row{Alternative Flow}{Employees and Auditors receive HTTP 403 when trying to verify.}
+\end{spec}
+
+\subsubsection{Module 4: Legal Assistant}
+\begin{spec}{UC-4.1: Ask a Fact Lookup}{tab:uc41}
+\row{Use Case ID}{UC-4.1}
+\row{Use Case Name}{Ask a Fact Lookup}
+\row{Actors}{All roles}
+\row{Description}{The user asks for a stored fact, e.g.\ ``When was the NDA with Acme signed?''.}
+\row{Trigger}{User submits a question in the Assistant.}
+\row{Preconditions}{User is signed in; at least one processed record is visible.}
+\row{Postconditions}{Answer, sources and plan are saved to the conversation; a SEARCH audit event is written.}
+\row{Normal Flow}{\begin{steps}
+\item Router classifies the question as LOOKUP with filters (type NDA, party Acme, field signed\_date).
+\item System queries the records table, limited to visible documents.
+\item System answers with the value, the document and the page, and lists the evidence as a source.
+\item User clicks the source; the document opens at that page with the quote highlighted.
+\end{steps}}
+\row{Alternative Flow}{No matching record: the system falls back to passage search and says when nothing is found.}
+\end{spec}
+
+\begin{spec}{UC-4.2: Ask a Question from a Law Book}{tab:uc42}
+\row{Use Case ID}{UC-4.2}
+\row{Use Case Name}{Ask a Question from Reference Material}
+\row{Actors}{All roles}
+\row{Description}{The user asks for an explanation, e.g.\ ``Is an agreement without consideration valid under the Contract Act?''.}
+\row{Trigger}{User submits a question.}
+\row{Preconditions}{The reference document has been processed and is visible to the user.}
+\row{Postconditions}{Answer with citations is saved to the conversation.}
+\row{Normal Flow}{\begin{steps}
+\item Router classifies the question as KNOWLEDGE.
+\item Hybrid retrieval returns the 8 best passages from visible documents.
+\item LLM writes an answer using only those passages, with [n] citations.
+\item System shows the answer and the cited passages with section and page.
+\end{steps}}
+\row{Alternative Flow}{If the passages do not contain the answer, the system says so. If the LLM is unavailable, the most relevant passages are shown without a written answer.}
+\end{spec}
+
+\begin{spec}{UC-4.3: Search and Open Source Document}{tab:uc43}
+\row{Use Case ID}{UC-4.3}
+\row{Use Case Name}{Search and Open Source Document}
+\row{Actors}{All roles}
+\row{Description}{The user asks to find documents, e.g.\ ``Find the lease for the Lahore office''.}
+\row{Trigger}{User submits a search-style question or uses the command palette.}
+\row{Preconditions}{User is signed in.}
+\row{Postconditions}{Matching documents are listed; opening one writes a VIEW audit event.}
+\row{Normal Flow}{\begin{steps}
+\item Router classifies the question as SEARCH.
+\item System ranks visible documents by their best-matching passages and clause labels.
+\item User opens a result in the document viewer.
+\end{steps}}
+\row{Alternative Flow}{No results: the system suggests rephrasing.}
+\end{spec}
+
+\begin{spec}{UC-4.4: View Query History}{tab:uc44}
+\row{Use Case ID}{UC-4.4}
+\row{Use Case Name}{View Query History}
+\row{Actors}{All roles}
+\row{Description}{The user reopens an earlier conversation with its answers and sources.}
+\row{Trigger}{User selects a conversation from the history list.}
+\row{Preconditions}{The conversation belongs to the user.}
+\row{Postconditions}{None.}
+\row{Normal Flow}{\begin{steps}
+\item System lists the user's conversations, newest first.
+\item User opens one; all questions, answers, sources and timings are shown.
+\end{steps}}
+\row{Alternative Flow}{Another user's conversation id returns HTTP 404.}
+\end{spec}
+
+\subsubsection{Module 5: History, Audit and Notifications}
+\begin{spec}{UC-5.1: View Audit Log}{tab:uc51}
+\row{Use Case ID}{UC-5.1}
+\row{Use Case Name}{View Audit Log}
+\row{Actors}{Admin, Auditor}
+\row{Description}{The user reviews who did what and when in the organization.}
+\row{Trigger}{User opens the Audit screen.}
+\row{Preconditions}{User is an Admin or Auditor.}
+\row{Postconditions}{None (events cannot be edited or deleted).}
+\row{Normal Flow}{\begin{steps}
+\item System lists events with time, person, action, target and details.
+\item User filters by action, person or text.
+\end{steps}}
+\row{Alternative Flow}{Other roles receive HTTP 403 and do not see the menu item.}
+\end{spec}
+
+\begin{spec}{UC-5.2: Receive Reminders}{tab:uc52}
+\row{Use Case ID}{UC-5.2}
+\row{Use Case Name}{Receive Expiry and Notice Reminders}
+\row{Actors}{Background Worker; uploader, department managers and admins}
+\row{Description}{The system warns responsible people before an agreement expires or its notice deadline passes.}
+\row{Trigger}{Hourly reminder check in the worker.}
+\row{Preconditions}{A record has an expiry date (and optionally a notice period).}
+\row{Postconditions}{One notification per person per reminder window; optional e-mail.}
+\row{Normal Flow}{\begin{steps}
+\item Worker finds expiry dates and notice deadlines (expiry minus notice period) 90, 30, 7 or 0 days ahead.
+\item It selects people who can see the document: the uploader, managers of its department and admins.
+\item It creates a notification for each, skipping ones already sent.
+\end{steps}}
+\row{Alternative Flow}{People who cannot see the document are never notified.}
+\end{spec}
+
+\subsection{Event-Response Table}
+\begin{table}[H]\centering
+\caption{Event-Response Table}\label{tab:events}
+\begin{tabularx}{\textwidth}{|p{4.6cm}|X|}\hline
+\textbf{Event} & \textbf{System Response} \\ \hline
+User submits a valid upload & Store file as a new version, queue a job, log UPLOAD, show ``Queued'' status. \\ \hline
+Worker finishes a job & Mark version READY, make it current, notify the uploader; notify reviewers if fields need review. \\ \hline
+Processing fails three times & Mark version FAILED with the error, notify the uploader. \\ \hline
+User asks a question & Route, retrieve from visible documents only, answer with sources, save to history, log SEARCH. \\ \hline
+User opens or downloads a document & Check access, stream the file, log VIEW / DOWNLOAD. \\ \hline
+Reviewer verifies or corrects a field & Update status/value, store FieldEdit, log FIELD\_VERIFY / FIELD\_EDIT. \\ \hline
+Admin changes a role or department & Update membership, log MEMBER\_UPDATE; access changes apply to the next request. \\ \hline
+Hourly reminder check & Create due expiry / notice reminders without duplicates. \\ \hline
+LLM provider rate-limits a call & Retry within a deadline, then switch to the fallback provider; if both fail, show passages without a written answer. \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{Functional Requirements}
+Each requirement below has an identifier used in the traceability matrix (Table~\ref{tab:rtm}).
+
+\subsection{Module 1: Organization and Access Management}
+\subsubsection{FR-1.1 Organization Registration and Authentication}
+\begin{spec}{Functional Requirement -- Registration and Authentication}{tab:fr11}
+\row{Identifier}{FR-1.1}
+\row{Title}{Organization registration and authentication}
+\row{Requirement}{The system shall let a person register an organization and become its Admin, and shall authenticate members with username and password, issuing JWT access (8 h) and refresh (7 days) tokens.}
+\row{Source}{Supervisor; previous version}
+\row{Rationale}{Every document belongs to an organization; identity is required for access control and auditing.}
+\row{Dependencies}{None}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-1.2 Members, Departments and Roles}
+\begin{spec}{Functional Requirement -- Members, Departments and Roles}{tab:fr12}
+\row{Identifier}{FR-1.2}
+\row{Title}{Member and department management}
+\row{Requirement}{An Admin shall be able to add members, create departments, and assign each member one role (Admin, Manager, Employee, Auditor) and optionally one department.}
+\row{Source}{Supervisor (RBAC, shared database)}
+\row{Dependencies}{FR-1.1}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-1.3 Document Access Control}
+\begin{spec}{Functional Requirement -- Document Access Control}{tab:fr13}
+\row{Identifier}{FR-1.3}
+\row{Title}{Access control before retrieval}
+\row{Requirement}{Each document shall have an access level (Organization, Department, Restricted to named people). A member shall see a document only if it is organization-wide, belongs to their department, was uploaded by them or was shared with them; Admins and Auditors see all. This rule shall be applied before every list, search, retrieval, file download and answer.}
+\row{Source}{Supervisor (RBAC)}
+\row{Dependencies}{FR-1.2}
+\row{Priority}{High}
+\end{spec}
+
+\subsection{Module 2: Document Ingestion and Processing}
+\subsubsection{FR-2.1 Upload and Validation}
+\begin{spec}{Functional Requirement -- Upload and Validation}{tab:fr21}
+\row{Identifier}{FR-2.1}
+\row{Title}{Document upload}
+\row{Requirement}{The system shall accept PDF, DOCX, PNG, JPG and JPEG files up to 25\,MB, store each as a numbered version with its SHA-256 hash, and process it in the background. Auditors shall not be able to upload.}
+\row{Dependencies}{FR-1.3}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-2.2 Text Extraction, OCR and Handwriting}
+\begin{spec}{Functional Requirement -- Text Extraction, OCR and Handwriting}{tab:fr22}
+\row{Identifier}{FR-2.2}
+\row{Title}{Reading every page}
+\row{Requirement}{For each page the system shall use the digital text layer when present; otherwise run Tesseract OCR; and if the uploader marked the document handwritten, or Tesseract's mean confidence is below 70 or it finds almost no words, transcribe the page with a vision-language model. The source of each page (Digital, OCR, Handwriting) shall be stored.}
+\row{Source}{Supervisor (handwritten records)}
+\row{Dependencies}{FR-2.1}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-2.3 Classification}
+\begin{spec}{Functional Requirement -- Record / Reference Classification}{tab:fr23}
+\row{Identifier}{FR-2.3}
+\row{Title}{Document classification}
+\row{Requirement}{The system shall classify every document as RECORD or REFERENCE, assign a document type and a one-sentence summary. A user may set the kind manually, after which it is not changed automatically.}
+\row{Dependencies}{FR-2.2}
+\row{Priority}{Medium}
+\end{spec}
+
+\subsubsection{FR-2.4 Structure-aware Chunking and Indexing}
+\begin{spec}{Functional Requirement -- Chunking and Indexing}{tab:fr24}
+\row{Identifier}{FR-2.4}
+\row{Title}{Chunking and indexing}
+\row{Requirement}{The system shall split text at legal headings (Part, Chapter, Article, Section, numbered clauses, capitalized titles) into chunks of at most 1,500 characters that keep their section path and page range, and index each chunk with a 384-dimensional embedding and a weighted full-text vector.}
+\row{Dependencies}{FR-2.2}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-2.5 Versions and Comparison}
+\begin{spec}{Functional Requirement -- Versions and Comparison}{tab:fr25}
+\row{Identifier}{FR-2.5}
+\row{Title}{Document versions}
+\row{Requirement}{Users who may edit a document shall be able to upload a new version with a change note. Older versions shall never be deleted, and any two versions shall be comparable (text differences and changed fields).}
+\row{Source}{Supervisor (history)}
+\row{Dependencies}{FR-2.1}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-2.6 Clause Labelling}
+\begin{spec}{Functional Requirement -- Clause Labelling}{tab:fr26}
+\row{Identifier}{FR-2.6}
+\row{Title}{Clause labelling with a fine-tuned model}
+\row{Requirement}{Chunks of RECORD documents shall be labelled with one of 100 clause types by the fine-tuned classifier when its confidence is at least 0.5, and labels shall be shown on the document and used to boost search.}
+\row{Source}{Supervisor (fine-tuning)}
+\row{Dependencies}{FR-2.4}
+\row{Priority}{Medium}
+\end{spec}
+
+\subsection{Module 3: Records Register and Verification}
+\subsubsection{FR-3.1 Field Extraction with Evidence}
+\begin{spec}{Functional Requirement -- Field Extraction with Evidence}{tab:fr31}
+\row{Identifier}{FR-3.1}
+\row{Title}{Record field extraction}
+\row{Requirement}{For RECORD documents the system shall extract eleven fields (parties, effective date, signing date, expiry date, term, auto-renewal, notice period, governing law, contract value, reference number, signatories), each with a page number, a verbatim quote and a confidence. Dates shall be normalized to ISO format and amounts to numbers. The quote shall be checked against the page text (grounding).}
+\row{Source}{Supervisor (``when was the NDA signed'')}
+\row{Dependencies}{FR-2.2, FR-2.3}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-3.2 Review Queue}
+\begin{spec}{Functional Requirement -- Review Queue}{tab:fr32}
+\row{Identifier}{FR-3.2}
+\row{Title}{Human review of uncertain values}
+\row{Requirement}{A field shall be marked NEEDS\_REVIEW when its confidence is below 0.75, its quote is not found on the page, or it comes from an OCR or handwritten page. Managers and Admins shall be able to verify or correct such fields.}
+\row{Dependencies}{FR-3.1}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-3.3 Field Edit History and Records Register}
+\begin{spec}{Functional Requirement -- Field History and Register}{tab:fr33}
+\row{Identifier}{FR-3.3}
+\row{Title}{Field edit history and records register}
+\row{Requirement}{Every verification or correction shall be stored with old and new value, old and new status, reason, person and time. The system shall provide a register of all visible records with their key fields, filterable and sortable.}
+\row{Source}{Supervisor (history, hold all records)}
+\row{Dependencies}{FR-3.2}
+\row{Priority}{High}
+\end{spec}
+
+\subsection{Module 4: Legal Assistant}
+\subsubsection{FR-4.1 Query Routing}
+\begin{spec}{Functional Requirement -- Query Routing}{tab:fr41}
+\row{Identifier}{FR-4.1}
+\row{Title}{Query routing}
+\row{Requirement}{The system shall classify each question as LOOKUP, KNOWLEDGE or SEARCH and extract document type, party, field and date range, using an LLM plan in JSON with a keyword-rule fallback. The LLM shall never write SQL.}
+\row{Dependencies}{FR-3.1}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-4.2 Lookup, Knowledge and Search Answers}
+\begin{spec}{Functional Requirement -- Answer Engines}{tab:fr42}
+\row{Identifier}{FR-4.2}
+\row{Title}{Answering questions}
+\row{Requirement}{LOOKUP questions shall be answered from the records table; KNOWLEDGE questions from the top 8 hybrid-retrieved passages with numbered citations; SEARCH questions with a ranked list of documents. A question may be limited to selected documents. If the sources do not contain the answer the system shall say so.}
+\row{Source}{Supervisor (law book, fact lookup)}
+\row{Dependencies}{FR-1.3, FR-2.4, FR-4.1}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-4.3 Source Document Viewing}
+\begin{spec}{Functional Requirement -- Source Viewing}{tab:fr43}
+\row{Identifier}{FR-4.3}
+\row{Title}{Open the source}
+\row{Requirement}{Every source in an answer shall open the document at the cited page with the quoted text highlighted.}
+\row{Source}{Supervisor (``the query pulls up the document'')}
+\row{Dependencies}{FR-4.2}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-4.4 Query History}
+\begin{spec}{Functional Requirement -- Query History}{tab:fr44}
+\row{Identifier}{FR-4.4}
+\row{Title}{Conversation history}
+\row{Requirement}{Each question shall be stored with its route, filters, scope, answer, sources and response time in a conversation that only its owner can open.}
+\row{Source}{Supervisor (history)}
+\row{Priority}{Medium}
+\end{spec}
+
+\subsection{Module 5: History, Audit and Notifications}
+\subsubsection{FR-5.1 Audit Log}
+\begin{spec}{Functional Requirement -- Audit Log}{tab:fr51}
+\row{Identifier}{FR-5.1}
+\row{Title}{Append-only audit log}
+\row{Requirement}{The system shall record logins, uploads, new versions, views, downloads, searches, field edits and verifications, document updates, access changes, archiving, reprocessing and membership changes, with person, target, details, IP address and time. Events shall not be editable or deletable, and only Admins and Auditors may read them.}
+\row{Source}{Supervisor (history)}
+\row{Priority}{High}
+\end{spec}
+
+\subsubsection{FR-5.2 Notifications and Reminders}
+\begin{spec}{Functional Requirement -- Notifications and Reminders}{tab:fr52}
+\row{Identifier}{FR-5.2}
+\row{Title}{Notifications and reminders}
+\row{Requirement}{The system shall notify the uploader when processing finishes or fails, reviewers when fields need review, and responsible people 90, 30 and 7 days before and on the day of an expiry date or notice deadline, without duplicates and only to people who can see the document.}
+\row{Priority}{Medium}
+\end{spec}
+
+\section{Non-Functional Requirements}
+\subsection{Performance Requirements}
+\begin{itemize}
+\item \textbf{PER-1:} Lookup answers shall be returned within 3 seconds.
+\item \textbf{PER-2:} Knowledge answers shall be returned within 35 seconds in the worst case; every LLM
+call has a deadline after which the fallback provider or a passages-only answer is used.
+\item \textbf{PER-3:} Uploading shall return immediately; processing runs in the background.
+\item \textbf{PER-4:} Vector search shall use an HNSW index so that response time does not grow linearly with
+the number of chunks.
+\end{itemize}
+\subsection{Security Requirements}
+\begin{itemize}
+\item \textbf{SEC-1:} Passwords shall be stored as salted hashes (Django PBKDF2).
+\item \textbf{SEC-2:} All API endpoints except registration and login shall require a valid JWT.
+\item \textbf{SEC-3:} Access control shall be enforced on the server before any data is read; document ids
+sent by the client shall be filtered through the same rule.
+\item \textbf{SEC-4:} Files shall only be served through a permission-checked endpoint, never from a public
+media URL.
+\item \textbf{SEC-5:} The assistant shall be rate-limited (20 questions per minute per user) and the API
+in general (600 requests per hour per user).
+\item \textbf{SEC-6:} API keys and secrets shall be read from environment variables, never stored in code.
+\end{itemize}
+\subsection{Reliability Requirements}
+\begin{itemize}
+\item \textbf{REL-1:} Failed processing jobs shall be retried up to three times; jobs left running by a
+crashed worker shall be recovered.
+\item \textbf{REL-2:} If the LLM is unavailable, upload, search, lookup and access control shall keep working.
+\item \textbf{REL-3:} Processing a new version shall not remove the current searchable version until the new
+one is ready.
+\end{itemize}
+\subsection{Usability Requirements}
+\begin{itemize}
+\item \textbf{USE-1:} Every extracted value and every answer shall show its evidence.
+\item \textbf{USE-2:} A new user shall be able to ask a first question within one minute of signing in.
+\item \textbf{USE-3:} The interface shall support keyboard use (command palette with Ctrl/\,\textsuperscript{$\wedge$}K, ``/'' to focus
+the question box) and visible focus states.
+\end{itemize}
+\subsection{Scalability Requirements}
+\begin{itemize}
+\item \textbf{SCA-1:} Several workers shall be able to run in parallel without taking the same job.
+\item \textbf{SCA-2:} The backend shall be stateless so that more API containers can be added.
+\end{itemize}
+\subsection{Maintainability Requirements}
+\begin{itemize}
+\item \textbf{MAI-1:} The LLM provider shall be changeable through configuration only.
+\item \textbf{MAI-2:} Core behavior shall be covered by automated tests run with \code{python manage.py test}.
+\item \textbf{MAI-3:} Evaluation results shall be reproducible with the provided scripts.
+\end{itemize}
+
+\section{External Interface Requirements}
+\subsection{User Interface Requirements}
+A responsive web interface with a sidebar for navigation, a question box docked at the bottom of the
+Assistant, an embedded PDF viewer, and clear status labels (Queued, Processing, Ready, Failed, Needs
+review, Verified). Errors are shown as messages next to the field or as notifications.
+\subsection{Hardware Interface Requirements}
+The server needs at least 4\,GB RAM (embedding and clause models run on the CPU) and disk space for
+uploaded files. No special client hardware is required; a scanner or phone camera is used to create
+images of paper documents.
+\subsection{Software Interface Requirements}
+PostgreSQL 16 with pgvector 0.8, Tesseract OCR 5, Python 3.12+, and an OpenAI-compatible LLM endpoint
+(Groq, Gemini, OpenAI or Ollama). Clients need a current version of Chrome, Edge, Firefox or Safari.
+\subsection{Communication Interface Requirements}
+The browser communicates with the server via REST over HTTPS with JSON bodies and Bearer tokens. The
+server reaches LLM providers over HTTPS. Optional reminder e-mails use SMTP.
+
+\section{Assumptions and Dependencies}
+The requirements assume that documents are in English, that members are added by a trusted
+administrator, and that at least one LLM provider is reachable for generated answers and field
+extraction. Accuracy of handwriting recognition depends on the quality of the scan.
+
+\section{Requirement Traceability Matrix}
+\begin{table}[H]\centering
+\caption{Requirement Traceability Matrix}\label{tab:rtm}
+\small
+\begin{tabularx}{\textwidth}{|p{1.3cm}|X|p{1.9cm}|p{3.4cm}|p{2.6cm}|}\hline
+\textbf{FR} & \textbf{Requirement} & \textbf{Use Case} & \textbf{Implemented in} & \textbf{Test} \\ \hline
+FR-1.1 & Registration \& authentication & UC-1.1, 1.2 & accounts/views.py & BB-01, BB-02 \\ \hline
+FR-1.2 & Members, departments, roles & UC-1.3 & accounts/views.py & BB-03 \\ \hline
+FR-1.3 & Access control before retrieval & UC-2.3, 4.x & documents/access.py & UT-04, UT-05, UT-06, IT-03 \\ \hline
+FR-2.1 & Upload \& validation & UC-2.1 & documents/views.py & UT-08, UT-09, BB-04 \\ \hline
+FR-2.2 & Extraction, OCR, handwriting & UC-2.1 & pipeline/\allowbreak{}extract.py, ai/ocr.py & IT-01, EV-5 \\ \hline
+FR-2.3 & Classification & UC-2.1 & pipeline/\allowbreak{}understanding.py & IT-01 \\ \hline
+FR-2.4 & Chunking \& indexing & UC-2.1 & pipeline/chunking.py & UT-03, EV-2 \\ \hline
+FR-2.5 & Versions \& comparison & UC-2.2 & documents/views.py & UT-10, BB-05 \\ \hline
+FR-2.6 & Clause labelling & UC-2.1 & ai/clauses.py, ml/ & EV-1 \\ \hline
+FR-3.1 & Field extraction with evidence & UC-3.1 & pipeline/\allowbreak{}understanding.py & UT-01, UT-02, EV-3 \\ \hline
+FR-3.2 & Review queue & UC-3.2 & documents/views.py & UT-12, BB-07 \\ \hline
+FR-3.3 & Field history \& register & UC-3.1, 3.2 & documents/views.py & UT-11, BB-06 \\ \hline
+FR-4.1 & Query routing & UC-4.1--4.3 & assistant/router.py & UT-14 -- UT-16, EV-4 \\ \hline
+FR-4.2 & Answer engines & UC-4.1--4.3 & assistant/engine.py & UT-17, IT-02, IT-04, BB-08, BB-09 \\ \hline
+FR-4.3 & Source viewing & UC-4.1, 4.3 & DocumentViewer.vue & BB-10 \\ \hline
+FR-4.4 & Query history & UC-4.4 & assistant/views.py & UT-18, BB-11 \\ \hline
+FR-5.1 & Audit log & UC-5.1 & audit/ & UT-13, BB-12 \\ \hline
+FR-5.2 & Notifications \& reminders & UC-5.2 & notifications/ & UT-19 -- UT-23 \\ \hline
+\end{tabularx}
+\end{table}

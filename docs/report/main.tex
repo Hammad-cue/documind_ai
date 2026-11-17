@@ -1,0 +1,195 @@
+% =====================================================================
+%  DocuMind AI — Final Year Project Report
+%  COMSATS University Islamabad, Vehari Campus
+%  Compile with pdflatex (Overleaf: Menu -> Compiler -> pdfLaTeX), twice
+%  so that the table of contents and cross-references are filled in.
+% =====================================================================
+\documentclass[11pt,a4paper]{report}
+
+% ---------- page and fonts ----------
+\usepackage[a4paper,left=2cm,right=2cm,top=3cm,bottom=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{setspace}
+
+% ---------- tables, lists, figures ----------
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[font=normalsize,skip=4pt]{caption}
+\usepackage{amsmath,amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{pifont}
+\usepackage{adjustbox}
+
+% ---------- diagrams ----------
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,shapes.multipart,shapes.misc,fit,calc,backgrounds}
+
+% ---------- headings ----------
+\usepackage{titlesec}
+\titleformat{\chapter}[display]{\normalfont\LARGE\bfseries\centering}{\chaptertitlename\ \thechapter}{0pt}{\LARGE}
+\titlespacing*{\chapter}{0pt}{20pt}{24pt}
+\titleformat{name=\chapter,numberless}[display]{\normalfont\LARGE\bfseries\centering}{}{0pt}{\LARGE}
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+
+\usepackage[hidelinks]{hyperref}
+
+% ---------- spacing ----------
+\setlength{\parskip}{2pt}
+\setlength{\emergencystretch}{3em}
+\setlist{itemsep=1pt,topsep=3pt}
+\renewcommand{\arraystretch}{1.15}
+
+% =====================================================================
+%  Helper macros
+% =====================================================================
+\newcommand{\sysname}{DocuMind AI}
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+% A visible marker for numbers that still have to be filled in.
+\newcommand{\pending}[1]{\textcolor{red}{\textbf{[#1]}}}
+
+% Screenshot: put the PNG in screens/ with the given name. Until then a framed
+% placeholder with the same caption is printed, so the report always compiles.
+\newcommand{\screenshot}[3]{%
+  \begin{figure}[H]\centering
+  \IfFileExists{screens/#1}{%
+    \fbox{\includegraphics[width=0.92\textwidth,height=0.42\textheight,keepaspectratio]{screens/#1}}}{%
+    \fbox{\parbox[c][5.5cm][c]{0.88\textwidth}{\centering\color{gray}\large
+      Screenshot to insert:\\[4pt]\texttt{screens/#1}}}}
+  \caption{#2}\label{#3}
+  \end{figure}}
+
+% TikZ figure from figures/<file>.tex, scaled down if it is larger than the page.
+\newcommand{\tikzfig}[4][0.78]{%
+  \begin{figure}[H]\centering
+  \begin{adjustbox}{max width=\textwidth,max totalheight=#1\textheight}\input{figures/#2}\end{adjustbox}
+  \caption{#3}\label{#4}
+  \end{figure}}
+
+% Two-column boxed table used for use cases and functional requirements.
+\newenvironment{spec}[2]{%
+  \begin{table}[H]\centering\caption{#1}\label{#2}
+  \begin{tabular}{|>{\bfseries}p{3.4cm}|p{\dimexpr\textwidth-3.4cm-4\tabcolsep-3\arrayrulewidth\relax}|}\hline}{%
+  \end{tabular}\end{table}}
+\newcommand{\row}[2]{#1 & #2 \\ \hline}
+
+% Compact numbered list inside table cells.
+\newenvironment{steps}{\begin{minipage}[t]{\linewidth}\begin{enumerate}[leftmargin=*,nosep]}{\end{enumerate}\vspace{2pt}\end{minipage}}
+\newenvironment{bullets}{\begin{minipage}[t]{\linewidth}\begin{itemize}[leftmargin=*,nosep]}{\end{itemize}\vspace{2pt}\end{minipage}}
+
+% ---------- TikZ styles ----------
+\tikzset{
+  >={Stealth[length=2.2mm]},
+  box/.style={draw,rounded corners=2pt,align=center,fill=white,font=\small,inner sep=4pt,minimum height=8mm},
+  softbox/.style={box,fill=gray!8},
+  tier/.style={draw,dashed,rounded corners=4pt,inner sep=8pt},
+  tierlabel/.style={font=\small\bfseries,anchor=north west},
+  db/.style={cylinder,shape border rotate=90,draw,aspect=0.18,align=center,font=\small,minimum width=24mm,minimum height=13mm,fill=white},
+  act/.style={draw,rounded corners=7pt,align=center,font=\small,minimum height=7mm,inner sep=4pt,fill=white,text width=#1},
+  act/.default=48mm,
+  dec/.style={draw,diamond,aspect=2.4,align=center,font=\footnotesize,inner sep=1pt,fill=white},
+  startnode/.style={circle,fill=black,minimum size=3.5mm,inner sep=0pt},
+  endnode/.style={circle,draw,double,double distance=1.2pt,fill=black,minimum size=3mm,inner sep=0pt},
+  flow/.style={->,thick},
+  lbl/.style={font=\footnotesize,fill=white,inner sep=1.5pt},
+  ent/.style={draw,rectangle split,rectangle split parts=2,align=left,font=\scriptsize,fill=white,inner sep=3pt,
+              rectangle split part fill={gray!15,white}},
+  usecase/.style={draw,ellipse,align=center,font=\footnotesize,minimum width=34mm,minimum height=8mm,inner sep=1pt,fill=white},
+  state/.style={draw,rounded corners=8pt,align=center,font=\small,minimum height=8mm,minimum width=24mm,fill=white},
+  proc/.style={draw,circle,align=center,font=\scriptsize,minimum size=19mm,inner sep=1pt,fill=white},
+  extent/.style={draw,rectangle,align=center,font=\small,minimum height=9mm,inner sep=4pt,fill=gray!8},
+  store/.style={draw,rectangle,align=left,font=\scriptsize,minimum height=6mm,inner sep=3pt,
+                path picture={\draw (path picture bounding box.north west)++(4mm,0) -- ++(0,-6mm);}},
+}
+% Stick-figure actor: \actor{name}{position}{label}
+\newcommand{\actor}[3]{%
+  \begin{scope}[shift={#2}]
+    \draw (0,0.55) circle (0.16);
+    \draw (0,0.39) -- (0,-0.05) (-0.28,0.25) -- (0.28,0.25) (0,-0.05) -- (-0.2,-0.4) (0,-0.05) -- (0.2,-0.4);
+    \node[font=\footnotesize\bfseries,align=center] at (0,-0.65) {#3};
+    \coordinate (#1) at (0,0.1);
+  \end{scope}}
+
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single,columns=fullflexible,
+        keywordstyle=\bfseries,showstringspaces=false}
+
+% =====================================================================
+\renewcommand{\contentsname}{Table of Contents}
+\begin{document}
+
+% ---------------- Title page ----------------
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Large\bfseries COMSATS University Islamabad, Vehari Campus,\\ Pakistan\par}
+\vspace{0.3cm}
+{\large Department of Computer Science\par}
+\vspace{0.8cm}
+{\LARGE\bfseries DocuMind AI\par}
+\vspace{0.25cm}
+{\large Legal Records Intelligence for Organizations\par}
+\vspace{0.8cm}
+\IfFileExists{figures/comsats_logo.png}{\includegraphics[width=4.2cm]{figures/comsats_logo.png}}{}
+\par\vspace{0.9cm}
+{\large A Final Year Project Report Submitted in Partial Fulfillment of the Requirements\\ for the Degree of\par}
+\vspace{0.6cm}
+{\Large\bfseries Bachelor of Science in Computer Science\par}
+\vspace{0.9cm}
+{\large\bfseries Submitted By\par}
+\vspace{0.3cm}
+{\large Hammad Khawar \quad (SP23-BSE-006)\\ M. Usman \quad (SP23-BSE-021)\par}
+\vspace{0.6cm}
+{\large\bfseries Supervisor\par}
+\vspace{0.3cm}
+{\large Dr. Umar Rashid\par}
+\vspace{0.6cm}
+{\large Session: Spring 2023-2027\par}
+\vfill
+\end{titlepage}
+
+\pagenumbering{roman}
+\setcounter{page}{2}
+
+\input{chapters/frontmatter}
+
+\tableofcontents
+\clearpage
+\phantomsection\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\clearpage
+\phantomsection\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\clearpage
+\pagenumbering{arabic}
+
+\input{chapters/ch1_introduction}
+\input{chapters/ch2_problem}
+\input{chapters/ch3_requirements}
+\input{chapters/ch4_design}
+\input{chapters/ch5_implementation}
+\input{chapters/ch6_testing}
+\input{chapters/ch7_conclusion}
+
+\clearpage
+\phantomsection\addcontentsline{toc}{chapter}{Bibliography}
+\input{chapters/bibliography}
+
+\appendix
+\input{chapters/appendix}
+
+\end{document}

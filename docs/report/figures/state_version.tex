@@ -1,0 +1,17 @@
+% State diagram: document version lifecycle (Figure 4.10)
+\begin{tikzpicture}[node distance=14mm and 22mm]
+\node[startnode] (s) {};
+\node[state,right=12mm of s] (q) {QUEUED};
+\node[state,right=of q] (p) {PROCESSING};
+\node[state,right=of p] (r) {READY};
+\node[state,below=of p] (f) {FAILED};
+\node[state,below=of r,text width=28mm] (c) {READY\\ \scriptsize (superseded by newer version, kept)};
+\draw[flow] (s) -- node[lbl,above]{upload} (q);
+\draw[flow] (q) -- node[lbl,above,align=center]{worker\\ claims job} (p);
+\draw[flow] (p) -- node[lbl,above,align=center]{pipeline\\ succeeds} (r);
+\draw[flow] (p) -- node[lbl,right,align=left]{error after\\ 3 attempts} (f);
+\draw[flow] (p) to[bend left=35] node[lbl,below]{error, attempts $<3$} (q);
+\draw[flow] (f.west) -| node[lbl,pos=0.25,below]{reprocess} (q.south);
+\draw[flow] (r.north) to[out=135,in=45] node[lbl,above]{reprocess} (p.north);
+\draw[flow] (r) -- node[lbl,right,align=left]{new version\\ becomes READY} (c);
+\end{tikzpicture}

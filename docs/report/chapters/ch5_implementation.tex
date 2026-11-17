@@ -1,0 +1,344 @@
+\chapter{Implementation}
+
+\section{Development Environment}
+\begin{table}[H]\centering
+\caption{Development Environment}\label{tab:devenv}
+\begin{tabularx}{\textwidth}{|p{4.5cm}|X|}\hline
+\textbf{Item} & \textbf{Details} \\ \hline
+Operating system & Windows 11 (development); Linux containers (deployment) \\ \hline
+Backend language and framework & Python 3.12+, Django 6.0, Django REST Framework 3.17, SimpleJWT 5.5 \\ \hline
+Frontend & Node.js, Vue.js 3.5, Vue Router 4, Vite, Tailwind CSS 4, Reka UI, vue-pdf-embed \\ \hline
+Database & PostgreSQL 16 with pgvector 0.8 (Docker image \code{pgvector/pgvector:pg16}) \\ \hline
+Document processing & pypdfium2 5.7, python-docx 1.2, Tesseract OCR 5 via pytesseract \\ \hline
+Machine learning & sentence-transformers 5.3, Hugging Face Transformers 5.5, PyTorch (CPU), scikit-learn, datasets \\ \hline
+LLM providers & Groq (\code{openai/gpt-oss-20b}); Google Gemini (fallback and vision) \\ \hline
+Editor and tools & Visual Studio Code, Git and GitHub, Docker Desktop, Google Colab (GPU training) \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{Core Module Implementation}
+\subsection{Module 1: Organization and Access Management}
+Registration (\code{POST /api/auth/register-organization/}) creates the organization, the user and an
+Admin membership in one database transaction. Login uses SimpleJWT and writes a LOGIN audit event.
+Permission classes (\code{IsOrgMember}, \code{IsOrgAdmin}, \code{CanUpload}, \code{CanVerify},
+\code{CanViewAudit}) protect the API, and \code{visible\_documents(user)} implements the
+document-level rule of FR-1.3:
+\begin{lstlisting}[language=Python]
+def visible_documents(user):
+    m = getattr(user, 'membership', None)
+    if m is None:
+        return Document.objects.none()
+    qs = Document.objects.filter(organization_id=m.organization_id, is_archived=False)
+    if m.sees_everything:                        # Admin, Auditor
+        return qs
+    rule = Q(access_level='ORG') | Q(uploaded_by=user) | Q(allowed_users=user)
+    if m.department_id:
+        rule |= Q(access_level='DEPARTMENT', department_id=m.department_id)
+    return Document.objects.filter(id__in=qs.filter(rule).values('id'))
+\end{lstlisting}
+
+\subsection{Module 2: Document Ingestion and Processing}
+The upload endpoint validates the file extension and size, stores the file as a new
+\code{DocumentVersion}, computes its SHA-256 hash and creates a \code{ProcessingJob}. The
+\code{run\_worker} command claims jobs and calls \code{process\_version}, which runs five logged steps:
+\begin{enumerate}
+\item \textbf{Extract.} PDFs are opened with pypdfium2. A page with a usable text layer is taken as is;
+otherwise it is rendered at 300\,dpi and passed to OCR. DOCX files are read with python-docx; images go
+straight to OCR. The OCR step runs Tesseract and computes the mean word confidence; if the document is
+marked handwritten, the confidence is below 70, or almost no words are found, the page image is sent to
+the vision-language model with an instruction to transcribe exactly and mark unreadable words.
+\item \textbf{Classify.} The first pages are sent to the LLM, which returns the kind, document type and a
+summary in JSON. A keyword heuristic is used if the LLM is unavailable; it recognizes statutes (``Act'',
+``Ordinance'', ``Code'' followed by a year) as reference material.
+\item \textbf{Chunk and embed.} The structure-aware chunker (Algorithm~\ref{alg:chunk}) produces chunks
+with section paths and page ranges; each is embedded with all-MiniLM-L6-v2 together with its section
+path, and a weighted \code{tsvector} is computed in SQL.
+\item \textbf{Label clauses.} For records, the fine-tuned classifier labels each chunk if its confidence
+is at least 0.5.
+\item \textbf{Extract fields.} For records, the LLM receives the paged text (up to 22,000 characters; for
+longer documents the beginning and end are kept, because signatures and dates are usually there) and
+returns the eleven fields with value, page, quote and confidence. Each quote is grounded
+(Algorithm~\ref{alg:ground}).
+\end{enumerate}
+Failures are retried up to three times. When a version becomes READY it becomes the current version and
+the uploader is notified.
+
+\subsection{Module 3: Records Register and Verification}
+The records endpoint returns one row per visible RECORD document with its key fields from the current
+version. The review queue returns NEEDS\_REVIEW fields of visible documents. Verifying or correcting a
+field updates its status (and value), and creates a \code{FieldEdit} row and an audit event in the same
+transaction. Users can also add a field the model missed.
+
+\subsection{Module 4: Legal Assistant}
+\code{AskView} (throttled to 20 requests per minute) calls \code{engine.answer(user, text,
+document\_ids)}. The router returns a plan; the engine runs the matching path:
+\begin{itemize}
+\item \textbf{LOOKUP} filters \code{RecordField} rows of the current versions of visible documents by
+document type (using a table of aliases, e.g.\ NDA $\rightarrow$ ``non-disclosure'', ``confidentiality
+agreement''), party name and field; date ranges use \code{value\_date}. The answer is composed from a
+template (``The NDA \emph{X} was signed on \emph{12 March 2025} (page 3)''), so no LLM is needed and
+the answer takes about a second.
+\item \textbf{KNOWLEDGE} retrieves the eight best chunks with hybrid search (Algorithm~\ref{alg:rrf})
+and asks the LLM to answer only from the numbered sources and cite them as [n].
+\item \textbf{SEARCH} groups retrieved chunks by document, boosts chunks whose clause label matches the
+query, and returns the documents with their best passages.
+\end{itemize}
+Every LLM call has a deadline. If the main provider fails or reports that its daily quota is used up,
+the gateway switches to the fallback provider and skips the main one until the quota resets; if both
+fail, the user still receives the most relevant passages. The query, plan, sources and latency are
+saved to the conversation.
+
+\subsection{Module 5: History, Audit and Notifications}
+\code{audit.service.log()} is called from every view that changes or reveals data. The
+\code{AuditEvent} model overrides \code{save()} and \code{delete()} to forbid changes after creation.
+\code{notifications.service.run\_reminders()} runs hourly in the worker: it computes expiry dates and
+notice deadlines (expiry minus the parsed notice period), finds those 90, 30, 7 or 0 days ahead, selects
+the people who can see the document (uploader, department managers, admins) and creates notifications
+with a unique \emph{dedupe key}, so each reminder is sent once.
+
+\subsection{Module 6: Model Training and Evaluation}
+\code{ml/train\_clause\_classifier.py} fine-tunes the clause classifier (Section~\ref{sec:finetune});
+\code{ml/baselines.py} trains the TF-IDF baseline and runs the zero-shot LLM baseline; the
+\code{evaluation/} package contains one script per component and \code{evaluation.report}, which writes
+all results into \code{docs/EVALUATION.md}.
+
+\section{Algorithm Implementation}
+
+\begin{algorithm}[H]
+\caption{Structure-aware chunking}\label{alg:chunk}
+\begin{algorithmic}[1]
+\Require pages $P = [(n, \mathit{text})]$, $\mathit{MAX}=1500$, $\mathit{MIN}=200$
+\State $\mathit{stack} \gets [\,]$; $\mathit{sections} \gets [\,]$; $\mathit{cur} \gets$ new section
+\For{each line $\ell$ on page $n$ in $P$}
+  \If{$\ell$ matches a heading rule of level $k$ (PART/CHAPTER/ARTICLE, Section $n$, $n.n$, ``$n$.'' title)}
+    \State append $\mathit{cur}$ to $\mathit{sections}$
+    \State pop from $\mathit{stack}$ every heading with level $\geq k$; push $(k,\ell)$
+    \State $\mathit{cur} \gets$ new section with path $=$ join($\mathit{stack}$, `` $>$ '')
+  \Else
+    \State add $(n,\ell)$ to $\mathit{cur}$
+  \EndIf
+\EndFor
+\State append $\mathit{cur}$; merge sections shorter than $\mathit{MIN}$ into the previous one
+\For{each section $s$}
+  \State split $s$ on paragraphs, then sentences, into parts of at most $\mathit{MAX}$ characters with overlap
+  \State emit chunks with $s$.path, $s$.heading and the first and last page of their lines
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Permission-filtered hybrid retrieval with Reciprocal Rank Fusion}\label{alg:rrf}
+\begin{algorithmic}[1]
+\Require user $u$, query $q$, optional document ids $D$, $k=8$, $C=40$, $K_{\mathrm{RRF}}=60$
+\State $V \gets$ ids of current versions of \Call{VisibleDocuments}{$u$} \Comment{access rule first}
+\If{$D$ given} $V \gets V \cap$ versions of $D$ \EndIf \Comment{forbidden ids are dropped}
+\State $e \gets$ \Call{Embed}{$q$}
+\State $L_d \gets$ top $C$ chunks in $V$ by cosine distance to $e$ (HNSW, \code{ef\_search}=100)
+\State $L_s \gets$ top $C$ chunks in $V$ matching any content word of $q$, ordered by \code{ts\_rank}
+\For{each chunk $c$}
+  \State $\mathit{score}(c) \gets \sum_{L \in \{L_d, L_s\}} \frac{1}{K_{\mathrm{RRF}} + \mathrm{rank}_L(c)}$
+\EndFor
+\State \Return the $k$ chunks with the highest score
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Field grounding and review decision}\label{alg:ground}
+\begin{algorithmic}[1]
+\Require field $f$ (value, page, quote, confidence $c$), page texts $T$, threshold $\tau = 0.75$
+\State $g \gets$ \Call{Ground}{$f$.quote, $T[f.\mathit{page}]$}
+\If{not $g$} \Comment{the model may have cited the wrong page}
+  \For{each page $p$} \If{\Call{Ground}{$f$.quote, $T[p]$}} $g \gets$ true; $f.\mathit{page} \gets p$; \textbf{break} \EndIf \EndFor
+\EndIf
+\If{not $g$} $c \gets c \times 0.5$ \EndIf
+\If{$f$ is a date and cannot be parsed} $c \gets c \times 0.7$ \EndIf
+\State $f.\mathit{status} \gets$ NEEDS\_REVIEW \textbf{if} $c < \tau$ or not $g$ or page source $\in$ \{OCR, HANDWRITING\} \textbf{else} AUTO
+\Statex
+\Function{Ground}{$q$, $t$} \Comment{normalize case, punctuation, spaces}
+  \State \Return $q \subseteq t$ as a string, or ($|q| \geq 3$ words and $\geq 80\%$ of the words of $q$ occur in $t$)
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Query routing}\label{alg:route}
+\begin{algorithmic}[1]
+\Require question $q$, last three questions $H$ of the conversation
+\State ask the LLM (JSON mode, deadline 12\,s) for \{intent, doc\_type, party, field, date\_from, date\_to, keywords\}, using $H$ to resolve ``it'' / ``that contract''
+\If{the call fails or the intent is invalid}
+  \State field $\gets$ first synonym rule that matches $q$ (e.g.\ ``signed'' $\rightarrow$ signed\_date)
+  \State doc\_type $\gets$ record word in $q$ (NDA, lease, contract \dots); party $\gets$ capitalized name after ``with/between/for''
+  \If{field and (doc\_type or party)} intent $\gets$ LOOKUP
+  \ElsIf{$q$ starts with find/show/open/list/search} intent $\gets$ SEARCH
+  \Else\ intent $\gets$ KNOWLEDGE \EndIf
+\EndIf
+\State replace string values such as ``null'' or ``N/A'' by none; validate the field key and ISO dates
+\State \Return plan
+\end{algorithmic}
+\end{algorithm}
+
+\section{Fine-tuning the Clause Classifier}\label{sec:finetune}
+The supervisor asked for a fine-tuned model. Clause classification was chosen because it has a large
+public labelled dataset and a clear use in the system (labels on the document page and a search boost).
+\begin{itemize}
+\item \textbf{Dataset.} LEDGAR~\cite{tuggener2020ledgar} from LexGLUE~\cite{chalkidis2022lexglue}:
+contract provisions from SEC filings labelled with 100 clause types (60,000 training, 10,000
+validation and 10,000 test provisions).
+\item \textbf{Model.} \code{sentence-transformers/all-MiniLM-L6-v2}~\cite{wang2020minilm} (22 million
+parameters, 6 layers) with a classification head, chosen because it runs quickly on a CPU at inference
+time and shares its encoder family with the retrieval embeddings.
+\item \textbf{Training.} Hugging Face \code{Trainer}, learning rate $5\times10^{-5}$, batch size 32,
+maximum length 256 tokens, 3 epochs, warm-up ratio 0.06, weight decay 0.01, seed 42. Because a laptop
+CPU was used, the reported run used 10,000 training provisions (36.7 minutes). A Google Colab notebook
+(\code{ml/colab\_train\_clause\_classifier.ipynb}) trains on all 60,000 provisions with a GPU.
+\item \textbf{Engineering note.} With Transformers 5.5, reloading intermediate checkpoints silently reset
+some LayerNorm weights. Mid-run checkpoints were therefore disabled, the model is saved once at the end,
+and the test set is evaluated on the \emph{reloaded} model so that the reported numbers are those of the
+model the application actually uses.
+\item \textbf{Baselines.} TF-IDF with logistic regression (10,000 and 60,000 training provisions) and a
+zero-shot LLM that picks a label from the list.
+\end{itemize}
+Results are reported in Section~\ref{sec:eval-clauses}.
+
+\section{External APIs / SDKs}
+\begin{table}[H]\centering
+\caption{External APIs and Third-Party Components Used}\label{tab:apis}
+\begin{tabularx}{\textwidth}{|p{4.2cm}|X|p{3.6cm}|}\hline
+\textbf{Component} & \textbf{Use in the system} & \textbf{Where} \\ \hline
+Groq API (\code{gpt-oss-20b}) & Routing plans, classification, field extraction, written answers & \code{ai/llm.py} \\ \hline
+Google Gemini API & Fallback text model; vision model for handwriting & \code{ai/llm.py}, \code{ai/ocr.py} \\ \hline
+Tesseract OCR & Printed text recognition with word confidences & \code{ai/ocr.py} \\ \hline
+sentence-transformers & Local 384-dimensional embeddings & \code{ai/embeddings.py} \\ \hline
+Hugging Face Transformers & Clause classifier training and inference & \code{ml/}, \code{ai/clauses.py} \\ \hline
+pgvector & Vector column, HNSW index, cosine distance in SQL & \code{documents/models.py} \\ \hline
+pypdfium2 / python-docx & PDF text and rendering / DOCX reading & \code{pipeline/extract.py} \\ \hline
+vue-pdf-embed, mammoth & PDF rendering with text layer; DOCX preview in the browser & frontend \\ \hline
+marked, DOMPurify & Rendering answers as safe Markdown & frontend \\ \hline
+\end{tabularx}
+\end{table}
+All LLM providers are called through their OpenAI-compatible Chat Completions endpoint, so switching
+provider (including a local Ollama model for fully offline use) only requires changing
+\code{LLM\_PROVIDER} and \code{LLM\_MODEL} in the environment file.
+
+\section{User Interface Implementation}
+\subsection{UI Design Approach}
+The interface was redesigned from scratch after the first version was judged generic. It uses a calm,
+light ``glass on paper'' style: translucent panels over a subtle paper-grain background, a single neutral
+accent, and no colour gradients, so that documents and evidence remain the focus. Key decisions:
+\begin{itemize}
+\item \textbf{Evidence everywhere.} Every extracted value has a ``show evidence'' action that opens the
+page with the quote highlighted; every answer lists numbered sources that do the same.
+\item \textbf{Question box at the bottom.} The Assistant uses a docked input, like a chat, and shows the
+steps it is taking (understanding the question, checking access, reading pages, writing the answer).
+\item \textbf{Keyboard support.} A command palette (Ctrl+K) searches documents and actions; ``/''
+focuses the question box; focus rings are visible.
+\item \textbf{Role-aware navigation.} Review, Team and Audit appear only for roles that may use them.
+\end{itemize}
+
+\subsection{Screen-wise Implementation}
+\subsubsection{Screen 1: Landing Page}
+Introduces the product with a self-playing demonstration of a question being answered with a citation.
+\screenshot{landing.jpg}{Landing Page}{fig:scr-landing}
+
+\subsubsection{Screen 2: Sign-up and Login}
+Sign-up registers a new organization and its administrator; login signs in existing members.
+\screenshot{login.jpg}{Login Page}{fig:scr-login}
+
+\subsubsection{Screen 3: Assistant}
+The main screen. Users ask questions, optionally limited to chosen documents. Answers show the route
+taken, the time, the written answer with numbered citations, and source cards.
+\screenshot{assistant.jpg}{Assistant -- Answer with Citations}{fig:scr-assistant}
+
+\subsubsection{Screen 4: Documents}
+Lists visible documents with kind, type, status, access level and page count, with search, filters and
+upload.
+\screenshot{documents.jpg}{Documents Screen}{fig:scr-documents}
+
+\subsubsection{Screen 5: Upload Modal}
+Drag-and-drop upload of several files with title, department, access level, kind and the
+``handwritten'' flag.
+\screenshot{upload.jpg}{Upload Documents Modal}{fig:scr-upload}
+
+\subsubsection{Screen 6: Document Detail}
+Shows the document in an embedded viewer next to tabs for extracted facts (with evidence), clauses,
+versions and comparison, extracted text and activity.
+\screenshot{document_detail.jpg}{Document Detail: Extracted Facts with the Signing-date Evidence Highlighted}{fig:scr-detail}
+
+Opening a source from an answer shows the cited passage of the reference document highlighted on its page
+(Figure~\ref{fig:scr-source}).
+\screenshot{source_highlight.jpg}{Source of an Answer Opened in the Contract Act with the Passage Highlighted}{fig:scr-source}
+
+\subsubsection{Screen 7: Records Register}
+\screenshot{records.jpg}{Records Register}{fig:scr-records}
+
+\subsubsection{Screen 8: Review Queue}
+\screenshot{review.jpg}{Review Queue}{fig:scr-review}
+
+\subsubsection{Screen 9: Team Management}
+\screenshot{team.jpg}{Team Management Screen}{fig:scr-team}
+
+\subsubsection{Screen 10: Audit Log}
+\screenshot{audit.jpg}{Audit Log Screen}{fig:scr-audit}
+
+\subsubsection{Screen 11: Profile Settings}
+\screenshot{profile.jpg}{Profile Settings}{fig:scr-profile}
+
+\subsection{Navigation Flow Diagram}
+\begin{figure}[H]\centering
+\begin{adjustbox}{max width=\textwidth}
+\begin{tikzpicture}[node distance=7mm and 9mm]
+\node[box] (land) {Landing};
+\node[box,right=of land] (login) {Login};
+\node[box,below=of login] (reg) {Sign-up};
+\node[box,right=14mm of login,fill=gray!8] (ask) {Assistant};
+\node[box,right=of ask] (docs) {Documents};
+\node[box,right=of docs] (det) {Document detail};
+\node[box,below=of docs] (rec) {Records};
+\node[box,below=of rec] (rev) {Review$^{\ast}$};
+\node[box,above=of docs] (team) {Team$^{\ast}$};
+\node[box,above=of ask] (aud) {Audit$^{\ast}$};
+\node[box,below=of ask] (prof) {Profile};
+\draw[flow] (land) -- (login);
+\draw[flow] (land) |- (reg);
+\draw[flow] (login) -- (ask);
+\draw[flow] (reg) -| ($(login.east)!0.5!(ask.west)$) -- (ask);
+\draw[flow] (ask) -- (docs);
+\draw[flow] (docs) -- (det);
+\draw[flow] (ask.north east) to[bend left=20] node[lbl,above]{source} (det.north west);
+\draw[flow] (rec) -| (det);
+\draw[flow] (rev) -| (det.south east);
+\draw[flow] (ask) -- (aud);
+\draw[flow] (ask) -- (prof);
+\draw[flow] (ask) -- (team);
+\draw[flow] (ask) -- (rec);
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Application Navigation Flow ($^{\ast}$ shown only to permitted roles)}\label{fig:navflow}
+\end{figure}
+
+\subsection{Responsiveness and Performance}
+The frontend is built with Vite and loads each screen as a separate, lazily loaded bundle, so the first
+page opens quickly. Heavy work (OCR, embeddings, model calls) never runs in the browser or in the
+request that uploads a file; the interface polls the document status and updates when processing
+finishes. The layout uses responsive breakpoints for laptop and tablet widths.
+
+\section{Deployment}
+\begin{table}[H]\centering
+\caption{Deployment Details}\label{tab:deploy}
+\begin{tabularx}{\textwidth}{|p{3cm}|X|}\hline
+\textbf{Service} & \textbf{Configuration (docker-compose.yml)} \\ \hline
+db & \code{pgvector/pgvector:pg16}, persistent volume, health check \\ \hline
+backend & Python 3.12-slim image with Tesseract and CPU PyTorch; runs migrations and Gunicorn \\ \hline
+worker & Same image; runs \code{python manage.py run\_worker} (processing and hourly reminders) \\ \hline
+web & Node build of the Vue app served by Nginx, which also proxies \code{/api/} to the backend \\ \hline
+Configuration & All secrets and provider settings in a \code{.env} file (never committed); \code{.env.example} documents every variable \\ \hline
+\end{tabularx}
+\end{table}
+For development, the database runs in Docker while the API, worker and Vite dev server run locally.
+A demonstration organization with users for every role and sample documents is created with
+\code{python manage.py seed\_demo}.
+
+\section{Chapter Summary}
+This chapter described the development environment, the implementation of the six modules, the main
+algorithms, the fine-tuning of the clause classifier, the external components, the user interface and
+the deployment configuration. The next chapter tests and evaluates the system.

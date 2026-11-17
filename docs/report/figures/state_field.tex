@@ -1,0 +1,18 @@
+% State diagram: record field lifecycle (Figure 4.11)
+\begin{tikzpicture}
+\node[startnode] (s) at (0,0) {};
+\node[dec] (d) at (2.8,0) {grounded, conf.\\ $\geq 0.75$, digital?};
+\node[state] (a) at (6.6,1.8) {AUTO};
+\node[state] (n) at (6.6,-1.8) {NEEDS\_REVIEW};
+\node[state] (v) at (11.6,1.8) {VERIFIED};
+\node[state] (c) at (11.6,-1.8) {CORRECTED};
+\draw[flow] (s) -- node[lbl,above]{extracted} (d);
+\draw[flow] (d) |- node[lbl,pos=0.75,above]{yes} (a);
+\draw[flow] (d) |- node[lbl,pos=0.75,below]{no} (n);
+\draw[flow] (a) -- node[lbl,above]{verify} (v);
+\draw[flow] (n) -- node[lbl,below]{correct value} (c);
+\draw[flow] (n.north east) -- node[lbl,pos=0.22,above,sloped]{verify} (v.south west);
+\draw[flow] (a.south east) -- node[lbl,pos=0.22,below,sloped]{correct value} (c.north west);
+\draw[flow] (v) -- node[lbl,right]{correct value} (c);
+\draw[flow] (c.east) to[out=0,in=-60,looseness=6] node[lbl,right]{correct again} (c.south east);
+\end{tikzpicture}

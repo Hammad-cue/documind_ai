@@ -1,0 +1,231 @@
+\chapter{Introduction}
+
+\section{Introduction}
+Every organization produces and receives legal documents: non-disclosure agreements (NDAs) with
+partners, service and supply contracts, office leases, employment and appointment letters,
+memoranda of understanding, affidavits and powers of attorney. These documents decide who owes
+what to whom, when obligations begin and end, and how much notice must be given to leave an
+agreement. Alongside them sit \emph{reference} documents such as the Contract Act 1872, company
+policies and handbooks, which explain the rules that apply to those agreements.
+
+In most small and medium organizations in Pakistan these documents live in shared folders, e-mail
+attachments and filing cabinets. Many are scanned, and some are handwritten on stamp paper. When a
+manager needs a simple fact, for example the date an NDA was signed or the notice period of a lease,
+someone has to find the right file and read it. Keyword search inside a PDF reader cannot help with
+scanned pages, cannot understand a question phrased in different words from the document, and
+cannot answer questions that span many documents, such as \emph{``Which contracts expire in 2027?''}.
+
+Recent AI document assistants allow questions in natural language. They are usually built on
+Retrieval-Augmented Generation (RAG)~\cite{lewis2020rag}, in which passages relevant to a question
+are retrieved and passed to a Large Language Model (LLM) so that the answer is grounded in the text.
+However, general-purpose tools treat every upload as loose text. They do not keep a structured
+register of records, do not know the difference between a contract and a law book, do not control
+which employee may see which document, keep no history of who changed what, and cannot prove where
+a date or party name came from.
+
+The first version of this project was such a general ``chat with your PDF'' tool for individual
+users. Following the evaluation of that version, the project was redesigned around a single domain,
+the legal records of an organization, to address the gaps above. This report presents the
+redesigned system, \textbf{\sysname{}}: a web-based legal records intelligence system in which the
+employees of an organization share one access-controlled document repository, every record is
+turned into verifiable structured facts, questions are answered with citations that open the source
+page, and every action is kept in history. \sysname{} was developed as a Final Year Project at
+COMSATS University Islamabad, Vehari Campus, under the supervision of Dr.\ Umar Rashid.
+
+\section{Vision Statement}
+\sysname{} is intended for organizations that hold legal documents and need to find facts in them
+quickly and safely: administration, human resources, procurement and legal staff, and the managers
+and auditors who supervise them.
+
+The vision of \sysname{} is to turn an organization's pile of contracts, scans and law books into a
+\emph{trustworthy, queryable records system}: one in which any employee can ask a question in plain
+English and receive an answer that is backed by the exact page it came from, limited to the
+documents that employee is allowed to see, and recorded in a history that can be audited later.
+
+The innovation of the system lies in combining, in one platform, (i) reading of digital, scanned and
+handwritten pages, (ii) automatic separation of records from reference material, (iii) extraction of
+structured record fields in which every value is proved by a verbatim quote and checked against the
+page, (iv) a query router that answers fact questions from a database table and explanation
+questions from retrieved passages, and (v) access control applied \emph{before} retrieval, so the
+language model never sees a document the user may not open.
+
+\section{Related System Analysis}
+Two groups of existing systems were analyzed: general AI document assistants and commercial contract
+analysis platforms. The descriptions below are based on publicly available information about these
+products.
+
+\textbf{ChatPDF}~\cite{chatpdf} and \textbf{Google NotebookLM}~\cite{notebooklm} let a user upload
+files and ask questions about them with cited answers. They need almost no setup, but they are
+built for one person's study material: there is no shared organizational repository with roles, no
+structured register of contract dates and parties, no document versioning and no audit trail.
+Documents are processed on the vendor's servers under the vendor's policies.
+
+\textbf{Kira}~\cite{kira} and \textbf{Luminance}~\cite{luminance} are commercial machine-learning
+platforms used by law firms to review contracts, find clauses and extract provisions. They are
+powerful, but they are priced for large legal teams, are not designed for handwritten Pakistani stamp
+paper documents, and are not available to small organizations at an academic or SME budget.
+
+\textbf{Contract lifecycle management (CLM) systems} such as Ironclad~\cite{ironclad} manage the
+drafting, approval and renewal of contracts created \emph{inside} the system. They store metadata
+well, but they assume structured, digital contracts and offer limited help with legacy scans or with
+questions answered from a law book.
+
+Table~\ref{tab:related} summarizes the weaknesses identified and how \sysname{} addresses them.
+
+\begin{table}[H]\centering
+\caption{Comparative Analysis of Existing Systems}\label{tab:related}
+\begin{tabularx}{\textwidth}{|p{3cm}|X|X|}\hline
+\textbf{Application} & \textbf{Identified Weaknesses} & \textbf{Proposed Improvements} \\ \hline
+ChatPDF / NotebookLM &
+\begin{bullets}
+\item Built for one user's study files
+\item No roles, departments or sharing rules
+\item No structured record of dates and parties
+\item No version history or audit log
+\end{bullets} &
+\begin{bullets}
+\item Shared organizational repository with four roles and department / named-person access
+\item Structured records register with evidence for every value
+\item Four kinds of history kept
+\end{bullets} \\ \hline
+Kira / Luminance &
+\begin{bullets}
+\item Enterprise pricing for large legal teams
+\item Not designed for handwritten stamp-paper documents
+\end{bullets} &
+\begin{bullets}
+\item Built on open-source components; free-tier LLM APIs or a local model
+\item Handwriting recognition with a vision-language model
+\end{bullets} \\ \hline
+CLM systems (e.g.\ Ironclad) &
+\begin{bullets}
+\item Assume digital contracts created in the system
+\item Little support for legacy scans or law-book questions
+\end{bullets} &
+\begin{bullets}
+\item Ingests existing PDFs, DOCX files, scans and photos
+\item Answers questions from reference material with page citations
+\end{bullets} \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{Project Deliverables}
+The tangible outputs of the project are listed below.
+\begin{enumerate}
+\item \textbf{\sysname{} Web Application (Frontend)} -- A Vue.js 3 single-page application with the
+Landing page, Sign-up and Login, the Assistant (question answering), Documents, Document detail with
+an embedded PDF viewer, Records register, Review queue, Team management, Audit log and Profile
+screens.
+\item \textbf{Backend Services} -- A Django 6 / Django REST Framework backend exposing REST APIs for
+authentication, organizations and members, documents and versions, records and reviews, the
+assistant, notifications and the audit log.
+\item \textbf{Document Processing Pipeline} -- A database-backed job queue and worker that extract
+text (digital, OCR and handwriting), classify the document, chunk it by its section structure,
+compute embeddings, label clauses and extract record fields with evidence.
+\item \textbf{Legal Assistant} -- A query router and three answer engines (lookup, knowledge and
+search) built on hybrid retrieval with Reciprocal Rank Fusion, with citations that open the source
+page.
+\item \textbf{Fine-tuned Clause Classifier} -- A transformer model fine-tuned on LEDGAR to label
+contract clauses with 100 clause types, with training scripts, baselines and a Google Colab notebook.
+\item \textbf{Evaluation Suite} -- Reproducible scripts that measure retrieval, field extraction,
+answer quality, query routing, handwriting recognition and clause classification, and write the
+results into one report.
+\item \textbf{Database} -- A PostgreSQL 16 database with the pgvector extension, an HNSW vector index
+and a GIN full-text index.
+\item \textbf{Deployment Configuration} -- Dockerfiles and a Docker Compose file for the database,
+backend, worker and web server.
+\item \textbf{Project Documentation} -- The SRS and SDD (Chapters 3 and 4), the test and evaluation
+results (Chapter 6) and this report.
+\end{enumerate}
+
+\section{System Limitations / Constraints}
+\begin{itemize}
+\item \textbf{Language} -- Documents and handwriting are supported in English only. Urdu documents are
+outside the scope.
+\item \textbf{File types and size} -- PDF, DOCX, PNG and JPG/JPEG files up to 25\,MB each are accepted.
+\item \textbf{Handwriting quality} -- Recognition of handwriting depends on the legibility and resolution
+of the scan; uncertain values are sent to the review queue instead of being trusted.
+\item \textbf{External AI services} -- Classification, field extraction and written answers use a hosted
+LLM (Groq, with Google Gemini as a fallback). Free tiers limit tokens per minute and per day, so heavy
+use can slow answers. Search, lookup answers and access control keep working without the LLM.
+\item \textbf{Not legal advice} -- The assistant reports what documents say; it does not give legal
+advice, and its extracted values should be verified before important decisions.
+\item \textbf{One organization per account} -- Each user belongs to exactly one organization.
+\item \textbf{Platform} -- \sysname{} is a web application; no native mobile application is provided.
+\item \textbf{Resources} -- As an academic project, large-scale deployment and load testing with many
+concurrent organizations were outside the scope; the clause model was trained on a laptop CPU, with a
+GPU notebook provided for full training.
+\end{itemize}
+
+\section{Tools and Technologies}
+The technology stack separates the user interface, the application logic and the data, and keeps
+all document processing on the server. Vue.js~\cite{vue} was chosen for the frontend because its
+reactive components suit an interactive document viewer and assistant. Django~\cite{django} with
+Django REST Framework~\cite{drf} provides authentication, an ORM, migrations and a mature Python
+ecosystem for document processing and machine learning. PostgreSQL~\cite{postgres} stores all
+relational data, and its pgvector extension~\cite{pgvector} stores embeddings in the same database
+with HNSW indexing~\cite{malkov2018hnsw}, so that permission filters and vector search run in a
+single query. Tesseract~\cite{smith2007tesseract} reads printed scans; a vision-language model
+reads handwriting. Sentence embeddings are computed locally with
+all-MiniLM-L6-v2~\cite{reimers2019sbert,wang2020minilm}, and the clause classifier is trained with
+Hugging Face Transformers~\cite{wolf2020transformers}.
+
+\begin{table}[H]\centering
+\caption{Tools and Technologies Used in the Project}\label{tab:tools}
+\begin{tabularx}{\textwidth}{|p{4.2cm}|p{2.8cm}|X|}\hline
+\textbf{Tool / Technology} & \textbf{Layer} & \textbf{Purpose} \\ \hline
+Vue.js 3, Vue Router, Vite & Frontend & Single-page application and build tooling \\ \hline
+Tailwind CSS 4, Reka UI, Lucide & Frontend & Styling, accessible UI primitives and icons \\ \hline
+vue-pdf-embed & Frontend & In-browser PDF viewer with evidence highlighting \\ \hline
+Django 6, Django REST Framework & Backend & REST APIs, ORM, permissions, throttling \\ \hline
+SimpleJWT & Backend & Token-based authentication \\ \hline
+PostgreSQL 16 + pgvector & Database & Relational data, vector search (HNSW), full-text search (GIN) \\ \hline
+pypdfium2, python-docx & Backend & PDF rendering and text extraction, DOCX reading \\ \hline
+Tesseract OCR & Backend & Printed text recognition from scans \\ \hline
+sentence-transformers (all-MiniLM-L6-v2) & Backend (local) & 384-dimensional sentence embeddings \\ \hline
+Hugging Face Transformers, PyTorch & Machine learning & Fine-tuning the clause classifier \\ \hline
+Groq API (gpt-oss-20b), Google Gemini & External service & LLM for routing, extraction and answers; vision model for handwriting \\ \hline
+Docker, Docker Compose, Nginx, Gunicorn & Deployment & Containerized deployment \\ \hline
+Git, GitHub & Development & Version control \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{Relevance to Course Modules}
+The project integrates knowledge from several courses of the degree program.
+
+\subsection{Programming Fundamentals}
+The system is organized into Django applications with clear responsibilities (\code{accounts},
+\code{documents}, \code{assistant}, \code{audit}, \code{notifications}) and an \code{ai} package that
+wraps every model call. Domain concepts such as Document, DocumentVersion, Chunk, RecordField and
+AuditEvent are modeled as classes, and the processing pipeline is split into small, separately
+testable steps.
+
+\subsection{Data Structures and Algorithms}
+Retrieval uses an HNSW graph index for approximate nearest-neighbor search and an inverted index for
+full-text search, combined with Reciprocal Rank Fusion~\cite{cormack2009rrf}. The chunker keeps a stack
+of open section headings to build each chunk's section path. The job queue uses row-level locking
+(\code{SELECT \dots{} FOR UPDATE SKIP LOCKED}) so several workers never take the same job.
+
+\subsection{Database Management Systems}
+The schema is normalized to Third Normal Form, with versioned documents, page and chunk tables,
+uniqueness constraints (one value per field per version, one notification per reminder key), indexes
+chosen for the main queries, and database-level append-only behavior for the audit log.
+
+\subsection{Software Engineering}
+The project followed an iterative Agile process. Requirements were elicited from the supervisor and
+documented with use cases, functional and non-functional requirements and a traceability matrix. The
+design uses UML activity, class, sequence and state diagrams, data flow diagrams and an ERD. Testing
+combines automated unit and integration tests, black-box system tests and a quantitative evaluation.
+
+\subsection{Other Relevant Courses}
+Artificial intelligence and machine learning concepts (embeddings, transformers, fine-tuning,
+evaluation metrics such as precision, recall, F1 and MRR) form the core of the system. Information
+security concepts (role-based access control~\cite{sandhu1996rbac}, token authentication, rate limiting
+and audit trails) protect the documents. Human-Computer Interaction principles guided the interface,
+in particular showing evidence next to every extracted value.
+
+\section{Chapter Summary}
+This chapter introduced the problem of managing an organization's legal documents, the vision of
+\sysname{}, and a comparison with existing systems. Project deliverables, constraints, the selected
+technologies and the academic relevance of the project were also discussed. The next chapter defines
+the problem precisely and describes the proposed solution and its modules.

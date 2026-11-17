@@ -1,0 +1,300 @@
+\chapter{Software Design}
+
+\section{Introduction to Software Design}
+This chapter turns the requirements of Chapter~3 into a design. It describes the methodology and
+process model, the architecture, the behavioral models (activity, sequence and state diagrams), the
+static structure (class diagram), the data flows, and the database design with its data dictionary.
+
+\section{Design Methodology and Software Process Model}
+\subsection{Design Methodology}
+An object-oriented design methodology was used. Domain concepts are modeled as classes (Django
+models) with clear responsibilities, and behavior that crosses several classes is placed in service
+modules: \code{documents/access.py} (access rules), \code{documents/pipeline/} (processing steps),
+\code{assistant/router.py}, \code{assistant/retrieval.py} and \code{assistant/engine.py} (question
+answering), \code{audit/service.py} and \code{notifications/service.py}. Every call to an AI model
+goes through the \code{ai} package, which hides the provider behind one interface.
+
+Two design principles guided the work:
+\begin{enumerate}
+\item \textbf{Permission before retrieval.} The function \code{visible\_documents(user)} is the only
+way any module obtains documents. Search, lookups, file downloads and answers all start from its result,
+so the language model can never receive text from a document the user may not open.
+\item \textbf{Evidence for every fact.} Extracted values store their page and verbatim quote, answers
+store their sources, and the interface always shows them. A value that cannot be proved is not trusted
+automatically.
+\end{enumerate}
+
+\subsection{Software Process Model}
+The project followed an iterative, incremental Agile process. Work was divided into short iterations,
+each ending with a working, tested increment:
+\begin{enumerate}
+\item Domain re-scoping, data model, RBAC and the four history types.
+\item Processing pipeline: extraction, OCR, handwriting, classification, chunking, embeddings.
+\item Record field extraction with grounding, the review queue and the records register.
+\item Query router, hybrid retrieval and the three answer engines with citations.
+\item User interface redesign with the evidence-linked document viewer.
+\item Clause classifier fine-tuning, the evaluation suite, reminders and deployment.
+\end{enumerate}
+This model suited the project because requirements from the supervisor were refined during
+development and each increment could be demonstrated.
+
+\section{System Overview}
+Figure~\ref{fig:context} shows \sysname{} as a single process with its external entities. Members
+(Admins, Managers, Employees and Auditors) provide documents, questions, verifications and
+administrative data and receive answers, documents, review items and reminders. The system sends
+prompts and page images to the LLM/VLM provider and optionally sends reminder e-mails.
+
+\tikzfig[0.5]{context}{Context Diagram of \sysname{}}{fig:context}
+
+\section{Architectural Design}
+Figure~\ref{fig:architecture} shows the architecture. It is a layered client-server architecture with a
+separate background worker.
+
+\tikzfig[0.62]{architecture}{System Architecture Diagram of \sysname{}}{fig:architecture}
+
+\begin{enumerate}
+\item \textbf{Presentation tier (Vue.js 3 SPA).} Renders all screens, keeps the session token, and
+calls the REST API. It contains no business rules; buttons a user may not use are hidden, but the server
+enforces every rule again.
+\item \textbf{Application tier (Django REST API).} Organized as five Django applications:
+\code{accounts} (organizations, members, roles), \code{documents} (documents, versions, pages, chunks,
+records, review), \code{assistant} (router, engines, retrieval, conversations), \code{audit} and
+\code{notifications}. The \code{ai} package contains the LLM gateway (with deadline and provider
+fallback), the embedding model, OCR and the clause classifier.
+\item \textbf{Background worker.} A long-running \code{run\_worker} command claims queued jobs from a
+database table using \code{SELECT \dots{} FOR UPDATE SKIP LOCKED}, runs the pipeline, retries failures
+up to three times and runs the reminder check every hour. Using the database as the queue avoids an extra
+message broker and works on Windows and Linux.
+\item \textbf{Data tier.} PostgreSQL 16 holds all relational data. The pgvector extension stores chunk
+embeddings with an HNSW index (cosine distance), and a weighted \code{tsvector} column with a GIN index
+supports full-text search, so permission filters, vector search and keyword search run in the same
+database. Uploaded files are stored on disk under organization- and document-specific paths and are
+served only through a permission-checked endpoint.
+\item \textbf{External services.} An OpenAI-compatible LLM endpoint (Groq by default, Gemini as
+fallback) and a vision-language model for handwriting.
+\end{enumerate}
+
+\section{Design Models}
+\subsection{Activity Diagrams}
+\subsubsection{Module 2: Document Ingestion}
+Figure~\ref{fig:act-ingest} shows how an uploaded file becomes searchable. Each page chooses its own
+reading method, so a PDF that mixes typed pages with a handwritten signature page is handled correctly.
+
+\tikzfig[0.82]{activity_ingestion}{Activity Diagram -- Document Ingestion}{fig:act-ingest}
+
+\subsubsection{Module 4: Answering a Question}
+Figure~\ref{fig:act-query} shows the three answer paths. All paths start from the user's visible
+documents.
+
+\tikzfig[0.8]{activity_query}{Activity Diagram -- Answering a Question}{fig:act-query}
+
+\subsubsection{Module 3: Review and Verification}
+\tikzfig[0.6]{activity_review}{Activity Diagram -- Review and Verification}{fig:act-review}
+
+\subsubsection{Module 1: Organization and Member Management}
+\tikzfig[0.7]{activity_users}{Activity Diagram -- Organization and Member Management}{fig:act-users}
+
+\subsection{Class Diagram}
+Figure~\ref{fig:class} shows the main classes, their key attributes and operations, and their
+relationships. Filled diamonds mark composition: versions, pages, chunks and fields cannot exist without
+their parent.
+
+\tikzfig[0.8]{class_diagram}{Class Diagram of \sysname{}}{fig:class}
+
+\subsection{Sequence Diagrams}
+\subsubsection{Sequence Diagram -- User Login}
+\tikzfig[0.5]{seq_login}{Sequence Diagram -- User Login}{fig:seq-login}
+
+\subsubsection{Sequence Diagram -- Core Operation (Asking a Question)}
+Figure~\ref{fig:seq-ask} shows a question passing through the router, the access filter and one of
+the answer engines. Only the LOOKUP and KNOWLEDGE alternatives are drawn; SEARCH follows the KNOWLEDGE
+path without the final LLM call.
+
+\tikzfig[0.62]{seq_ask}{Sequence Diagram -- Asking a Question}{fig:seq-ask}
+
+\subsection{State Transition Diagrams}
+A document version moves through the states in Figure~\ref{fig:state-version}. Because a new version
+becomes current only when it is READY, the previous version stays searchable while the new one is
+processed. An extracted field moves through the states in Figure~\ref{fig:state-field}; every
+transition caused by a person creates a FieldEdit record.
+
+\tikzfig[0.4]{state_version}{State Transition Diagram -- Document Version Lifecycle}{fig:state-version}
+\tikzfig[0.4]{state_field}{State Transition Diagram -- Record Field Lifecycle}{fig:state-field}
+
+\section{Data Flow Diagrams}
+The context diagram (Figure~\ref{fig:context}) is the Level 0 DFD. The Level 1 DFD
+(Figure~\ref{fig:dfd1}) divides the system into five processes and seven data stores, and the Level 2
+DFD (Figure~\ref{fig:dfd2}) expands process 4.0, answering questions.
+
+\subsection{Level 1 Data Flow Diagram}
+\tikzfig[0.6]{dfd1}{Level 1 Data Flow Diagram}{fig:dfd1}
+
+\subsection{Level 2 Data Flow Diagram}
+\tikzfig[0.5]{dfd2}{Level 2 Data Flow Diagram -- Process 4.0 Answer Questions}{fig:dfd2}
+
+\section{Data Design}
+\subsection{Entity Relationship Diagram (ERD)}
+\tikzfig[0.75]{erd}{Entity Relationship Diagram of \sysname{}}{fig:erd}
+
+\subsection{Database Architecture}
+The database is normalized to Third Normal Form. Key design decisions are:
+\begin{itemize}
+\item \textbf{Document and version are separate.} A \emph{Document} is the logical item (``NDA with
+Acme''); each uploaded file is a \emph{DocumentVersion}. Pages, chunks and fields belong to a version,
+so history is preserved exactly and versions can be compared. \code{current\_version} points to the
+newest READY version.
+\item \textbf{Typed field values.} \code{RecordField} keeps the value as text and, depending on the field
+type, also as a \code{date} or \code{decimal}, so questions such as ``expiring in 2027'' are answered
+with indexed range queries instead of text matching.
+\item \textbf{Search structures inside PostgreSQL.} The \code{embedding} column (\code{vector(384)})
+has an HNSW index (\code{m=16, ef\_construction=64}, cosine), and \code{search\_vector} (section path
+weighted A, text weighted B) has a GIN index.
+\item \textbf{Integrity rules in the database.} Unique constraints exist on (document, number),
+(version, key), (organization, department name) and (recipient, reminder key). The audit model refuses
+updates and deletes.
+\end{itemize}
+
+\section{Database Schema Diagram}
+\tikzfig[0.85]{schema}{Database Schema Diagram of \sysname{}}{fig:schema}
+
+\section{Data Dictionary}
+The data dictionary for the most important tables is given below. Django adds an auto-increment
+primary key \code{id} to every table.
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- DOCUMENT Table}\label{tab:dd-doc}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+organization\_id & FK, not null & Owning organization \\ \hline
+department\_id & FK, nullable & Department the document belongs to \\ \hline
+title & varchar(255) & Display title \\ \hline
+kind & varchar(10) & UNKNOWN, RECORD or REFERENCE \\ \hline
+kind\_locked & boolean & True when a user set the kind; not overwritten by the classifier \\ \hline
+doc\_type & varchar(120) & e.g.\ ``Non-Disclosure Agreement'', ``Law / statute'' \\ \hline
+summary & text & One-sentence summary \\ \hline
+access\_level & varchar(10) & ORG, DEPARTMENT or RESTRICTED \\ \hline
+uploaded\_by\_id & FK User & Uploader (always allowed to see it) \\ \hline
+current\_version\_id & FK Version & Newest READY version \\ \hline
+is\_archived & boolean & Archived documents are hidden everywhere \\ \hline
+created\_at, updated\_at & timestamp & Audit timestamps \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- DOCUMENT VERSION Table}\label{tab:dd-ver}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+document\_id & FK, not null & Parent document \\ \hline
+number & integer & 1, 2, 3 \dots; unique per document \\ \hline
+file, original\_filename & varchar & Stored path and original name \\ \hline
+file\_type & varchar(5) & PDF, DOCX or IMAGE \\ \hline
+file\_size, sha256 & integer, char(64) & Size in bytes and content hash \\ \hline
+page\_count & integer & Number of pages read \\ \hline
+marked\_handwritten & boolean & Uploader says the document is handwritten \\ \hline
+change\_note & varchar(300) & Reason for the new version \\ \hline
+status & varchar(10) & QUEUED, PROCESSING, READY, FAILED \\ \hline
+processing\_log & JSON & Per-step timings and details (method, page sources, counts) \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- CHUNK Table}\label{tab:dd-chunk}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+version\_id & FK & Version the text came from \\ \hline
+sequence & integer & Order inside the document \\ \hline
+section\_path & varchar(500) & e.g.\ ``Chapter II $>$ Section 25 $>$ Agreement without consideration, void'' \\ \hline
+heading & varchar(300) & Heading of the chunk's section \\ \hline
+text & text & Chunk text (at most 1,500 characters) \\ \hline
+page\_start, page\_end & integer & Pages covered (used for citations) \\ \hline
+clause\_label, clause\_confidence & varchar, float & Clause type from the fine-tuned model \\ \hline
+embedding & vector(384) & MiniLM sentence embedding, HNSW-indexed \\ \hline
+search\_vector & tsvector & Weighted full-text vector, GIN-indexed \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- RECORD FIELD Table}\label{tab:dd-field}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+version\_id & FK & Version the value was extracted from \\ \hline
+key, label & varchar & One of the 11 field keys, and its display label \\ \hline
+value\_text & text & Value as shown to users \\ \hline
+value\_date & date & Parsed date for date fields \\ \hline
+value\_number & decimal(18,2) & Parsed amount for money fields \\ \hline
+confidence & float & 0--1; halved when the quote is not found on the page \\ \hline
+source\_page, source\_quote & integer, text & Evidence location and verbatim quote \\ \hline
+grounded & boolean & Quote found in the page text \\ \hline
+status & varchar(12) & AUTO, NEEDS\_REVIEW, VERIFIED, CORRECTED \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- AUDIT EVENT Table}\label{tab:dd-audit}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+organization\_id & FK & Organization the event belongs to \\ \hline
+actor\_id, actor\_name & FK, varchar & Who acted; the name is kept even if the user is deleted \\ \hline
+action & varchar(20) & LOGIN, UPLOAD, NEW\_VERSION, VIEW, DOWNLOAD, SEARCH, FIELD\_EDIT, FIELD\_VERIFY, UPDATE\_DOCUMENT, ACCESS\_CHANGE, ARCHIVE, REPROCESS, MEMBER\_ADD, MEMBER\_UPDATE, DEPARTMENT\_CHANGE \\ \hline
+target\_type, target\_id, target\_label & varchar & What the action was applied to \\ \hline
+metadata & JSON & Extra details (e.g.\ old and new value) \\ \hline
+ip\_address & inet & Client address \\ \hline
+created\_at & timestamp, indexed & Time of the event \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- QUERY Table}\label{tab:dd-query}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+conversation\_id & FK & Conversation (owned by one user) \\ \hline
+text & text & The question \\ \hline
+intent & varchar(10) & LOOKUP, KNOWLEDGE or SEARCH \\ \hline
+plan & JSON & Router output: filters and method (LLM or heuristic) \\ \hline
+scope\_document\_ids & JSON & Documents the user limited the question to \\ \hline
+answer, sources, results & text, JSON, JSON & Answer, cited passages/fields, record rows or hits \\ \hline
+latency\_ms & integer & Response time \\ \hline
+\end{tabularx}
+\end{table}
+
+\section{Database Tables}
+\subsection{User and Organization Tables}
+Django's \code{auth\_user} table stores credentials (PBKDF2 password hashes). The
+\code{accounts\_membership} table links each user to exactly one organization (unique
+\code{user\_id}), one role and optionally one department. All capability checks
+(\code{can\_upload}, \code{can\_verify}, \code{can\_view\_audit}, \code{sees\_everything}) are
+derived from the role in one place.
+
+\subsection{Core Data Tables}
+The core tables are \code{document}, \code{documentversion}, \code{page}, \code{chunk},
+\code{recordfield} and \code{fieldedit}, described above, together with \code{processingjob} (the job
+queue), \code{conversation} and \code{query} (query history), \code{auditevent} and
+\code{notification}.
+
+\subsection{Relationships Between Tables}
+An organization has many departments, members, documents, conversations, audit events and
+notifications. A document has many versions; a version has many pages, chunks, fields and jobs; a field
+has many edits. Documents and users have a many-to-many ``shared with'' relationship for restricted
+documents. A conversation has many queries.
+
+\subsection{Security and Data Integrity}
+\begin{itemize}
+\item Every query on documents is restricted by organization and access rules in
+\code{visible\_documents}; tests check the full role $\times$ access-level matrix.
+\item Cascading deletes remove pages, chunks and fields with their version; audit events use
+\code{SET\_NULL} for the actor and keep \code{actor\_name}, so history survives user deletion.
+\item The audit model raises an error on update or delete.
+\item Files are stored under non-guessable names and are only returned by an endpoint that checks access
+and writes a DOWNLOAD or VIEW event.
+\end{itemize}
+
+\subsection{Scalability Considerations}
+HNSW gives sub-linear vector search; the GIN index does the same for keyword search. Queries use
+\code{hnsw.iterative\_scan} so that permission filtering does not reduce the number of results. The
+worker can be scaled to several processes because jobs are claimed with \code{SKIP LOCKED}, and the API
+is stateless (JWT), so more API containers can be added behind the web server.
+
+\section{Chapter Summary}
+This chapter presented the design of \sysname{}: the design methodology and process model, the layered
+architecture with a background worker, activity, class, sequence and state diagrams, data flow diagrams,
+the ERD, the schema and the data dictionary. The next chapter describes how this design was implemented.

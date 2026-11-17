@@ -1,0 +1,158 @@
+\chapter{Problem Definition}
+
+\section{Problem Statement}
+Organizations keep their legal records (contracts, NDAs, leases, employment letters, affidavits)
+as a mix of digital files, scanned pages and handwritten stamp-paper documents, stored in folders that
+are not connected to each other. As a result:
+\begin{enumerate}
+\item \textbf{Facts are slow to find.} Answering \emph{``When was the NDA with Acme signed?''} or
+\emph{``Which leases expire this year?''} requires opening and reading files manually, and questions
+across many documents are practically impossible to answer.
+\item \textbf{Scanned and handwritten documents are invisible to search.} Their content exists only as
+images.
+\item \textbf{Reference material is hard to use.} Finding the relevant provision in a 100-page law book
+such as the Contract Act 1872 takes time and expertise.
+\item \textbf{Access is uncontrolled.} Shared folders are either open to everyone or require manual
+sharing, and there is no record of who opened or changed a document.
+\item \textbf{Deadlines are missed.} Expiry dates and notice periods are buried inside documents, so
+agreements renew or lapse without anyone noticing.
+\end{enumerate}
+General AI document assistants reduce the reading effort but do not solve the problem for an
+organization: they cannot prove where an answer came from at the level of a single field, they do not
+keep a structured register of records, and they do not enforce who may see what.
+
+\section{Proposed Solution Overview}
+\sysname{} is a shared, access-controlled legal records system for one organization at a time. Every
+uploaded document passes through a processing pipeline that reads all pages (including scanned and
+handwritten ones), classifies the document as a \emph{record} or \emph{reference} material, splits it
+along its section structure, indexes it for keyword and semantic search, and, for records, extracts
+structured fields with page-level evidence. Low-confidence or unverified values go to a review queue
+where a manager confirms or corrects them.
+
+Employees ask questions in plain English. A query router decides whether the question asks for a
+stored fact (answered from the records table), an explanation from document text (answered from
+retrieved passages with citations), or a set of documents (answered with a ranked list). Every answer
+links to the source page, and the document viewer highlights the evidence. Access rules are applied
+before any search, and query history, document versions, field edits and all user actions are kept.
+
+\section{Objectives of the Proposed System}
+\begin{enumerate}
+\item Provide one shared document repository for an organization with role-based, department-based and
+named-person access control.
+\item Read digital, scanned and handwritten (English) documents and make all of them searchable.
+\item Automatically distinguish records from reference material and extract eleven structured fields
+from each record, each backed by a verbatim quote and a page number.
+\item Answer fact questions (e.g.\ signing dates) directly from the extracted records, and explanation
+questions (e.g.\ from a 100-page law book) from retrieved passages with citations.
+\item Open the source document at the cited page with the evidence highlighted.
+\item Maintain four types of history: query history, document versions, field-edit history and an
+audit log.
+\item Remind responsible people before agreements expire or notice deadlines pass.
+\item Fine-tune a clause-classification model and evaluate every AI component quantitatively on public
+legal datasets.
+\end{enumerate}
+
+\section{Scope of the System}
+\textbf{In scope:}
+\begin{itemize}
+\item Organization registration, member and department management, four roles (Admin, Manager,
+Employee, Auditor).
+\item Upload of PDF, DOCX, PNG and JPG documents; new versions of an existing document and comparison
+between versions.
+\item Text extraction from digital PDFs and DOCX files, OCR of printed scans, recognition of English
+handwriting.
+\item Record/reference classification, structure-aware chunking, embeddings, clause labelling and record
+field extraction with grounding.
+\item Records register, review queue, verification and correction of fields.
+\item Assistant with lookup, knowledge and search answers, citations and conversation history.
+\item Audit log, in-app notifications and expiry / notice reminders.
+\item Fine-tuning and evaluation of the clause classifier; evaluation of retrieval, extraction, routing,
+answers and handwriting.
+\end{itemize}
+\textbf{Out of scope:} Urdu or other non-English documents, drafting or e-signing of contracts, legal
+advice, native mobile applications, and multi-organization membership for one user.
+
+\section{System Architecture and Modules}
+\sysname{} follows a three-tier client-server architecture with a separate background worker
+(Figure~\ref{fig:highlevel}). The Vue.js single-page application communicates with the Django REST
+API. Uploads are stored and queued; the worker processes them asynchronously, so the user interface
+never waits for OCR or model calls. PostgreSQL with pgvector stores relational data, embeddings and
+full-text indexes together. External LLM services are reached only through one gateway module.
+
+\begin{figure}[H]\centering
+\begin{tikzpicture}[node distance=6mm and 6mm]
+\node[box,minimum width=11cm,fill=gray!8] (ui) {\textbf{Vue.js Single-Page Application}\\ Assistant $\cdot$ Documents $\cdot$ Records $\cdot$ Review $\cdot$ Team $\cdot$ Audit};
+\node[box,below=10mm of ui,minimum width=11cm] (api) {\textbf{Django REST API}\\ JWT authentication $\cdot$ RBAC $\cdot$ throttling $\cdot$ audit};
+\node[box,below=10mm of api,text width=34mm] (m4) {M4 Legal\\ Assistant};
+\node[box,left=3mm of m4,text width=34mm] (m1) {M1 Organization \&\\ Access};
+\node[box,right=3mm of m4,text width=34mm] (m3) {M3 Records \&\\ Verification};
+\node[box,below=4mm of m1,text width=34mm] (m5) {M5 History, Audit\\ \& Notifications};
+\node[box,below=4mm of m4,text width=34mm] (m2) {M2 Document Ingestion\\ (background worker)};
+\node[box,below=4mm of m3,text width=34mm] (m6) {M6 Model Training\\ \& Evaluation};
+\node[db,below=12mm of m2] (db) {PostgreSQL 16\\ + pgvector};
+\node[box,fill=gray!8,text width=34mm] (llm) at (m6 |- db) {External LLM / VLM\\ (Groq, Gemini)};
+\draw[<->,thick] (ui) -- node[lbl,right]{HTTPS / JSON} (api);
+\draw[->,thick] (api) -- (m4.north);
+\draw[->,thick] (api.south) -| (m1.north);
+\draw[->,thick] (api.south) -| (m3.north);
+\draw[<->,thick] (m2) -- (db);
+\draw[<->,thick] (m5.south) |- (db.west);
+\draw[->,dashed,thick] (m2.south east) -- (llm.north west);
+\draw[->,dashed,thick] (m6) -- (llm);
+\end{tikzpicture}
+\caption{High-Level System Architecture of \sysname{}}\label{fig:highlevel}
+\end{figure}
+
+\subsection{Module 1: Organization and Access Management}
+Registers an organization and its first administrator, authenticates users with JSON Web Tokens, and
+lets administrators add members, assign roles and departments. It defines the access model used by
+every other module: a user sees all organization-wide documents, the documents of their department,
+documents they uploaded and documents shared with them by name; Admins and Auditors see all documents
+of the organization.
+
+\subsection{Module 2: Document Ingestion and Processing}
+Validates uploads, stores each file as a numbered version, and queues it for the background worker.
+The worker extracts text page by page, chooses between the digital text layer, Tesseract OCR and the
+vision-language model for each page, classifies the document, chunks it by section, computes
+embeddings, labels contract clauses with the fine-tuned classifier, and extracts record fields.
+Users can upload new versions and compare any two versions line by line.
+
+\subsection{Module 3: Records Register and Verification}
+Presents all records of the organization as one register (title, type, parties, dates, status) that
+can be filtered and sorted. Each field shows its evidence quote and page. Fields marked
+\emph{Needs review} appear in a review queue where Managers and Admins verify or correct them; every
+change is stored in the field's edit history.
+
+\subsection{Module 4: Legal Assistant}
+Accepts a question, optionally limited to selected documents. A router (an LLM with a keyword fallback)
+classifies the question as LOOKUP, KNOWLEDGE or SEARCH and extracts filters such as document type,
+party, field and date range. Lookups are answered from the records table; knowledge questions are
+answered by an LLM from hybrid-retrieved passages with numbered citations; searches return ranked
+documents. Each conversation is saved.
+
+\subsection{Module 5: History, Audit and Notifications}
+Writes an append-only audit event for logins, uploads, views, downloads, searches, field edits, access
+changes and membership changes. It also produces notifications: when a document is processed or fails,
+when fields need review, and reminders 90, 30 and 7 days before (and on the day of) an expiry or a
+notice deadline, sent only to people who can see the document.
+
+\subsection{Module 6: Model Training and Evaluation}
+Contains the scripts that fine-tune the clause classifier on LEDGAR, the TF-IDF and zero-shot LLM
+baselines, and the evaluation suite that measures each AI component on CUAD, LEDGAR, a labelled
+routing set and a handwriting set.
+
+\section{Assumptions and Dependencies}
+\begin{itemize}
+\item Users have a modern web browser and network access to the server.
+\item Uploaded documents are in English and reasonably legible.
+\item An API key for at least one supported LLM provider (Groq, Gemini, OpenAI or a local Ollama server)
+is configured; without it, upload, search, lookup and access control still work, while generated
+answers and field extraction are disabled.
+\item The server provides PostgreSQL 16 with pgvector and the Tesseract OCR engine.
+\item The organization assigns roles responsibly; an administrator is trusted to manage members.
+\end{itemize}
+
+\section{Chapter Summary}
+This chapter defined the problem of finding, trusting and protecting information in an organization's
+legal documents, presented the proposed solution, its objectives and scope, and described the six
+modules of the system. The next chapter analyzes the requirements in detail.

@@ -1,0 +1,38 @@
+% Activity diagram: answering a question (Figure 4.4)
+\begin{tikzpicture}[node distance=5mm]
+\node[startnode] (s) {};
+\node[act,below=of s] (a1) {User submits question (optionally limited to selected documents)};
+\node[act,below=of a1] (a2) {Router asks LLM for a JSON plan (deadline 12 s)};
+\node[dec,below=of a2] (d1) {Valid plan?};
+\node[act=30mm,right=10mm of d1] (a3) {Keyword-rule plan (fallback)};
+\node[act,below=of d1] (a4) {Restrict scope to documents the user may see};
+\node[dec,below=7mm of a4] (d2) {Intent?};
+\node[act=38mm,below=10mm of d2] (k1) {KNOWLEDGE: hybrid retrieval (dense + full text, RRF), top 8};
+\node[act=38mm,left=6mm of k1] (l1) {LOOKUP: query records table by type, party, field, dates};
+\node[act=38mm,right=6mm of k1] (q1) {SEARCH: rank documents by best passages and clause labels};
+\node[act=38mm,below=5mm of k1] (k2) {LLM writes answer with [n] citations (deadline 35 s, fallback provider)};
+\node[act=38mm] (l2) at (l1 |- k2) {Answer from field values with page evidence};
+\node[act=38mm] (q2) at (q1 |- k2) {Return ranked document list};
+\node[act,below=8mm of k2] (a5) {Save query, plan, sources, latency; log SEARCH};
+\node[act,below=of a5] (a6) {Show answer; sources open the cited page with highlight};
+\node[endnode,below=of a6] (e) {};
+
+\draw[flow] (s) -- (a1);
+\draw[flow] (a1) -- (a2);
+\draw[flow] (a2) -- (d1);
+\draw[flow] (d1) -- node[lbl,above]{no} (a3);
+\draw[flow] (a3) |- (a4);
+\draw[flow] (d1) -- node[lbl,right]{yes} (a4);
+\draw[flow] (a4) -- (d2);
+\draw[flow] (d2) -| node[lbl,pos=0.75,left]{lookup} (l1);
+\draw[flow] (d2) -- node[lbl,right]{knowledge} (k1);
+\draw[flow] (d2) -| node[lbl,pos=0.75,right]{search} (q1);
+\draw[flow] (l1) -- (l2);
+\draw[flow] (k1) -- (k2);
+\draw[flow] (q1) -- (q2);
+\draw[flow] (l2) |- (a5);
+\draw[flow] (k2) -- (a5);
+\draw[flow] (q2) |- (a5);
+\draw[flow] (a5) -- (a6);
+\draw[flow] (a6) -- (e);
+\end{tikzpicture}
