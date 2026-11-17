@@ -1,0 +1,230 @@
+{
+  "name": "router",
+  "created": "2026-11-17 11:01",
+  "questions": 100,
+  "model": "openai/gpt-oss-20b",
+  "llm": {
+    "accuracy": 0.94,
+    "field_accuracy_on_lookups": 1.0,
+    "per_intent": {
+      "LOOKUP": {
+        "precision": 0.93,
+        "recall": 1.0,
+        "f1": 0.964
+      },
+      "KNOWLEDGE": {
+        "precision": 0.919,
+        "recall": 0.971,
+        "f1": 0.944
+      },
+      "SEARCH": {
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.889
+      }
+    },
+    "confusion": {
+      "LOOKUP": {
+        "LOOKUP": 40
+      },
+      "KNOWLEDGE": {
+        "KNOWLEDGE": 34,
+        "LOOKUP": 1
+      },
+      "SEARCH": {
+        "SEARCH": 20,
+        "LOOKUP": 2,
+        "KNOWLEDGE": 3
+      }
+    },
+    "avg_ms": 1163,
+    "misses": [
+      {
+        "q": "Is the security deposit refundable?",
+        "gold": "KNOWLEDGE",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "Which documents mention Imran Qureshi?",
+        "gold": "SEARCH",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "Are there any documents about non-compete clauses?",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Show me reference material on contract formation",
+        "gold": "SEARCH",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "Which files talk about probation periods?",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Bring up the handbook chapter on termination",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      }
+    ],
+    "llm_fallbacks": 11
+  },
+  "heuristic": {
+    "accuracy": 0.77,
+    "field_accuracy_on_lookups": 0.6,
+    "per_intent": {
+      "LOOKUP": {
+        "precision": 0.818,
+        "recall": 0.675,
+        "f1": 0.74
+      },
+      "KNOWLEDGE": {
+        "precision": 0.638,
+        "recall": 0.857,
+        "f1": 0.732
+      },
+      "SEARCH": {
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.889
+      }
+    },
+    "confusion": {
+      "LOOKUP": {
+        "LOOKUP": 27,
+        "KNOWLEDGE": 13
+      },
+      "KNOWLEDGE": {
+        "KNOWLEDGE": 30,
+        "LOOKUP": 5
+      },
+      "SEARCH": {
+        "SEARCH": 20,
+        "KNOWLEDGE": 4,
+        "LOOKUP": 1
+      }
+    },
+    "avg_ms": 0,
+    "misses": [
+      {
+        "q": "What date did we sign the Acme non-disclosure agreement?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Which of our NDAs run out in 2028?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Is anything expiring this month?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Who signed the security deposit receipt?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Which law governs the NDA with Acme?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Under which country's law is the employment contract?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "How much is the monthly rent in the office lease?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "What is the value of the security deposit?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "What salary does the employment contract mention?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "For how many years does the NDA last?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "when does it expire",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "and who are the parties?",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "what about its notice period",
+        "gold": "LOOKUP",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "What is our standard NDA term and who must approve longer ones?",
+        "gold": "KNOWLEDGE",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "What notice periods should commercial contracts allow according to the handbook?",
+        "gold": "KNOWLEDGE",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "How should stamp duty be handled for agreements executed in Punjab?",
+        "gold": "KNOWLEDGE",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "What does 'receiving party' mean in the NDA?",
+        "gold": "KNOWLEDGE",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "What obligations survive after the NDA ends?",
+        "gold": "KNOWLEDGE",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "Which documents mention Imran Qureshi?",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Are there any documents about non-compete clauses?",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Show me reference material on contract formation",
+        "gold": "SEARCH",
+        "got": "LOOKUP"
+      },
+      {
+        "q": "Which files talk about probation periods?",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      },
+      {
+        "q": "Bring up the handbook chapter on termination",
+        "gold": "SEARCH",
+        "got": "KNOWLEDGE"
+      }
+    ],
+    "llm_fallbacks": 0
+  }
+}
