@@ -10,12 +10,12 @@ such as the Contract Act 1872 with page citations; opens the source page for eve
 query history, document versions, field-edit history and an append-only audit log. A clause classifier
 was fine-tuned on LEDGAR, and every AI component was evaluated on public datasets. On CUAD, the final
 retrieval design raised Hit@5 from 82.8\% to 93.0\% over the first version's design, and field
-extraction reached a micro-F1 of 75.9\% with 99.4\% of evidence quotes found on the cited page.
+extraction reached a micro-F1 of 75.9\% with 99.4\% of evidence quotes found on the cited page. The query router chose the correct path for 94\% of 100 labelled questions, and 95.2\% of answers to CUAD questions cited a passage containing the lawyers' answer.
 
 \section{Limitations}
 \begin{itemize}
-\item The clause classifier reported here was trained on a laptop CPU with 10,000 examples and is
-under-trained; the full GPU run is still to be reported.
+\item The fine-tuned clause classifier (85.1\% accuracy) is a small model chosen for speed and is still
+slightly below a TF-IDF baseline (87.7\%); a larger encoder is needed to overtake it.
 \item Free LLM tiers limit throughput; heavy use falls back to a second provider or to passages only.
 \item The review rule misses wrong values that carry a real but irrelevant quote.
 \item English only; no native mobile application.

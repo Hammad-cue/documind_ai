@@ -1,6 +1,6 @@
 {
   "name": "clauses_ledgar",
-  "created": "2026-11-17 01:23",
+  "created": "2026-11-17 21:45",
   "rows": [
     {
       "model": "TF-IDF + logistic regression (baseline)",
@@ -17,13 +17,20 @@
       "macro_f1": 0.8253108024881499
     },
     {
+      "model": "Zero-shot LLM (groq/openai/gpt-oss-120b)",
+      "test_examples": 198,
+      "accuracy": 0.6515151515151515,
+      "macro_f1": 0.43982510200257613,
+      "train_examples": 0
+    },
+    {
       "model": "Fine-tuned all-MiniLM-L6-v2 (ours)",
       "test_examples": 10000,
-      "accuracy": 0.7119,
-      "macro_f1": 0.4586706314470125,
-      "train_examples": 10000,
-      "epochs": 3.0,
-      "train_minutes": 36.7
+      "accuracy": 0.8512,
+      "macro_f1": 0.7509756083881217,
+      "train_examples": 60000,
+      "epochs": 5.0,
+      "train_minutes": 13.2
     }
   ]
 }

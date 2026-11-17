@@ -1,0 +1,330 @@
+{
+  "name": "answers_cuad",
+  "created": "2026-11-17 15:48",
+  "summary": {
+    "contracts": 10,
+    "model": "gemini-flash-lite-latest",
+    "answerable_questions": 21,
+    "unanswerable_questions": 10,
+    "judged_questions": 21,
+    "errors": 0,
+    "citation_hit_rate": 0.952,
+    "answer_correct_rate": 1.0,
+    "answers_with_citations": 1.0,
+    "abstention_rate_when_absent": 0.8,
+    "wrongly_abstained_when_present": 0.048
+  },
+  "rows": [
+    {
+      "contract": "SPIENERGYCO,LTD_07_10_2014-EX-10-Cooperation Agreement of 50MWp Photovoltaic Grid-connected Power Generation Project in Yangqiao of~1",
+      "category": "Anti-Assignment",
+      "answerable": false,
+      "answer": "Based on the provided sources, there is no mention or provision regarding whether the agreement can be assigned or transferred to someone else. The sources do not contain the answer.",
+      "cited": 0,
+      "abstained": true
+    },
+    {
+      "contract": "TEARDROPGOLFCO_10_23_1996-EX-10.12-ENDORSEMENT AGREEMENT",
+      "category": "Post-Termination Services",
+      "answerable": true,
+      "answer": "Based on the provided sources, the following obligations and restrictions apply after the agreement ends or upon termination:\n\n* **Cessation of Endorsement Use:** If the agreement terminates due to Ogle's determination that he no longer desires to use the Endorsed Product, TPC must \"cease using the Ogle Endorsement, the name 'Brett Ogle,' or any facsimile thereof, for any promotional or advertising purposes in accordance with the terms set forth in Paragraph 5 above\" [2].\n* **Payment of Earned Compensation and Fees:** Upon termination, Consolidated Artists remains entitled to:\n  * The Retainer",
+      "cited": 4,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies the continuing obligation to cease using the endorsement, which matches the annotated text."
+    },
+    {
+      "contract": "TEARDROPGOLFCO_10_23_1996-EX-10.12-ENDORSEMENT AGREEMENT",
+      "category": "License Grant",
+      "answerable": true,
+      "answer": "Based on the provided documents, Consolidated Artists grants TPC:\n\n* **Exclusive Right and License:** TPC receives \"the exclusive right and license, within the Contract Territory and during the Contract Period, to use the Ogle Endorsement in connection with the manufacture, distribution, advertisement, promotion and sale of the Endorsed Product.\" [3]",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": false,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies and quotes the exclusive license granted in the contract."
+    },
+    {
+      "contract": "TEARDROPGOLFCO_10_23_1996-EX-10.12-ENDORSEMENT AGREEMENT",
+      "category": "Audit Rights",
+      "answerable": true,
+      "answer": "Yes, Consolidated Artists and Advantage have the right to inspect and make copies of TPC's books and records [2]. \n\n* **Scope:** The right applies to books and records \"insofar as they relate to the computation of royalty payments due and owing to Consolidated Artists hereunder\" [2].\n* **Timing:** The inspection can take place \"during the Contract Period and until two (2) years after the termination of this Agreement\" [2].\n* **Expense:** The inspection is conducted at \"Consolidated Artists' expense\" [2].",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately confirms the audit right and provides correct details matching the annotated text."
+    },
+    {
+      "contract": "TEARDROPGOLFCO_10_23_1996-EX-10.12-ENDORSEMENT AGREEMENT",
+      "category": "Renewal Term",
+      "answerable": false,
+      "answer": "Based on the provided sources, the agreement does not mention automatic renewal. The term of the agreement is explicitly defined to \"commence January 1, 1996, and shall continue for a period of three (3) years, concluding December 31, 1998,\" unless it is terminated sooner in accordance with its terms [2][8].",
+      "cited": 2,
+      "abstained": true
+    },
+    {
+      "contract": "VARIABLESEPARATEACCOUNT_04_30_2014-EX-13.C-UNCONDITIONAL CAPITAL MAINTENANCE AGREEMENT",
+      "category": "Minimum Commitment",
+      "answerable": true,
+      "answer": "Based on the provided sources, there is no mention of a minimum purchase or order commitment. The sources discuss capital maintenance, capital contributions, and the \"Specified Minimum Percentage\" of the Company's Company Action Level RBC [1][2][3][6].",
+      "cited": 4,
+      "abstained": true,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer correctly identifies that there is no mention of a minimum purchase or order commitment in the text."
+    },
+    {
+      "contract": "VARIABLESEPARATEACCOUNT_04_30_2014-EX-13.C-UNCONDITIONAL CAPITAL MAINTENANCE AGREEMENT",
+      "category": "Governing Law",
+      "answerable": true,
+      "answer": "Based on the provided documents, the agreement is governed by the laws of New York:\n\n* \"This Agreement shall be governed by and construed in accordance with the laws of New York, without giving effect to the principles of conflict of laws.\" [1]",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies New York law as governing the agreement and includes the supporting quote."
+    },
+    {
+      "contract": "VARIABLESEPARATEACCOUNT_04_30_2014-EX-13.C-UNCONDITIONAL CAPITAL MAINTENANCE AGREEMENT",
+      "category": "Notice Period To Terminate Renewal",
+      "answerable": true,
+      "answer": "Based on the provided sources, the agreement continues indefinitely unless terminated [1]. To terminate the agreement, AIG is required to provide \"thirty (30) days' prior written notice to the Company, which notice shall state the effective date of termination\" [1]. Additionally, AIG agrees not to terminate the agreement unless specific conditions regarding corporate structure modification or the sale of the Company to an eligible acquirer are met [1][8].",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately states the required thirty days' notice for termination based on the annotated contract text."
+    },
+    {
+      "contract": "VARIABLESEPARATEACCOUNT_04_30_2014-EX-13.C-UNCONDITIONAL CAPITAL MAINTENANCE AGREEMENT",
+      "category": "License Grant",
+      "answerable": false,
+      "answer": "Based on the provided sources, there is no mention of any \"license\" being granted under the agreement. The agreement addresses capital contributions [1][5], funding mechanics [3], AIG policies [3], termination [8], and related corporate matters, but does not contain provisions regarding the granting of a license.",
+      "cited": 4,
+      "abstained": true
+    },
+    {
+      "contract": "Cerus Corporation - FIRST AMEND TO SUPPLY AND MANUFACTURING AGREEMENT",
+      "category": "Anti-Assignment",
+      "answerable": false,
+      "answer": "Based on the provided sources, there is no mention or information regarding whether the agreement can be assigned or transferred to someone else.",
+      "cited": 0,
+      "abstained": true
+    },
+    {
+      "contract": "REWALKROBOTICSLTD_07_10_2014-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "category": "Expiration Date",
+      "answerable": true,
+      "answer": "Based on the provided documents, the agreement may end or expire under the following terms:\n\n* **Initial Term:** The initial term is ten (10) years from the Effective Date, unless terminated sooner in accordance with the agreement's provisions [1]. \n* **Termination after 7 Years:** Following the 7th anniversary of the Effective Date, either party may terminate the strategic alliance upon \"not less than 60 days' prior written notice to the other party\" [1].\n* **Renewal Requirements:** After the Initial Term, the agreement only renews if authorized officers of ARGO and YEC \"agree in writing at l",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer correctly identifies the expiration and termination terms outlined in the annotated text."
+    },
+    {
+      "contract": "REWALKROBOTICSLTD_07_10_2014-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "category": "Termination For Convenience",
+      "answerable": true,
+      "answer": "Based on the provided sources, the Strategic Alliance Agreement may be terminated in the following ways without a default:\n\n* **Termination after the 7th anniversary:** \"at any time following the 7th anniversary of such date, either party may terminate such strategic alliance upon not less than 60 days' prior written notice to the other party.\" [3]\n* **Mutual written agreement:** \"ARGO and YEC may terminate this Agreement at any point provided that both parties agree in writing to such a termination.\" [1]",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer correctly identifies that a party can terminate the agreement without cause after the 7th anniversary."
+    },
+    {
+      "contract": "REWALKROBOTICSLTD_07_10_2014-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "category": "Governing Law",
+      "answerable": true,
+      "answer": "This agreement is governed by the laws of the State of Israel [1].",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies the governing law as the State of Israel, matching the annotated answer."
+    },
+    {
+      "contract": "REWALKROBOTICSLTD_07_10_2014-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "category": "Non-Compete",
+      "answerable": false,
+      "answer": "Based on the provided documents, there is no mention or restriction regarding competing with the other party. \n\nThe sources do outline the scope of the strategic alliance between YEC and Argo, which includes collaboration in areas such as marketing, distribution, product improvement, and future research and development [8], but they do not contain provisions addressing competition.",
+      "cited": 1,
+      "abstained": true
+    },
+    {
+      "contract": "VERTEXENERGYINC_08_14_2014-EX-10.24-OPERATION AND MAINTENANCE AGREEMENT",
+      "category": "Insurance",
+      "answerable": true,
+      "answer": "Based on the provided documents, the **Operator** is required to maintain the following insurance coverage with responsible insurance carriers for its activities under the agreement [5]:\n\n*   **Workers' Compensation and Employer's Liability Insurance:** \n    *   Statutory workers' compensation insurance covering all employees and statutory employees in accordance with applicable state, territory, or district laws [5].\n    *   Employer's liability insurance with a limit of not less than $1,000,000 each accident, $1,000,000 disease each employee, and $1,000,000 disease policy limit [5].\n*   **Co",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies the required insurance types and limits mentioned in the annotated text."
+    },
+    {
+      "contract": "VERTEXENERGYINC_08_14_2014-EX-10.24-OPERATION AND MAINTENANCE AGREEMENT",
+      "category": "Audit Rights",
+      "answerable": true,
+      "answer": "Based on the provided documents, yes, Owner has the right to audit books and records:\n\n* **Right to Audit:** Upon reasonable prior written notice to the Operator, Owner has the right during normal business hours to audit or examine:\n  * All books and records of the Operator to the extent they relate to the Operator's performance under the Agreement [1].\n  * The relevant books of account of the Operator's contractors relating to the performance of the Operator's obligations [1].\n* **Operator Cooperation:** The Operator must cooperate with Owner's auditors by making the applicable books and reco",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately and comprehensively affirms the right to audit based on the annotated text."
+    },
+    {
+      "contract": "VERTEXENERGYINC_08_14_2014-EX-10.24-OPERATION AND MAINTENANCE AGREEMENT",
+      "category": "Anti-Assignment",
+      "answerable": true,
+      "answer": "Based on the provided documents, assignments are governed by Section 8.13 of the Operation and Maintenance Agreement:\n\n* **Operator's Assignment:** Operator is prohibited from assigning all or any part of the agreement, or any rights or obligations under it, without first obtaining Owner's written consent (which shall not be unreasonably withheld, conditioned, or delayed) [1]. \n* **Owner's Assignment:** Owner may assign all or any part of the agreement or its rights and obligations only in connection with the \"sale, financing or conveyance of all or any part of the Rail Facility\" [1].\n* **Effe",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately explains the assignment terms for both parties and directly answers the question."
+    },
+    {
+      "contract": "VERTEXENERGYINC_08_14_2014-EX-10.24-OPERATION AND MAINTENANCE AGREEMENT",
+      "category": "Exclusivity",
+      "answerable": false,
+      "answer": "Based on the provided sources, the agreement does not limit the Owner's right to construct, expand, modify, or operate other rail car loading or off-loading facilities at the Owner's terminal and storage facility or at any other location the Owner deems necessary and beneficial [1]. \n\nThe sources do not contain a general statement explicitly labeling the arrangement as exclusive or non-exclusive beyond preserving the Owner's rights under Section 8.1 [1].",
+      "cited": 1,
+      "abstained": true
+    },
+    {
+      "contract": "AMBASSADOREYEWEARGROUPINC_11_17_1997-EX-10.28-ENDORSEMENT AGREEMENT",
+      "category": "Anti-Assignment",
+      "answerable": true,
+      "answer": "Based on the provided documents, the assignment and transfer of the Agreement are restricted as follows:\n\n* **Diplomat's Restrictions:** The Agreement and all rights and duties are personal to Diplomat and \"shall not, without the written consent of KI, Inc., be assigned, mortgaged, sublicensed or otherwise encumbered by Diplomat or by operation of law\" [1]. Upon termination or expiration of the Agreement, Diplomat is deemed to have assigned, transferred, and conveyed to KI, Inc. any trade rights, equities, good will, titles, or other rights in and to KI's name that may have been obtained by or",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately explains the different assignment restrictions for both parties based on the annotated text."
+    },
+    {
+      "contract": "AMBASSADOREYEWEARGROUPINC_11_17_1997-EX-10.28-ENDORSEMENT AGREEMENT",
+      "category": "Audit Rights",
+      "answerable": true,
+      "answer": "Yes. KI, Inc. and its duly-authorized representatives have the right to visit Diplomat's offices one time each calendar quarter to examine books of account, records, and all other documents and materials related to the agreement's subject matter and terms [1]. \n\nSpecifically:\n* KI, Inc. has \"free and full access thereto for said purposes and for the purpose of making extracts therefrom\" [2].\n* KI, Inc. may demand that Diplomat furnish a detailed statement prepared by an independent certified public accountant showing product sales, prices, and deductions [2]. \n* Diplomat's books of account and",
+      "cited": 2,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer correctly affirms the right to audit and accurately reflects the contract details provided in the annotation."
+    },
+    {
+      "contract": "AMBASSADOREYEWEARGROUPINC_11_17_1997-EX-10.28-ENDORSEMENT AGREEMENT",
+      "category": "Exclusivity",
+      "answerable": true,
+      "answer": "Based on the provided documents, the arrangement is mixed:\n\n* **Exclusive:** The license is exclusive regarding the products described in subparagraphs 2.(a)(1) and (2) of the agreement [1]. KI, Inc. agrees not to grant any other licenses for the territory extending to the sale of those specific products during the term of the agreement [1].\n* **Nonexclusive:** The license is nonexclusive regarding all other products covered by the agreement [1].",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately reflects the mixed exclusive and nonexclusive terms described in the annotated answer."
+    },
+    {
+      "contract": "AMBASSADOREYEWEARGROUPINC_11_17_1997-EX-10.28-ENDORSEMENT AGREEMENT",
+      "category": "Warranty Duration",
+      "answerable": false,
+      "answer": "Based on the provided sources, there are no representations, promises, warranties, covenants, or undertakings other than those contained in the agreement [1]. The sources do not specify a duration for how long any warranty lasts.",
+      "cited": 1,
+      "abstained": true
+    },
+    {
+      "contract": "SFGFINANCIALCORP_05_12_2009-EX-10.1-SOFTWARE LICENSE AND MAINTENANCE AGREEMENT",
+      "category": "Governing Law",
+      "answerable": true,
+      "answer": "Based on the provided documents, the agreement is governed by the internal laws of the State of New York, U.S.A.:\n\n* **Governing Law Provision:** \"the validity, interpretation and legal effect of this Agreement shall be governed by the internal laws of the State of New York, U.S.A., applicable to contracts entered in and performed entirely within the State of New York, U.S.A. without regard to any conflict of law principles.\" [1]",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies New York law as the governing law and matches the annotated text."
+    },
+    {
+      "contract": "SFGFINANCIALCORP_05_12_2009-EX-10.1-SOFTWARE LICENSE AND MAINTENANCE AGREEMENT",
+      "category": "Audit Rights",
+      "answerable": true,
+      "answer": "Yes, the agreement allows for audits under the following terms:\n\n* **Right to Audit:** \"Licensee agrees to allow an independent Certified Public Accountant or other Audit Professional, (selected by mutual agreement) to audit and analyze appropriate accounting records to ensure compliance with all terms of this Agreement.\" [1]\n* **Timing:** Any such audit must be permitted by the Licensee \"within 30 days of Licensee's receipt of a written request of Licensor.\" [1]",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately confirms the right to audit and correctly cites the relevant terms from the annotated text."
+    },
+    {
+      "contract": "SFGFINANCIALCORP_05_12_2009-EX-10.1-SOFTWARE LICENSE AND MAINTENANCE AGREEMENT",
+      "category": "Expiration Date",
+      "answerable": true,
+      "answer": "Based on the provided sources, the agreement may expire, end, or be terminated under the following conditions:\n\n* **Initial Period and Renewal:** The non-exclusive license granted by Licensor to Licensee has an \"initial period of 36 months, commencing from the acceptance date\" [3]. The agreement may be renewed for an additional period of seven (7) years at the option of the Licensor [3]. The Initial Period may also be extended by mutual written agreement of the parties within 45 days of its close [3].\n* **Breach of Agreement:** Licensor may immediately terminate the agreement upon any breach b",
+      "cited": 3,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer is consistent with the annotation and successfully addresses the question about agreement expiration and termination."
+    },
+    {
+      "contract": "SFGFINANCIALCORP_05_12_2009-EX-10.1-SOFTWARE LICENSE AND MAINTENANCE AGREEMENT",
+      "category": "Post-Termination Services",
+      "answerable": false,
+      "answer": "Based on the provided sources, upon the termination of the agreement:\n\n* **Return of Property and Confidential Information:** Licensee must, within five (5) days, ship to Licensor all Licensed Technology, APIs, Documentation regarding the Licensed Technology, and other Confidential Information in the Licensee's possession or control [5]. \n* **Officer Certification:** An officer of the Licensee must \"certify in writing that Licensee as complied with the provisions of this Section\" [5].\n* **Survival of Rights:** \"All of the Licensor's rights under this Agreement shall survive termination of this",
+      "cited": 1,
+      "abstained": false
+    },
+    {
+      "contract": "KUBIENT,INC_07_02_2020-EX-10.14-MASTER SERVICES AGREEMENT_Part1",
+      "category": "Renewal Term",
+      "answerable": true,
+      "answer": "Yes, the agreement renews automatically:\n\n* \"The initial term of this Agreement shall be one (1) year from the Effective Date (the 'Initial Term'). This Agreement will automatically renew for additional 1-year terms unless earlier terminated pursuant to this Agreement's express provisions...\" [1]",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately states that the agreement renews automatically and provides a supporting quote from the text."
+    },
+    {
+      "contract": "KUBIENT,INC_07_02_2020-EX-10.14-MASTER SERVICES AGREEMENT_Part1",
+      "category": "Anti-Assignment",
+      "answerable": true,
+      "answer": "Based on the provided sources, the rules regarding the assignment or transfer of the agreement are as follows:\n\n* **General Prohibition:** Neither party may assign the agreement or any rights or obligations under it (voluntarily, by operation of law, or otherwise) without the other party's prior written consent, which shall not be unreasonably withheld [2]. \n* **Void Assignments:** Any attempted assignment other than in accordance with the agreement's terms will be void [1][2].\n* **Permitted Exceptions:** Either party may assign the agreement *without* approval or consent to:\n  * Any affiliate",
+      "cited": 4,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately summarizes the assignment and transfer terms from the provided text."
+    },
+    {
+      "contract": "KUBIENT,INC_07_02_2020-EX-10.14-MASTER SERVICES AGREEMENT_Part1",
+      "category": "Governing Law",
+      "answerable": true,
+      "answer": "Based on the provided documents, the agreement is governed in all respects by the laws of the State of Delaware, without giving effect to its conflict of laws principles [3].",
+      "cited": 1,
+      "abstained": false,
+      "citation_hit": true,
+      "correct": true,
+      "judge_reason": "The answer accurately identifies Delaware law as governing the agreement and matches the annotated answer."
+    },
+    {
+      "contract": "KUBIENT,INC_07_02_2020-EX-10.14-MASTER SERVICES AGREEMENT_Part1",
+      "category": "Warranty Duration",
+      "answerable": false,
+      "answer": "Based on the provided sources, there is no specific duration or time limit explicitly stated for how long the warranties last. However, the sources outline the following regarding warranties:\n\n* **Representations, Warranties, and Covenants:** Both parties make ongoing representations, warranties, and covenants (such as having the authority to enter the agreement, compliance with laws, and ownership/non-infringement of intellectual property) that apply throughout the term of the agreement [1][4].\n* **Disclaimer:** Except for the express representations and warranties set forth in the agreement,",
+      "cited": 3,
+      "abstained": false
+    },
+    {
+      "contract": "GALERATHERAPEUTICS,INC_02_14_2020-EX-99.A-JOINT FILING AGREEMENT",
+      "category": "Minimum Commitment",
+      "answerable": false,
+      "answer": "The provided sources do not contain information regarding a minimum purchase or order commitment.",
+      "cited": 0,
+      "abstained": true
+    }
+  ]
+}

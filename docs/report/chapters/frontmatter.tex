@@ -58,7 +58,7 @@ deadlines pass.
 A clause classifier was fine-tuned on the LEDGAR dataset (100 clause types) and the system was
 evaluated on the public CUAD contract dataset. Section-aware chunking with hybrid retrieval raised
 Hit@5 from 82.8\% (the previous fixed-size, semantic-only design) to 93.0\%; field extraction reached a
-micro-F1 of 75.9\% with 99.4\% of evidence quotes found word-for-word on the cited page. All 26
+micro-F1 of 75.9\% with 99.4\% of evidence quotes found word-for-word on the cited page. The query router chose the correct path for 94\% of 100 labelled questions, and 95.2\% of answers to CUAD questions cited a passage containing the lawyers' answer. All 26
 automated tests, which include the full role and access-level matrix, pass.
 
 The system is built with Vue.js 3, Django 6 with Django REST Framework, and PostgreSQL 16 with the

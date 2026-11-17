@@ -187,10 +187,11 @@ validation and 10,000 test provisions).
 \item \textbf{Model.} \code{sentence-transformers/all-MiniLM-L6-v2}~\cite{wang2020minilm} (22 million
 parameters, 6 layers) with a classification head, chosen because it runs quickly on a CPU at inference
 time and shares its encoder family with the retrieval embeddings.
-\item \textbf{Training.} Hugging Face \code{Trainer}, learning rate $5\times10^{-5}$, batch size 32,
-maximum length 256 tokens, 3 epochs, warm-up ratio 0.06, weight decay 0.01, seed 42. Because a laptop
-CPU was used, the reported run used 10,000 training provisions (36.7 minutes). A Google Colab notebook
-(\code{ml/colab\_train\_clause\_classifier.ipynb}) trains on all 60,000 provisions with a GPU.
+\item \textbf{Training.} Hugging Face \code{Trainer} with AdamW, learning rate $10^{-4}$, linear warm-up over
+the first 6\% of steps, weight decay 0.01, seed 42. The final model was trained on all 60,000 provisions on a
+free Google Colab T4 GPU (\code{ml/colab\_train\_clause\_classifier.ipynb}): 5 epochs, batch size 64,
+maximum length 256 tokens, mixed precision, 13.2 minutes. An earlier laptop-CPU run (10,000 provisions,
+3 epochs, maximum length 128, 36.7 minutes) is reported for comparison.
 \item \textbf{Engineering note.} With Transformers 5.5, reloading intermediate checkpoints silently reset
 some LayerNorm weights. Mid-run checkpoints were therefore disabled, the model is saved once at the end,
 and the test set is evaluated on the \emph{reloaded} model so that the reported numbers are those of the

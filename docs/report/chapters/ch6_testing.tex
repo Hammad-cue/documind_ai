@@ -156,18 +156,25 @@ much as common ones.
 TF-IDF + logistic regression (baseline) & 10,000 & 10,000 & 81.7\% & 72.3\% \\ \hline
 TF-IDF + logistic regression (baseline) & 60,000 & 10,000 & 87.7\% & 82.5\% \\ \hline
 Fine-tuned all-MiniLM-L6-v2 (ours, CPU, 3 epochs) & 10,000 & 10,000 & 71.2\% & 45.9\% \\ \hline
-Fine-tuned all-MiniLM-L6-v2 (ours, GPU, full data) & 60,000 & 10,000 & \pending{Colab} & \pending{Colab} \\ \hline
+\textbf{Fine-tuned all-MiniLM-L6-v2 (ours, GPU, 5 epochs)} & \textbf{60,000} & \textbf{10,000} & \textbf{85.1\%} & \textbf{75.1\%} \\ \hline
 Zero-shot LLM (\code{gpt-oss-120b}, no training) & 0 & 198 & 65.2\% & 44.0\% \\ \hline
 \end{tabularx}
 \end{table}
 
 The zero-shot LLM was tested on a random sample of 198 test provisions because of the free-tier rate limit; 2 calls that failed at the API were excluded. It needs no training data, but with 100 closely related labels it is less accurate than both trained models, which supports fine-tuning a small local model for this task: it is also free and fast at inference time.
 
-The CPU-trained model is under-trained: its validation score was still rising at every epoch, and with
-only 10,000 examples many of the 100 classes have very few training examples, which explains the low
-macro-F1 (several rare classes are never predicted). The strong TF-IDF baseline shows that clause types
-are largely signalled by vocabulary. The full-data GPU run in the provided Colab notebook is the
-configuration to compare with the 60,000-example baseline.
+Training on all 60,000 provisions on a free Colab T4 GPU (13.2 minutes) raised the fine-tuned model from
+71.2\% to 85.1\% accuracy and from 45.9\% to 75.1\% macro-F1; only 4 of the 100 clause types are still never
+predicted. The laptop run had been under-trained: with 10,000 examples many rare classes had almost no
+training data. This GPU model is the one the system uses.
+
+The TF-IDF baseline trained on the same 60,000 provisions remains slightly stronger (87.7\% accuracy,
+82.5\% macro-F1). LEDGAR clause types are signalled largely by vocabulary (``governing law'', ``indemnify''),
+which suits a keyword model, and MiniLM is a very small encoder (22 million parameters) chosen for fast CPU
+inference rather than accuracy. The fine-tuned model is still kept in the system because it labels clauses
+from their meaning, not only their keywords, and it clearly beats the zero-shot LLM (65.2\%) at no API cost.
+A larger encoder (DeBERTa-v3, provided as an option in the notebook) is the natural next step to overtake
+the baseline.
 
 \subsection{EV-2: Retrieval (CUAD)}
 For 60 CUAD contracts, 344 questions were asked about clauses that lawyers had marked. A result is a
@@ -223,7 +230,7 @@ grounding do not catch these; a second checking model is listed as future work.
 
 \subsection{EV-4: Query Routing}
 A set of 100 questions (40 LOOKUP, 35 KNOWLEDGE, 25 SEARCH) labelled by hand was routed by the keyword
-rules and by the LLM router. ``Correct field'' is the share of lookup questions for which the right record
+rules and by the LLM router. ``Right field'' is the share of lookup questions for which the right record
 field (e.g.\ signing date) was chosen.
 \begin{table}[H]\centering\footnotesize
 \caption{Query Routing Results (100 questions)}\label{tab:ev-router}
@@ -242,30 +249,51 @@ answered by the keyword fallback, so the LLM figures are a slight underestimate.
 1.2 s.
 
 \subsection{EV-5: Handwriting Recognition}
-Character and word error rates (lower is better) of Tesseract, the vision model, and the pipeline's rule
-(vision model only when Tesseract is unsure).
+Character and word error rates (lower is better) on 30 pages (synthetic handwriting-style fonts) for Tesseract, the vision
+model, and the pipeline's rule (vision model only when Tesseract is unsure). The pages were generated from handwriting-style fonts, which
+are easier than real handwriting; the script \code{evaluation/eval\_handwriting.py --folder} repeats the test on real
+scans with transcripts.
 \begin{table}[H]\centering
 \caption{Handwriting Recognition Results}\label{tab:ev-hand}
 \begin{tabular}{|l|r|r|r|}\hline
 \textbf{Reader} & \textbf{CER} & \textbf{WER} & \textbf{Time per page} \\ \hline
-Tesseract OCR & \pending{run} & \pending{run} & \pending{run} \\ \hline
-Vision-language model & \pending{run} & \pending{run} & \pending{run} \\ \hline
-Pipeline (vision only when needed) & \pending{run} & -- & -- \\ \hline
+Tesseract OCR & 5.0\% & 17.2\% & 1.0 s \\ \hline
+Vision-language model (\code{gemini/gemini-2.5-flash}) & 0.1\% & 0.4\% & 34.8 s$^{\ast}$ \\ \hline
+Pipeline (5/30 pages sent to the vision model) & 2.6\% & -- & -- \\ \hline
 \end{tabular}
 \end{table}
+Tesseract alone already reads these typed-looking ``handwriting'' fonts well (5.0\% character errors), while the
+vision model is almost perfect (0.1\%). With the pipeline's rule, only the 5 pages where Tesseract was unsure were
+sent to the vision model, which halves the error rate (2.6\%) while keeping most pages fast and free. Six vision
+calls were refused by the free-tier rate limit; those pages are left out of the vision figures.
+$^{\ast}$The vision time includes waiting for the rate limit; a single uncontended call took about 6--7 s
+(Table~\ref{tab:perf}).
+
 
 \subsection{EV-6: Answer Quality}
-CUAD questions are asked through the full answer engine. Measures: answer judged correct against the
+21 CUAD questions whose answer is in the contract and 10 whose answer is not
+(10 contracts) were asked through the full answer engine (model \code{gemini-flash-lite-latest}). Measures: answer judged correct against the
 lawyers' annotation, citation hit rate, and abstention (saying ``not in the document'') when the clause
-is absent.
+is absent. Correctness is graded by a second LLM call that sees the lawyers' annotation (LLM-as-judge).
+
+The run used Gemini Flash-Lite, the system's configured fallback model, for both answering and grading: the
+first run with \code{gpt-oss-20b} hit the free daily token limit part-way, and 19 of its 31 answers were
+``model unavailable'' messages rather than answers, so it was not used. Because the same model graded its own
+answers, the 100\% correctness figure is optimistic and should be read together with the citation hit rate,
+which is measured directly against the lawyers' spans. Of the two absent-clause questions counted as not
+abstained, one answer did say that no warranty duration is stated, in wording the automatic check did not
+recognise; the other described related termination obligations (returning property) that CUAD's narrower
+\emph{Post-Termination Services} category does not include. The one wrongly declined question
+(\emph{Minimum Commitment}) involved a ``minimum percentage'' clause the model judged unrelated.
 \begin{table}[H]\centering
 \caption{Answer Quality Results}\label{tab:ev-answers}
 \begin{tabular}{|l|r|}\hline
 \textbf{Measure} & \textbf{Result} \\ \hline
-Answer judged correct & \pending{run} \\ \hline
-At least one citation contains the lawyers' span & \pending{run} \\ \hline
-Answers that cite their sources & \pending{run} \\ \hline
-Correctly says ``not in the document'' when absent & \pending{run} \\ \hline
+Answer judged correct & 100.0\% \\ \hline
+At least one citation contains the lawyers' span & 95.2\% \\ \hline
+Answers that cite their sources & 100.0\% \\ \hline
+Wrongly says ``not in the document'' when present & 4.8\% \\ \hline
+Correctly says ``not in the document'' when absent & 80.0\% \\ \hline
 \end{tabular}
 \end{table}
 
@@ -283,5 +311,5 @@ Security checks & 9 & 9 & 0 \\ \hline
 All automated unit and integration tests pass, and the security checks confirm that access rules hold at
 every layer, including retrieval. The evaluation shows that the redesigned retrieval clearly outperforms
 the first version's design and that extracted values are backed by real evidence, while it also
-identifies honest limitations (the under-trained CPU clause model and the review rule's blind spot)
+identifies honest limitations (a small clause model that does not yet beat a strong keyword baseline, and the review rule's blind spot)
 that are discussed in the next chapter.
