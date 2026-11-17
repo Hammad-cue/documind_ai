@@ -136,6 +136,9 @@ SIMPLE_JWT = {
 # ---- AI / processing configuration ----
 LLM_PROVIDER = env('LLM_PROVIDER', 'groq')
 LLM_MODEL = env('LLM_MODEL', 'openai/gpt-oss-20b')
+# Used automatically when the main text model is rate-limited or down (only if its API key is set)
+LLM_FALLBACK_PROVIDER = env('LLM_FALLBACK_PROVIDER', 'gemini')
+LLM_FALLBACK_MODEL = env('LLM_FALLBACK_MODEL', 'gemini-flash-lite-latest')
 VISION_PROVIDER = env('VISION_PROVIDER', 'gemini')
 VISION_MODEL = env('VISION_MODEL', 'gemini-2.5-flash')
 EMBEDDING_MODEL = env('EMBEDDING_MODEL', 'all-MiniLM-L6-v2')

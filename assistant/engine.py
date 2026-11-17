@@ -123,7 +123,7 @@ def run_knowledge(user, plan, text, document_ids):
         answer = llm.chat([
             {'role': 'system', 'content': SYSTEM_PROMPT},
             {'role': 'user', 'content': f'SOURCES:\n{context}\n\nQUESTION: {text}'},
-        ], max_tokens=1500, temperature=0.1)
+        ], max_tokens=1000, temperature=0.1, deadline=35)
     except llm.LLMError as exc:
         return f'The language model is unavailable right now ({exc}). The most relevant passages are listed as sources.', sources, []
     return answer, sources, []

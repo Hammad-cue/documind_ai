@@ -29,7 +29,7 @@ FIELD_SYNONYMS = [
     ('term', r'\b(term|duration|how long)\b'),
     ('reference_number', r'\b(reference|ref\.? ?(no|number)|file number)\b'),
 ]
-LOOKUP_DOC_WORDS = r'\b(nda|agreement|contract|lease|deed|mou|affidavit|letter|tenancy|records?)\b'
+LOOKUP_DOC_WORDS = r'\b(ndas?|agreements?|contracts?|leases?|deeds?|mous?|affidavits?|letters?|tenancy|tenancies|records?)\b'
 SEARCH_START = r'^(find|show|open|get|fetch|pull up|locate|where is|list|search)\b'
 
 
@@ -84,7 +84,7 @@ Return JSON with exactly these keys:
   "date_from": "YYYY-MM-DD or null", "date_to": "YYYY-MM-DD or null",
   "keywords": "the question rewritten as a standalone search query"}}"""
     try:
-        out = llm.chat_json([{'role': 'user', 'content': prompt}], max_tokens=400, temperature=0.0)
+        out = llm.chat_json([{'role': 'user', 'content': prompt}], max_tokens=300, temperature=0.0, deadline=12)
     except llm.LLMError:
         return heuristic_plan(text)
     plan = {

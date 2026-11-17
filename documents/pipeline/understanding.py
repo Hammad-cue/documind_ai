@@ -42,8 +42,15 @@ def _paged_text(pages, budget_chars, head_ratio=0.7):
     return '\n\n'.join(head) + '\n\n[[... pages omitted ...]]\n\n' + '\n\n'.join(tail)
 
 
+STATUTE = re.compile(r'\b(act|ordinance|code|rules|regulations|order)\s*,?\s*(no\.?\s*\w+\s+of\s+)?(1[89]|20)\d{2}\b', re.I)
+
+
 def heuristic_classify(pages, page_count):
-    sample = ' '.join(p.text for p in pages[:3]).lower()
+    first = ' '.join(p.text for p in pages[:3])
+    # laws, ordinances and codes are reference material even though they keep saying "contract" and "party"
+    if STATUTE.search(first) and (page_count > 5 or len(re.findall(r'\b(section|chapter)\b', first, re.I)) >= 3):
+        return {'kind': 'REFERENCE', 'doc_type': 'Law / statute', 'summary': ''}
+    sample = first.lower()
     hits = sum(1 for h in RECORD_HINTS if h in sample)
     if page_count > 40 and hits < 4:
         return {'kind': 'REFERENCE', 'doc_type': 'Reference document', 'summary': ''}
