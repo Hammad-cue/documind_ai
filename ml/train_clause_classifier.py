@@ -3,7 +3,7 @@ Fine-tune a transformer to classify contract clauses (the ML contribution of the
 
 Dataset : LEDGAR (part of LexGLUE) — ~80k contract provisions from SEC filings, 100 clause types
           (Governing Laws, Terminations, Confidentiality, Indemnifications, ...).
-Model   : nlpaueb/legal-bert-small-uncased by default (fast); try microsoft/deberta-v3-base for accuracy.
+Model   : sentence-transformers/all-MiniLM-L6-v2 by default (fast, runs on CPU at inference time).
 Output  : ml/models/clause-classifier/  (the backend loads it automatically from CLAUSE_MODEL_DIR)
 Metrics : accuracy, macro-F1, micro-F1 on the official test split -> ml/runs/<run>/metrics.json
 
@@ -16,7 +16,9 @@ Run on a free GPU (Google Colab / Kaggle):
     python ml/train_clause_classifier.py --train-limit 3000 --eval-limit 1000 --epochs 2
 """
 import argparse
+import inspect
 import json
+import math
 import os
 import time
 from pathlib import Path
@@ -24,6 +26,17 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent
+
+
+def training_arguments(**kwargs):
+    """TrainingArguments that tolerates transformers versions: options the installed version no longer has are
+    skipped (with a note) instead of crashing, because Colab always installs the newest release."""
+    from transformers import TrainingArguments
+    accepted = inspect.signature(TrainingArguments.__init__).parameters
+    dropped = sorted(k for k in kwargs if k not in accepted)
+    if dropped:
+        print(f'note: this transformers version has no {", ".join(dropped)}; skipping')
+    return TrainingArguments(**{k: v for k, v in kwargs.items() if k in accepted})
 
 
 def parse_args():
@@ -74,14 +87,17 @@ def main():
                 'micro_f1': f1_score(y, p, average='micro')}
 
     run_dir = ROOT / 'runs' / time.strftime('%Y%m%d-%H%M%S')
-    targs = TrainingArguments(
+    cuda = __import__('torch').cuda.is_available()
+    # Warm up over the first 6% of steps. Given as a step count: newer transformers releases removed `warmup_ratio`.
+    total_steps = math.ceil(math.ceil(len(train) / args.batch_size) * args.epochs)
+    targs = training_arguments(
         output_dir=str(run_dir / 'checkpoints'), num_train_epochs=args.epochs, learning_rate=args.lr,
         per_device_train_batch_size=args.batch_size, per_device_eval_batch_size=args.batch_size * 2,
-        dataloader_num_workers=0, use_cpu=not __import__('torch').cuda.is_available(),
+        dataloader_num_workers=0, use_cpu=not cuda,
         # No mid-training checkpoints: transformers 5.x on Windows reloads BERT checkpoints with mismatched
         # LayerNorm names, silently resetting those weights. We save once at the end and test the reloaded copy.
-        eval_strategy='epoch', save_strategy='no', warmup_ratio=0.06, weight_decay=0.01, logging_steps=50, report_to=[],
-        fp16=__import__('torch').cuda.is_available(), seed=args.seed)
+        eval_strategy='epoch', save_strategy='no', warmup_steps=max(1, round(0.06 * total_steps)), weight_decay=0.01,
+        logging_steps=50, report_to=[], fp16=cuda, seed=args.seed)
     trainer = Trainer(model=model, args=targs, train_dataset=train, eval_dataset=val, processing_class=tok,
                       data_collator=DataCollatorWithPadding(tok), compute_metrics=metrics)
 
