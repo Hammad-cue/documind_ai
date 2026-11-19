@@ -32,6 +32,12 @@ services:
     volumes: [media:/app/media, models:/app/ml/models, hf-cache:/data/hf-cache]
     depends_on: { db: { condition: service_healthy } }
     restart: unless-stopped
+    healthcheck:   # API answers and can reach the database
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=5)"]
+      interval: 15s
+      timeout: 6s
+      retries: 5
+      start_period: 90s
 
   worker:
     build: .
@@ -39,14 +45,25 @@ services:
     environment: *backend-env
     command: python manage.py run_worker
     volumes: [media:/app/media, models:/app/ml/models, hf-cache:/data/hf-cache]
-    depends_on: { db: { condition: service_healthy }, backend: { condition: service_started } }
+    depends_on: { db: { condition: service_healthy }, backend: { condition: service_healthy } }   # healthy = migrations done
     restart: unless-stopped
+    healthcheck:   # the worker touches a heartbeat file on every loop (every 2 s when idle; a large document can keep it busy for minutes)
+      test: ["CMD", "python", "-c", "import os, sys, tempfile, time; p = os.path.join(tempfile.gettempdir(), 'documind-worker.heartbeat'); sys.exit(0 if os.path.exists(p) and time.time() - os.path.getmtime(p) < 1800 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   web:
     build: ./frontend
     ports: ["8080:80"]
-    depends_on: [backend]
+    depends_on: { backend: { condition: service_healthy } }
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   db-data:

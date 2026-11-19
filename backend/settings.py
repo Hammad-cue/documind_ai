@@ -22,8 +22,12 @@ def env_bool(name, default=False):
     return str(env(name, '1' if default else '0')).lower() in ('1', 'true', 'yes', 'on')
 
 
-SECRET_KEY = env('DJANGO_SECRET_KEY', 'dev-only-insecure-key-change-me')
+DEV_SECRET_KEY = 'dev-only-insecure-key-change-me'
+SECRET_KEY = env('DJANGO_SECRET_KEY') or DEV_SECRET_KEY
 DEBUG = env_bool('DJANGO_DEBUG', True)
+if not DEBUG and SECRET_KEY == DEV_SECRET_KEY:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('Set DJANGO_SECRET_KEY in .env before running with DJANGO_DEBUG=0.')
 ALLOWED_HOSTS = [h.strip() for h in env('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
 
 INSTALLED_APPS = [
@@ -46,11 +50,13 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',   # serves admin static files when DEBUG is off
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'

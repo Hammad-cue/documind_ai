@@ -9,10 +9,11 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+# CPU-only PyTorch keeps the image ~1.5 GB smaller than the default CUDA build. It gets its own layer, so
+# changing requirements.txt does not download it again.
+RUN pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
 COPY requirements.txt .
-# CPU-only PyTorch keeps the image ~1.5 GB smaller than the default CUDA build
-RUN pip install torch --index-url https://download.pytorch.org/whl/cpu \
- && pip install -r requirements.txt gunicorn==23.0.0
+RUN pip install -r requirements.txt gunicorn==23.0.0
 
 COPY . .
 RUN DJANGO_SECRET_KEY=build python manage.py collectstatic --noinput

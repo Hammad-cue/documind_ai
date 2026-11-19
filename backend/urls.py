@@ -1,12 +1,13 @@
 from django.conf import settings
-from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.views.static import serve
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
+from backend.health import health
 from accounts.views import DepartmentViewSet, LoginView, MemberViewSet, MeView, RegisterOrganizationView
-from assistant.views import AskView, ConversationDetailView, ConversationListView
+from assistant.views import AskStreamView, AskView, ConversationDetailView, ConversationListView
 from audit.views import AuditListView
 from notifications.views import NotificationListView, NotificationReadView
 from documents.views import (DocumentViewSet, FieldCreateView, FieldHistoryView, FieldView, RecordListView,
@@ -19,6 +20,7 @@ router.register('org/members', MemberViewSet, basename='member')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health/', health),
     # auth
     path('api/auth/register-organization/', RegisterOrganizationView.as_view()),
     path('api/auth/token/', LoginView.as_view()),
@@ -32,6 +34,7 @@ urlpatterns = [
     path('api/records/fields/<int:pk>/history/', FieldHistoryView.as_view()),
     # assistant
     path('api/assistant/ask/', AskView.as_view()),
+    path('api/assistant/ask/stream/', AskStreamView.as_view()),
     path('api/assistant/conversations/', ConversationListView.as_view()),
     path('api/assistant/conversations/<int:pk>/', ConversationDetailView.as_view()),
     # audit
@@ -43,5 +46,5 @@ urlpatterns = [
 ]
 
 # Only avatars are public. Documents are served through /api/documents/<id>/file/ with permission checks.
-if settings.DEBUG:
-    urlpatterns += static('/media/avatars/', document_root=settings.MEDIA_ROOT / 'avatars')
+# Served by Django in production too (small files, few users); nginx forwards /media/avatars/ here.
+urlpatterns += [re_path(r'^media/avatars/(?P<path>.+)$', serve, {'document_root': settings.MEDIA_ROOT / 'avatars'})]

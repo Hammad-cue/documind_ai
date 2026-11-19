@@ -1,4 +1,6 @@
+import tempfile
 import time
+from pathlib import Path
 
 from notifications.service import run_reminders
 
@@ -20,7 +22,9 @@ class Command(BaseCommand):
             self.stdout.write(f'Re-queued {n} stale job(s).')
         self.stdout.write(self.style.SUCCESS('Worker started. Waiting for documents...'))
         last_reminders = 0.0
+        heartbeat = Path(tempfile.gettempdir()) / 'documind-worker.heartbeat'
         while True:
+            heartbeat.touch()   # the Docker health check reads this file's age
             if time.time() - last_reminders > 3600:  # expiry / notice reminders, hourly
                 last_reminders = time.time()
                 try:

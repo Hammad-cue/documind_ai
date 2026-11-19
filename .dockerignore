@@ -10,3 +10,6 @@ ml/runs
 **/__pycache__
 .claude
 *.pyc
+ml/models/clause-classifier-cpu-10k
+docs
+evaluation/logs
