@@ -4,7 +4,7 @@
          @close="emit('close')">
     <form class="space-y-4" @submit.prevent="submit">
       <label @dragover.prevent="drag = true" @dragleave="drag = false" @drop.prevent="drag = false; pick($event.dataTransfer.files[0])"
-             :class="['flex cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed px-4 py-8 text-center transition',
+             :class="['flex cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed px-4 py-6 text-center transition',
                       drag ? 'border-accent bg-accent-soft' : 'border-black/10 bg-white/50 hover:border-accent/40 hover:bg-white/80']">
         <span class="flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-[0_6px_16px_rgb(28_38_90/0.1)]"><Upload :size="20" class="text-accent" /></span>
         <span v-if="!file" class="mt-3 text-sm text-ink-2"><b class="text-accent">Choose a file</b> or drop it here</span>
@@ -59,7 +59,8 @@
       </label>
 
       <p v-if="error" class="rounded-[14px] bg-bad-soft px-3.5 py-2.5 text-sm text-bad">{{ error }}</p>
-      <div class="flex justify-end gap-2 pt-1">
+      <!-- stays visible on short screens while the form scrolls -->
+      <div class="sticky -bottom-6 -mx-6 -mb-6 flex justify-end gap-2 rounded-b-[26px] border-t border-line bg-white/90 px-6 py-4 backdrop-blur">
         <button type="button" class="btn-ghost" @click="emit('close')">Cancel</button>
         <button class="btn-primary" :disabled="!file || busy">{{ busy ? 'Uploading…' : 'Upload' }}</button>
       </div>

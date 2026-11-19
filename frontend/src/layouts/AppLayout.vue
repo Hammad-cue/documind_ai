@@ -29,7 +29,7 @@
         </router-link>
       </nav>
 
-      <div v-if="session.recent.length" class="mt-7 min-h-0 flex-1 overflow-y-auto px-2 scroll-thin">
+      <div v-if="session.recent.length" class="fade-bottom mt-7 min-h-0 flex-1 overflow-y-auto px-2 pb-3 scroll-thin">
         <div class="mb-1.5 text-xs font-semibold text-muted">Recent</div>
         <router-link v-for="c in session.recent" :key="c.id" :to="`/app/ask/${c.id}`" @click="open = false"
           class="block truncate rounded-lg py-1.5 text-[13px] text-ink-2 hover:text-ink" active-class="!text-accent font-semibold">

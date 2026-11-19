@@ -23,11 +23,18 @@ class MemberSerializer(serializers.ModelSerializer):
     is_active = serializers.BooleanField(source='user.is_active', read_only=True)
     department_name = serializers.CharField(source='department.name', read_only=True, default=None)
     full_name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = Membership
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'is_active',
-                  'role', 'department', 'department_name', 'job_title')
+                  'role', 'department', 'department_name', 'job_title', 'avatar')
+
+    def get_avatar(self, m):
+        if not m.avatar:
+            return None
+        request = self.context.get('request')
+        return request.build_absolute_uri(m.avatar.url) if request else m.avatar.url
 
     def get_full_name(self, m):
         return m.user.get_full_name() or m.user.username

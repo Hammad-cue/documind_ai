@@ -5,10 +5,11 @@
         <DialogOverlay v-if="open" class="fixed inset-0 z-50 bg-ink/20 backdrop-blur-[2px]" />
       </Transition>
       <Transition name="rise">
-        <DialogContent v-if="open" aria-describedby="palette-hint"
+        <DialogContent v-if="open"
           class="glass-strong fixed top-[12vh] left-1/2 z-50 flex max-h-[70vh] w-[calc(100%-32px)] max-w-[620px] -translate-x-1/2 flex-col overflow-hidden rounded-[24px] outline-none"
           @keydown="onKey">
           <DialogTitle class="sr-only">Search or jump to</DialogTitle>
+          <DialogDescription class="sr-only">Type to search documents, pages and past questions, or ask the assistant. Use the arrow keys and Enter to open a result.</DialogDescription>
           <div class="flex items-center gap-3 border-b border-line px-5">
             <Search :size="19" class="shrink-0 text-muted" aria-hidden="true" />
             <input ref="inputEl" v-model="q" role="combobox" aria-autocomplete="list" aria-controls="palette-list"
@@ -49,7 +50,7 @@
 
 <script setup>
 import { BookOpen, CircleCheck, CornerDownLeft, FilePlus, FileText, History, MessageSquare, PenLine, Search, Sparkles, Table2, UserRound, Users } from '@lucide/vue'
-import { DialogContent, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
+import { DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
 import { computed, nextTick, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../api'

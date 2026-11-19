@@ -107,7 +107,7 @@ class MemberViewSet(viewsets.ViewSet):
     def list(self, request):
         qs = Membership.objects.filter(organization=self._org()).select_related('user', 'department') \
             .order_by('user__username')
-        return Response(MemberSerializer(qs, many=True).data)
+        return Response(MemberSerializer(qs, many=True, context={'request': request}).data)
 
     def create(self, request):
         s = MemberCreateSerializer(data=request.data)
@@ -122,7 +122,7 @@ class MemberViewSet(viewsets.ViewSet):
             m = Membership.objects.create(user=user, organization=self._org(), role=d['role'], department=dept,
                                           job_title=d.get('job_title', ''))
         record(request.user, AuditEvent.Action.MEMBER_ADD, user, request, label=user.username, role=m.role)
-        return Response(MemberSerializer(m).data, status=201)
+        return Response(MemberSerializer(m, context={'request': request}).data, status=201)
 
     def partial_update(self, request, pk=None):
         m = Membership.objects.filter(organization=self._org(), user_id=pk).select_related('user').first()
