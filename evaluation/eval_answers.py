@@ -33,7 +33,8 @@ from assistant.engine import run_knowledge  # noqa: E402
 from documents.models import Chunk, Document  # noqa: E402
 
 ABSTAIN = re.compile(r"(not (?:mention|contain|include|specif|state|address|provide|found|present)|no (?:mention|information|provision|clause|reference)|"
-                     r"does(?:n't| not) (?:say|mention|contain|include|specify|address)|could(?:n't| not) find|isn't (?:mentioned|stated)|silent)", re.I)
+                     r"do(?:es)?(?:n't| not) (?:say|mention|contain|include|specify|address)|could(?:n't| not) find|isn't (?:mentioned|stated)|silent|"
+                     r"no specific [^.]{0,60}?(?:stated|specified|given|mentioned)|not explicitly (?:stated|specified|mentioned))", re.I)
 LLM_DOWN = 'The language model is unavailable'
 
 

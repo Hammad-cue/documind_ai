@@ -63,6 +63,13 @@ returns the eleven fields with value, page, quote and confidence. Each quote is 
 Failures are retried up to three times. When a version becomes READY it becomes the current version and
 the uploader is notified.
 
+Two steps were added after extraction. If no end date is written but a start date and a fixed term are, the
+expiry date is calculated (start + term $-$ 1 day) and sent to review. Then a \emph{second check} asks the LLM,
+for all values in one call, whether each quote on its own proves the value as that field; values that fail
+go to the review queue. Every field stores a \code{review\_reason} (``Calculated from effective date + term'',
+``Second check: the quote is about renewal, not termination'', ``Read from handwriting''), which the review
+queue shows to the reviewer.
+
 \subsection{Module 3: Records Register and Verification}
 The records endpoint returns one row per visible RECORD document with its key fields from the current
 version. The review queue returns NEEDS\_REVIEW fields of visible documents. Verifying or correcting a
@@ -87,6 +94,23 @@ Every LLM call has a deadline. If the main provider fails or reports that its da
 the gateway switches to the fallback provider and skips the main one until the quota resets; if both
 fail, the user still receives the most relevant passages. The query, plan, sources and latency are
 saved to the conversation.
+
+\textbf{Streamed answers.} The Assistant uses a second endpoint, \code{POST /api/assistant/ask/stream/},
+that sends the answer as it is produced, one JSON object per line: the routing plan, then the sources
+(as soon as retrieval finishes), then the answer text piece by piece as the LLM writes it (the provider's
+OpenAI-compatible streaming mode), and finally the saved query with its id and latency. The source cards
+therefore appear before the answer, and the first words follow about a second later instead of after
+the whole answer is complete. The fallback rule still applies: if the main provider fails before writing
+anything, the answer is streamed from the fallback provider. Access control is unchanged, because the
+stream is produced by the same retrieval code. Nginx is configured not to buffer this endpoint.
+
+\textbf{Saving LLM quota.} Two measures reduce calls to the free-tier LLM. First, requests that start with
+``find'', ``show'' or ``list'' and name no record field are routed as searches by the keyword rules without an LLM
+call; on the 100 labelled routing questions these 20 requests were all searches. Second, written answers and
+searches are cached for six hours. The cache key contains the organisation, the normalised question, the
+selected documents, the recent turns of the conversation and the exact documents \emph{and versions} the user
+may open, so people with different access never share an answer and a new version invalidates it. Record
+lookups are not cached, because a reviewer can correct a value at any time.
 
 \subsection{Module 5: History, Audit and Notifications}
 \code{audit.service.log()} is called from every view that changes or reveals data. The
@@ -198,6 +222,10 @@ and the test set is evaluated on the \emph{reloaded} model so that the reported 
 model the application actually uses.
 \item \textbf{Baselines.} TF-IDF with logistic regression (10,000 and 60,000 training provisions) and a
 zero-shot LLM that picks a label from the list.
+\item \textbf{Combination used in the system.} \code{ml/train\_ensemble.py} trains the TF-IDF model on all
+60,000 provisions and averages its probabilities with the fine-tuned model's (weight 0.25 for the transformer,
+chosen on the validation split). \code{ai/clauses.py} uses the combination automatically when its files are
+present and falls back to the transformer alone otherwise.
 \end{itemize}
 Results are reported in Section~\ref{sec:eval-clauses}.
 
@@ -231,6 +259,7 @@ accent, and no colour gradients, so that documents and evidence remain the focus
 page with the quote highlighted; every answer lists numbered sources that do the same.
 \item \textbf{Question box at the bottom.} The Assistant uses a docked input, like a chat, and shows the
 steps it is taking (understanding the question, checking access, reading pages, writing the answer).
+The answer then appears as it is written, with a blinking caret, and its sources are shown before the text.
 \item \textbf{Keyboard support.} A command palette (Ctrl+K) searches documents and actions; ``/''
 focuses the question box; focus rings are visible.
 \item \textbf{Role-aware navigation.} Review, Team and Audit appear only for roles that may use them.
@@ -262,7 +291,9 @@ Drag-and-drop upload of several files with title, department, access level, kind
 
 \subsubsection{Screen 6: Document Detail}
 Shows the document in an embedded viewer next to tabs for extracted facts (with evidence), clauses,
-versions and comparison, extracted text and activity.
+versions and comparison, extracted text and activity. For reference documents such as the Contract Act,
+the first tab instead lists the detected chapters with their names and page numbers; selecting one opens
+that page.
 \screenshot{document_detail.jpg}{Document Detail: Extracted Facts with the Signing-date Evidence Highlighted}{fig:scr-detail}
 
 Opening a source from an answer shows the cited passage of the reference document highlighted on its page
@@ -329,12 +360,18 @@ finishes. The layout uses responsive breakpoints for laptop and tablet widths.
 \begin{tabularx}{\textwidth}{|p{3cm}|X|}\hline
 \textbf{Service} & \textbf{Configuration (docker-compose.yml)} \\ \hline
 db & \code{pgvector/pgvector:pg16}, persistent volume, health check \\ \hline
-backend & Python 3.12-slim image with Tesseract and CPU PyTorch; runs migrations and Gunicorn \\ \hline
-worker & Same image; runs \code{python manage.py run\_worker} (processing and hourly reminders) \\ \hline
-web & Node build of the Vue app served by Nginx, which also proxies \code{/api/} to the backend \\ \hline
+backend & Python 3.12-slim image with Tesseract and CPU PyTorch; runs migrations and Gunicorn; WhiteNoise serves static files; health check on \code{/api/health/} (API and database) \\ \hline
+worker & Same image; runs \code{python manage.py run\_worker} (processing and hourly reminders); starts only once the backend is healthy, i.e.\ after migrations; health check on a heartbeat file \\ \hline
+web & Node build of the Vue app served by Nginx, which proxies \code{/api/} to the backend without buffering streamed answers; starts once the backend is healthy \\ \hline
 Configuration & All secrets and provider settings in a \code{.env} file (never committed); \code{.env.example} documents every variable \\ \hline
 \end{tabularx}
 \end{table}
+The deployment was tested from an empty database (integration test IT-06): all containers became healthy, the
+six demo documents were processed by the worker container, and sign-in, lookups, streamed answers and protected
+downloads worked through Nginx. The test found and fixed one start-up race: the worker had started before the
+database tables existed. Docker's restart policy restarts containers that exit, not ones reported unhealthy,
+so the health checks report problems and order the start-up but do not repair a running container.
+
 For development, the database runs in Docker while the API, worker and Vite dev server run locally.
 A demonstration organization with users for every role and sample documents is created with
 \code{python manage.py seed\_demo}.

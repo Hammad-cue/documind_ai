@@ -1,0 +1,1295 @@
+{
+  "name": "verifier_cuad",
+  "created": "2026-11-19 22:50",
+  "summary": {
+    "model": "openai/gpt-oss-20b",
+    "contracts": 40,
+    "checked_values": 176,
+    "wrong_values": 34,
+    "wrong_flagged": 11,
+    "wrong_flagged_rate": 0.324,
+    "right_values": 142,
+    "right_flagged": 17,
+    "right_flagged_rate": 0.12,
+    "per_field": {
+      "parties": {
+        "wrong": 0,
+        "wrong_flagged": 0,
+        "right": 40,
+        "right_flagged": 3
+      },
+      "signed_date": {
+        "wrong": 3,
+        "wrong_flagged": 2,
+        "right": 22,
+        "right_flagged": 8
+      },
+      "effective_date": {
+        "wrong": 8,
+        "wrong_flagged": 1,
+        "right": 27,
+        "right_flagged": 5
+      },
+      "expiry_date": {
+        "wrong": 0,
+        "wrong_flagged": 0,
+        "right": 10,
+        "right_flagged": 0
+      },
+      "notice_period": {
+        "wrong": 19,
+        "wrong_flagged": 8,
+        "right": 7,
+        "right_flagged": 0
+      },
+      "governing_law": {
+        "wrong": 3,
+        "wrong_flagged": 0,
+        "right": 27,
+        "right_flagged": 1
+      },
+      "auto_renewal": {
+        "wrong": 1,
+        "wrong_flagged": 0,
+        "right": 9,
+        "right_flagged": 0
+      }
+    },
+    "api_failures": 0,
+    "note": "Quotes are the first 200 characters saved by eval_extraction, so the check sees slightly less text than it does inside the pipeline."
+  },
+  "rows": [
+    {
+      "contract": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "quote lists both parties"
+    },
+    {
+      "contract": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote indicates execution date"
+    },
+    {
+      "contract": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote states agreement made on 1st day of August, 2013"
+    },
+    {
+      "contract": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote states term terminates on May 31, 2015"
+    },
+    {
+      "contract": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "quote refers to cure period, not termination notice"
+    },
+    {
+      "contract": "BLACKBOXSTOCKSINC_08_05_2014-EX-10.1-DISTRIBUTOR AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": "quote specifies State of Texas"
+    },
+    {
+      "contract": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HOLIDAYRVSUPERSTORESINC_04_15_2002-EX-10.13-ENDORSEMENT AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote does not specify the actual date of signing."
+    },
+    {
+      "contract": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote refers to invoice payment terms, not termination notice."
+    },
+    {
+      "contract": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "key": "governing_law",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VitalibisInc_20180316_8-K_EX-10.2_11100168_EX-10.2_Hosting Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VitalibisInc_20180316_8-K_EX-10.2_11100168_EX-10.2_Hosting Agreement",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote only states the agreement is dated May\u202f3,\u202f2006, not that it takes effect on that date."
+    },
+    {
+      "contract": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote refers to a 30\u2011day period for a disposition notice, not a termination notice."
+    },
+    {
+      "contract": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "BANUESTRAFINANCIALCORP_09_08_2006-EX-10.16-AGENCY AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote identifies both El Banco Financial Corporation and the sales agent as parties."
+    },
+    {
+      "contract": "BANUESTRAFINANCIALCORP_09_08_2006-EX-10.16-AGENCY AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote only mentions the year 2006, not a specific effective date."
+    },
+    {
+      "contract": "BANUESTRAFINANCIALCORP_09_08_2006-EX-10.16-AGENCY AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": "Quote states all notices must be in writing, supporting a written notice requirement."
+    },
+    {
+      "contract": "BANUESTRAFINANCIALCORP_09_08_2006-EX-10.16-AGENCY AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote explicitly states the agreement is governed by the laws of the State of Georgia."
+    },
+    {
+      "contract": "Columbia Laboratories, (Bermuda) Ltd. - AMEND NO. 2 TO MANUFACTURING AND SUPPLY AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "Columbia Laboratories, (Bermuda) Ltd. - AMEND NO. 2 TO MANUFACTURING AND SUPPLY AGREEMENT",
+      "key": "signed_date",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote references the Effective Date but does not provide a specific date."
+    },
+    {
+      "contract": "Columbia Laboratories, (Bermuda) Ltd. - AMEND NO. 2 TO MANUFACTURING AND SUPPLY AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote gives only the year 2018, not the full date 2018-01-01."
+    },
+    {
+      "contract": "Columbia Laboratories, (Bermuda) Ltd. - AMEND NO. 2 TO MANUFACTURING AND SUPPLY AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HALITRON,INC_03_01_2005-EX-10.15-SPONSORSHIP AND DEVELOPMENT AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HALITRON,INC_03_01_2005-EX-10.15-SPONSORSHIP AND DEVELOPMENT AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HALITRON,INC_03_01_2005-EX-10.15-SPONSORSHIP AND DEVELOPMENT AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HALITRON,INC_03_01_2005-EX-10.15-SPONSORSHIP AND DEVELOPMENT AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "HALITRON,INC_03_01_2005-EX-10.15-SPONSORSHIP AND DEVELOPMENT AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AULAMERICANUNITTRUST_04_24_2020-EX-99.8.77-SERVICING AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AULAMERICANUNITTRUST_04_24_2020-EX-99.8.77-SERVICING AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AULAMERICANUNITTRUST_04_24_2020-EX-99.8.77-SERVICING AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "quote refers to Effective Date, not a signing date"
+    },
+    {
+      "contract": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "Principal Life Insurance Company - Broker Dealer Marketing and Servicing Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote lists only Principal Life Insurance Company and Princor Financial Services Corporation, not ABC Company."
+    },
+    {
+      "contract": "Principal Life Insurance Company - Broker Dealer Marketing and Servicing Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote indicates an unspecified day in 2013, not the specific date 2013-01-01."
+    },
+    {
+      "contract": "Principal Life Insurance Company - Broker Dealer Marketing and Servicing Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": "Quote explicitly states termination may occur at any time upon prior written notice."
+    },
+    {
+      "contract": "Principal Life Insurance Company - Broker Dealer Marketing and Servicing Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote states the agreement is governed by the laws of the State of Iowa."
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICANPHYSICIANSCAPITALINC_03_31_2003-EX-10.26-AGENCY AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICANPHYSICIANSCAPITALINC_03_31_2003-EX-10.26-AGENCY AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICANPHYSICIANSCAPITALINC_03_31_2003-EX-10.26-AGENCY AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICANPHYSICIANSCAPITALINC_03_31_2003-EX-10.26-AGENCY AGREEMENT",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CHEETAHMOBILEINC_04_22_2014-EX-10.43-Cooperation Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CHEETAHMOBILEINC_04_22_2014-EX-10.43-Cooperation Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CHEETAHMOBILEINC_04_22_2014-EX-10.43-Cooperation Agreement",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CHEETAHMOBILEINC_04_22_2014-EX-10.43-Cooperation Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "quote refers to negotiation, not termination notice"
+    },
+    {
+      "contract": "CHEETAHMOBILEINC_04_22_2014-EX-10.43-Cooperation Agreement",
+      "key": "governing_law",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "quote lists both parties with identifiers"
+    },
+    {
+      "contract": "2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote shows date 6/21/99"
+    },
+    {
+      "contract": "2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote explicitly states \"as of June 21, 1999 (the \"Effective Date\")\""
+    },
+    {
+      "contract": "INTRICONCORP_03_10_2009-EX-10.22-Strategic Alliance Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote lists both IntriCon Corporation and Dynamic Hearing Pty Ltd as parties."
+    },
+    {
+      "contract": "INTRICONCORP_03_10_2009-EX-10.22-Strategic Alliance Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote states the agreement is effective as of the 1st day of October, 2008."
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CURAEGISTECHNOLOGIES,INC_05_26_2010-EX-1-CORPORATE SPONSORSHIP AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CURAEGISTECHNOLOGIES,INC_05_26_2010-EX-1-CORPORATE SPONSORSHIP AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote specifies the Effective Date, not the signing date."
+    },
+    {
+      "contract": "CURAEGISTECHNOLOGIES,INC_05_26_2010-EX-1-CORPORATE SPONSORSHIP AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CURAEGISTECHNOLOGIES,INC_05_26_2010-EX-1-CORPORATE SPONSORSHIP AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CURAEGISTECHNOLOGIES,INC_05_26_2010-EX-1-CORPORATE SPONSORSHIP AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote lists both TOM WATSON and ADAMS GOLF, LTD."
+    },
+    {
+      "contract": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote includes \"Date: January 13, 2005\"."
+    },
+    {
+      "contract": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": "Quote states \"This Agreement is entered into on January 13, 2005\" indicating the effective date."
+    },
+    {
+      "contract": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote only mentions immediate termination, no 90\u2011day notice."
+    },
+    {
+      "contract": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote references venue, not governing law."
+    },
+    {
+      "contract": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote references the Effective Date, not a specific signing date."
+    },
+    {
+      "contract": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "key": "effective_date",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote mentions the Effective Date but does not provide an actual date."
+    },
+    {
+      "contract": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote lists both parties"
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote specifies effective date, not signing date"
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote states effective September 10, 2015"
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote states one\u2011year term ending September 10, 2016"
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote allows written extension for successive one\u2011year periods"
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote refers to payment notice, not termination notice"
+    },
+    {
+      "contract": "VnueInc_20150914_8-K_EX-10.1_9259571_EX-10.1_Promotion Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote specifies State of Nevada"
+    },
+    {
+      "contract": "ScansourceInc_20190509_10-Q_EX-10.2_11661422_EX-10.2_Distributor Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote only lists two parties, not all listed in the value."
+    },
+    {
+      "contract": "ScansourceInc_20190509_10-Q_EX-10.2_11661422_EX-10.2_Distributor Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "Quote explicitly states \"Effective Date\" as 4th day of February 2019."
+    },
+    {
+      "contract": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote does not specify a complete date, only the year 2014."
+    },
+    {
+      "contract": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote states effective as of the last date of signature but does not provide a specific date."
+    },
+    {
+      "contract": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "LOGANSROADHOUSEINC_03_27_1998-EX-10.17-SPONSORSHIP AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement4",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote lists both KIOSK CONCEPTS, INC. and THE GRILLED CHEESE TRUCK, INC. as parties."
+    },
+    {
+      "contract": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement4",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "The quote contains blanks for the month and day, so it does not provide a specific signed date."
+    },
+    {
+      "contract": "FTENETWORKS,INC_02_18_2016-EX-99.4-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "quote lists both parties"
+    },
+    {
+      "contract": "FTENETWORKS,INC_02_18_2016-EX-99.4-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote states effective date"
+    },
+    {
+      "contract": "FTENETWORKS,INC_02_18_2016-EX-99.4-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": "quote specifies end date"
+    },
+    {
+      "contract": "FTENETWORKS,INC_02_18_2016-EX-99.4-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": "quote describes month\u2011to\u2011month continuation"
+    },
+    {
+      "contract": "FTENETWORKS,INC_02_18_2016-EX-99.4-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": "quote specifies thirty (30) days prior written notice"
+    },
+    {
+      "contract": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "key": "signed_date",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote refers to the Effective Date, not the signing date."
+    },
+    {
+      "contract": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "OPERALTD_04_30_2020-EX-4.14-SERVICE AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "InnerscopeHearingTechnologiesInc_20181109_8-K_EX-10.6_11419704_EX-10.6_Distributor Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote lists both Erchonia Corporation and InnerScope Hearing Technologies Inc as parties."
+    },
+    {
+      "contract": "InnerscopeHearingTechnologiesInc_20181109_8-K_EX-10.6_11419704_EX-10.6_Distributor Agreement",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote explicitly states the agreement shall automatically renew for a period of three (3) years."
+    },
+    {
+      "contract": "InnerscopeHearingTechnologiesInc_20181109_8-K_EX-10.6_11419704_EX-10.6_Distributor Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": "The quote indicates a ten\u2011day cure period after written notice of breach, matching the required notice period."
+    },
+    {
+      "contract": "InnerscopeHearingTechnologiesInc_20181109_8-K_EX-10.6_11419704_EX-10.6_Distributor Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote states the agreement is governed by the laws of the United States and the State of Florida."
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "key": "notice_period",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ArconicRolledProductsCorp_20191217_10-12B_EX-2.7_11923804_EX-2.7_Trademark License Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ArconicRolledProductsCorp_20191217_10-12B_EX-2.7_11923804_EX-2.7_Trademark License Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ArconicRolledProductsCorp_20191217_10-12B_EX-2.7_11923804_EX-2.7_Trademark License Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "Quote refers to a cure period after a default, not a termination notice period."
+    },
+    {
+      "contract": "ArconicRolledProductsCorp_20191217_10-12B_EX-2.7_11923804_EX-2.7_Trademark License Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement2",
+      "key": "parties",
+      "right": true,
+      "flagged": true,
+      "reason": "Quote mentions only Franchisor and Master Franchisee, not Guarantors."
+    },
+    {
+      "contract": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement2",
+      "key": "governing_law",
+      "right": false,
+      "flagged": false,
+      "reason": "Quote specifies laws of the state where Franchisor has its principal place of business at the time the action is initiated."
+    },
+    {
+      "contract": "CardlyticsInc_20180112_S-1_EX-10.16_11002987_EX-10.16_Maintenance Agreement2",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote explicitly names both parties, matching the required format."
+    },
+    {
+      "contract": "PREMIERBIOMEDICALINC_05_14_2020-EX-10.2-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote lists all three parties separated by commas, matching the required format."
+    },
+    {
+      "contract": "PREMIERBIOMEDICALINC_05_14_2020-EX-10.2-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": true,
+      "reason": "The quote references a date but does not specify the exact date of signing; it only mentions the date set forth above."
+    },
+    {
+      "contract": "PREMIERBIOMEDICALINC_05_14_2020-EX-10.2-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote explicitly states \"entered into on May 12, 2020 (\"Effective Date\")\"."
+    },
+    {
+      "contract": "PREMIERBIOMEDICALINC_05_14_2020-EX-10.2-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": "The quote states \"governed by and construed in accordance with the laws of the Commonwealth of Pennsylvania\"."
+    },
+    {
+      "contract": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "key": "auto_renewal",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "key": "notice_period",
+      "right": false,
+      "flagged": true,
+      "reason": "quote specifies five (5) days after mailing, not 30 days written notice"
+    },
+    {
+      "contract": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "signed_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "auto_renewal",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "TcPipelinesLp_20160226_10-K_EX-99.12_9454048_EX-99.12_Transportation Agreement",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "TcPipelinesLp_20160226_10-K_EX-99.12_9454048_EX-99.12_Transportation Agreement",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "TcPipelinesLp_20160226_10-K_EX-99.12_9454048_EX-99.12_Transportation Agreement",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "TcPipelinesLp_20160226_10-K_EX-99.12_9454048_EX-99.12_Transportation Agreement",
+      "key": "expiry_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "TcPipelinesLp_20160226_10-K_EX-99.12_9454048_EX-99.12_Transportation Agreement",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "key": "notice_period",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VERSOTECHNOLOGIESINC_12_28_2007-EX-99.3-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VERSOTECHNOLOGIESINC_12_28_2007-EX-99.3-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "signed_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VERSOTECHNOLOGIESINC_12_28_2007-EX-99.3-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "effective_date",
+      "right": false,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "VERSOTECHNOLOGIESINC_12_28_2007-EX-99.3-INTELLECTUAL PROPERTY AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PRIMEENERGYRESOURCESCORP_04_02_2007-EX-10.28-COMPLETION AND LIQUIDITY MAINTENANCE AGREEMENT",
+      "key": "parties",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PRIMEENERGYRESOURCESCORP_04_02_2007-EX-10.28-COMPLETION AND LIQUIDITY MAINTENANCE AGREEMENT",
+      "key": "effective_date",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    },
+    {
+      "contract": "PRIMEENERGYRESOURCESCORP_04_02_2007-EX-10.28-COMPLETION AND LIQUIDITY MAINTENANCE AGREEMENT",
+      "key": "governing_law",
+      "right": true,
+      "flagged": false,
+      "reason": ""
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "clauses_ledgar",
-  "created": "2026-11-17 21:45",
+  "created": "2026-11-19 23:10",
   "rows": [
     {
       "model": "TF-IDF + logistic regression (baseline)",
@@ -31,6 +31,13 @@
       "train_examples": 60000,
       "epochs": 5.0,
       "train_minutes": 13.2
+    },
+    {
+      "model": "Fine-tuned MiniLM + TF-IDF, averaged (ours, weight 0.25)",
+      "test_examples": 10000,
+      "accuracy": 0.8845,
+      "macro_f1": 0.8265,
+      "train_examples": 60000
     }
   ]
 }

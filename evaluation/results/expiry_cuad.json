@@ -1,0 +1,376 @@
+{
+  "name": "expiry_cuad",
+  "created": "2026-11-19 23:02",
+  "summary": {
+    "model": "openai/gpt-oss-120b",
+    "contracts": 40,
+    "re_extracted": 30,
+    "calculated_values": 9,
+    "calculated_right": 8,
+    "calculated_wrong": 1,
+    "first_run": {
+      "tp": 10,
+      "fp": 0,
+      "fn": 18,
+      "precision": 1.0,
+      "recall": 0.357,
+      "f1": 0.526
+    },
+    "without_calculation": {
+      "tp": 10,
+      "fp": 0,
+      "fn": 18,
+      "precision": 1.0,
+      "recall": 0.357,
+      "f1": 0.526
+    },
+    "with_calculation": {
+      "tp": 18,
+      "fp": 1,
+      "fn": 10,
+      "precision": 0.947,
+      "recall": 0.643,
+      "f1": 0.766
+    },
+    "skipped": []
+  },
+  "rows": [
+    {
+      "contract": "FerroglobePlc_20150624_F-4A_EX-10.20_9154746_EX-10.20_Outsourcing Agreement",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "PacificapEntertainmentHoldingsInc_20051115_8-KA_EX-1.01_4300894_EX-1.01_Content License Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2015-11-02",
+      "term": "10 Years",
+      "gold": [
+        "This Agreement will become effective as of the last date of signature (Effective Date) and shall, unless sooner terminated as provided below or as otherwise agreed, remain effective for an initial ter"
+      ]
+    },
+    {
+      "contract": "VitalibisInc_20180316_8-K_EX-10.2_11100168_EX-10.2_Hosting Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "This Agreement shall commence as of the Effective Date and shall continue in effect for one (I) year, unless earlier terminated as expressly provided in Sections 1.3. 10.1. or 10.2 of this Agreement ("
+      ]
+    },
+    {
+      "contract": "WESTERN COPPER - NON-COMPETITION AGREEMENT",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "FP",
+      "calculated": true,
+      "pred": "2008-05-02",
+      "term": "2 years",
+      "gold": []
+    },
+    {
+      "contract": "BANUESTRAFINANCIALCORP_09_08_2006-EX-10.16-AGENCY AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "This Agreement shall become effective on the date hereof and shall terminate upon the termination of the Offering."
+      ]
+    },
+    {
+      "contract": "Columbia Laboratories, (Bermuda) Ltd. - AMEND NO. 2 TO MANUFACTURING AND SUPPLY AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "Unless terminated earlier pursuant to Section 12.2 below, the initial term of this Agreement shall expire on 31 December 2024 (the \"Initial Term\") unless the Parties mutually agree in writing any exte"
+      ]
+    },
+    {
+      "contract": "AULAMERICANUNITTRUST_04_24_2020-EX-99.8.77-SERVICING AGREEMENT",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "GIGGLESN_HUGS,INC_06_23_2016-EX-10.2-STRATEGIC ALLIANCE AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2019-05-16",
+      "term": "3 years",
+      "gold": [
+        "Either party may terminate this agreement after 3 years following the effective date."
+      ]
+    },
+    {
+      "contract": "Principal Life Insurance Company - Broker Dealer Marketing and Servicing Agreement",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "CENTRACKINTERNATIONALINC_10_29_1999-EX-10.3-WEB SITE HOSTING AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "1999-09-30",
+      "term": "six (6) months",
+      "gold": [
+        "The term of this Agreement for the Hosted Site shall commence upon April 1, 1999 and shall continue for a period of six (6) months, unless earlier terminated in accordance with provisions hereof."
+      ]
+    },
+    {
+      "contract": "AMERICANPHYSICIANSCAPITALINC_03_31_2003-EX-10.26-AGENCY AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "This agreement shall terminate:\n\n                  a.       Automatically if any public authority cancels or                            declines to renew the Agency's license or Certificate           "
+      ]
+    },
+    {
+      "contract": "2ThemartComInc_19990826_10-12G_EX-10.10_6700288_EX-10.10_Co-Branding Agreement_ Agency Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "The term of this Agreement shall continue for one (1) year following the Launch Date, unless earlier terminated as provided herein."
+      ]
+    },
+    {
+      "contract": "INTRICONCORP_03_10_2009-EX-10.22-Strategic Alliance Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2013-09-30",
+      "term": "five (5) years",
+      "gold": [
+        "The initial term of this Agreement shall be five (5) years from the date of execution and may be extended subject to satisfactory  agreement on ongoing commercial terms, to be agreed two (2) months pr"
+      ]
+    },
+    {
+      "contract": "AMERICASSHOPPINGMALLINC_12_10_1999-EX-10.2-SITE DEVELOPMENT AND HOSTING AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2000-08-08",
+      "term": "1 year",
+      "gold": [
+        "This Agreement shall be effective as of that date (the \"Effective Date\") the Site becomes fully operational as set forth in writing and executed by both Parties and shall continue for a period of one "
+      ]
+    },
+    {
+      "contract": "ADAMSGOLFINC_03_21_2005-EX-10.17-ENDORSEMENT AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "The Term of this Agreement shall be for a period of [* ****] years and [*****] months commencing the 1st day of September 2004 and terminating the [*****] day of [*****]."
+      ]
+    },
+    {
+      "contract": "NeuroboPharmaceuticalsInc_20190903_S-4_EX-10.36_11802165_EX-10.36_Manufacturing Agreement_ Supply Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "This Agreement shall commence on the Effective Date and, unless earlier terminated, shall continue in full force and effect for a period of [***] years thereafter."
+      ]
+    },
+    {
+      "contract": "ScansourceInc_20190509_10-Q_EX-10.2_11661422_EX-10.2_Distributor Agreement",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "STWRESOURCESHOLDINGCORP_08_06_2014-EX-10.1-COOPERATION AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": "thirty (30) years",
+      "gold": [
+        "Subject to the other provisions contained herein, this AGREEMENT shall be for a term of thirty (30) years from the Effective Date, which shall automatically renew from year-to-year thereafter unless t"
+      ]
+    },
+    {
+      "contract": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement4",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "InnerscopeHearingTechnologiesInc_20181109_8-K_EX-10.6_11419704_EX-10.6_Distributor Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": "3 years",
+      "gold": [
+        "Unless terminated earlier as provided in this agreement, this Agreement shall have an initial term of three (3) years."
+      ]
+    },
+    {
+      "contract": "CCAINDUSTRIESINC_04_14_2014-EX-10.1-OUTSOURCING AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2014-07-19",
+      "term": "six (6) months",
+      "gold": [
+        "This agreement shall commence on January 20, 2014 (the \"Effective Date\") and shall continue in effect for six (6) months (the \"Initial Term\")."
+      ]
+    },
+    {
+      "contract": "ArconicRolledProductsCorp_20191217_10-12B_EX-2.7_11923804_EX-2.7_Trademark License Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "FN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": [
+        "The Term of this Agreement will commence on the Effective Date and shall continue for the time periods set forth in Schedules 1 and 2 unless sooner terminated in accordance with the terms of this Agre"
+      ]
+    },
+    {
+      "contract": "SoupmanInc_20150814_8-K_EX-10.1_9230148_EX-10.1_Franchise Agreement2",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "CardlyticsInc_20180112_S-1_EX-10.16_11002987_EX-10.16_Maintenance Agreement2",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "PREMIERBIOMEDICALINC_05_14_2020-EX-10.2-INTELLECTUAL PROPERTY AGREEMENT",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "AlliedEsportsEntertainmentInc_20190815_8-K_EX-10.19_11788293_EX-10.19_Content License Agreement",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2021-01-31",
+      "term": "three (3) years initial term, automatically extendable for two (2) years",
+      "gold": [
+        "This Agreement will be in effect for three (3) years from the Effective Date (\"Initial Term\") unless terminated earlier in accordance with this Agreement."
+      ]
+    },
+    {
+      "contract": "ORBSATCORP_08_17_2007-EX-7.3-STRATEGIC ALLIANCE AGREEMENT",
+      "before": "FN",
+      "without_calculation": "FN",
+      "with_calculation": "TP",
+      "calculated": true,
+      "pred": "2006-09-08",
+      "term": "12 months",
+      "gold": [
+        "The term of the Agreement will be for 12 months unless terminated sooner.",
+        "The term of the Agreement will be for 12 months unless terminated sooner"
+      ]
+    },
+    {
+      "contract": "PLAYAHOTELS_RESORTSNV_03_14_2017-EX-10.22-STRATEGIC ALLIANCE AGREEMENT (Hyatt Ziva Cancun)",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "VERSOTECHNOLOGIESINC_12_28_2007-EX-99.3-INTELLECTUAL PROPERTY AGREEMENT",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    },
+    {
+      "contract": "PRIMEENERGYRESOURCESCORP_04_02_2007-EX-10.28-COMPLETION AND LIQUIDITY MAINTENANCE AGREEMENT",
+      "before": "TN",
+      "without_calculation": "TN",
+      "with_calculation": "TN",
+      "calculated": false,
+      "pred": null,
+      "term": null,
+      "gold": []
+    }
+  ]
+}

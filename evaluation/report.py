@@ -22,7 +22,9 @@ def latest(pattern):
 
 
 def pct(x):
-    return '—' if x is None else f'{x * 100:.1f}%'
+    """0.8845 -> '88.5%' (round half up, as in the written report)."""
+    from decimal import ROUND_HALF_UP, Decimal
+    return '—' if x is None else f"{(Decimal(str(x)) * 100).quantize(Decimal('0.1'), ROUND_HALF_UP)}%"
 
 
 def collect_clauses():
@@ -44,6 +46,12 @@ def collect_clauses():
         rows.append({'model': f"Fine-tuned {m['model'].split('/')[-1]} (ours)", 'test_examples': m['test_examples'],
                      'accuracy': m.get('accuracy'), 'macro_f1': m.get('macro_f1'), 'train_examples': m['train_examples'],
                      'epochs': m.get('epochs'), 'train_minutes': m.get('train_minutes')})
+    ens = latest('ensemble-*.json')
+    if ens:
+        t = ens['test']['ensemble']
+        rows.append({'model': f"Fine-tuned MiniLM + TF-IDF, averaged (ours, weight {ens['transformer_weight']})",
+                     'test_examples': ens['test_examples'], 'accuracy': t['accuracy'], 'macro_f1': t['macro_f1'],
+                     'train_examples': ens['train_examples']})
     if rows:
         save('clauses_ledgar', {'rows': rows})
     return rows
@@ -121,9 +129,29 @@ def main():
     else:
         lines += ['_not run yet_', '']
 
-    # 3b. answers
+    # 3a. second check and calculated expiry dates
+    v = load('verifier_cuad')
+    if v:
+        sv = v['summary']
+        lines += ['## 3a. Second check on extracted values', '',
+                  f"The check (model `{sv['model']}`) re-read the {sv['checked_values']} saved predictions: it flagged "
+                  f"**{sv['wrong_flagged']}/{sv['wrong_values']}** wrong values ({pct(sv['wrong_flagged_rate'])}) and "
+                  f"{sv['right_flagged']}/{sv['right_values']} right ones ({pct(sv['right_flagged_rate'])}). Before it, the review rule "
+                  "caught 2 of 34 wrong values.", '']
+    x = load('expiry_cuad')
+    if x:
+        sx = x['summary']
+        a, b = sx['without_calculation'], sx['with_calculation']
+        lines += ['## 3b. Expiry dates calculated from start date + term', '',
+                  f"{sx['re_extracted']} contracts without a written expiry date were extracted again (model `{sx['model']}`); "
+                  f"{sx['calculated_values']} expiry dates were calculated ({sx['calculated_right']} right, {sx['calculated_wrong']} wrong).", '',
+                  '| Expiry date | Precision | Recall | F1 |', '|---|---:|---:|---:|',
+                  f"| Without calculation | {pct(a['precision'])} | {pct(a['recall'])} | {pct(a['f1'])} |",
+                  f"| With calculation | {pct(b['precision'])} | {pct(b['recall'])} | {pct(b['f1'])} |", '']
+
+    # 3c. answers
     a = load('answers_cuad')
-    lines += ['## 3b. Answer quality (CUAD, questions asked through the full answer engine)', '']
+    lines += ['## 3c. Answer quality (CUAD, questions asked through the full answer engine)', '']
     if a:
         s = a['summary']
         lines += [f"{s['contracts']} contracts, {s['answerable_questions']} questions whose answer is in the contract and "

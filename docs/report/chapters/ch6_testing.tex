@@ -19,7 +19,7 @@ labelled set of 100 routing questions and a handwriting set (Section~\ref{sec:ev
 \end{itemize}
 
 \section{Unit Testing}
-All automated tests pass (26 tests, 99.5 seconds). Table~\ref{tab:unit} lists the unit tests.
+All automated tests pass (34 tests, 97 seconds). Table~\ref{tab:unit} lists the unit tests.
 
 \begin{longtable}{|p{1.15cm}|p{3.1cm}|p{4.1cm}|p{4.5cm}|p{1.2cm}|}
 \caption{Unit Test Cases}\label{tab:unit}\\ \hline
@@ -51,11 +51,19 @@ UT-20 & \code{run\_reminders} & Lease expiring in 25 days with 30 days' notice &
 UT-21 & \code{run\_reminders} & Contracts expiring in 400 and 60 days; check run twice & No reminder for the far one; exactly one per person for the near one & Pass \\ \hline
 UT-22 & \code{people\_to\_remind} & HR department-only contract expiring in 5 days & Admin and uploader notified; legal employee and outsider not & Pass \\ \hline
 UT-23 & Notifications API & List and mark as read & Unread count drops to 0 & Pass \\ \hline
+UT-24 & Streaming ask API & ``When was the NDA with Acme signed?'' & Events arrive as plan, sources, text, done; the text contains ``12 March 2025''; the question is saved to history & Pass \\ \hline
+UT-25 & Streaming ask API & HR employee asks for the secret settlement codeword, passing its document id & No source from the forbidden document and none of its text in the stream & Pass \\ \hline
+UT-26 & Answer cache & Same question asked twice by one user, then by a user with different access & Second answer comes from the cache; the other user gets a fresh answer & Pass \\ \hline
+UT-27 & \code{confident\_search} & ``Find the lease \dots'', ``Show me all handwritten affidavits'', ``Show me the expiry dates \dots'' & First two skip the LLM routing call; requests naming a record field do not & Pass \\ \hline
+UT-28 & \code{parse\_term} & ``three (3) years'', ``thirty-six months'', ``90 days'', ``until terminated'' & 36 months, 36 months, 90 days, none & Pass \\ \hline
+UT-29 & \code{derive\_expiry} & Effective 1 April 2025, term ``3 years'', no written expiry & Expiry 31 March 2028, quote = the term, status NEEDS\_REVIEW & Pass \\ \hline
+UT-30 & \code{derive\_expiry} & Same, but with a written expiry date & Written date kept, nothing calculated & Pass \\ \hline
+UT-31 & Second check & Governing law (supported) and a notice period quoting a renewal clause (not supported) & Governing law stays AUTO; notice period goes to review with the reason & Pass \\ \hline
 \end{longtable}
 
 \section{Integration Testing}
-Integration tests check that modules work together. IT-01, IT-03 and IT-04 are automated; IT-02 and
-IT-05 were run against the running system.
+Integration tests check that modules work together. IT-01, IT-03 and IT-04 are automated; IT-02, IT-05 and
+IT-06 were run against the running system.
 
 \begin{longtable}{|p{1.15cm}|p{3.4cm}|p{4.0cm}|p{4.4cm}|p{1.3cm}|}
 \caption{Integration Testing Summary}\label{tab:integration}\\ \hline
@@ -69,6 +77,7 @@ IT-02 & Vue Assistant $\rightarrow$ Ask API $\rightarrow$ router $\rightarrow$ r
 IT-03 & Access control $\rightarrow$ hybrid retrieval & A secret document visible only to the legal department; searches by an HR employee, an outsider and a legal employee & HR employee and outsider never receive its chunks; legal employee gets it first & Pass \\ \hline
 IT-04 & Ask API $\rightarrow$ engine with explicit document ids & HR employee passes the secret document's id & Id ignored; no sources from it & Pass \\ \hline
 IT-05 & LLM gateway $\rightarrow$ fallback provider & Main provider's daily quota exhausted (HTTP 429, retry after 20 min) & Gateway switches to the fallback at once and answers; later calls skip the main provider & Pass \\ \hline
+IT-06 & Docker Compose: database, backend, worker, nginx web & \code{docker compose up} on an empty database, then \code{seed\_demo} & Migrations run; all four containers healthy; six documents processed; sign-in, lookup, streamed answer and protected file download work through nginx & Pass \\ \hline
 \end{longtable}
 
 \section{System Testing}
@@ -110,12 +119,13 @@ generated answers came from the fallback provider (Gemini).
 \textbf{Metric} & \textbf{Requirement} & \textbf{Observed Result} \\ \hline
 Lookup answer time & $\leq$ 3 s (PER-1) & 1.5 s (``Which contracts expire in 2027?'') \\ \hline
 Knowledge answer time & $\leq$ 35 s (PER-2) & 11.5--13.6 s with a warm server; 22.8 s for the first question after a restart (model loading) \\ \hline
+Streamed knowledge answer & -- & Sources shown after 2.6 s, first words after 4.1 s, complete after 4.4 s (Groq, warm server) \\ \hline
 Upload response & Immediate (PER-3) & Returns after storing the file; processing continues in the background \\ \hline
 Digital page extraction & -- & About 10 ms per page (65-page Contract Act read in 1.2 s) \\ \hline
 Handwritten page reading & -- & 6.8 s for one handwritten receipt (vision model) \\ \hline
 Classification / field extraction & -- & 1.1--1.8 s / 1.4--2.0 s per short document; 38.6 s per long CUAD contract \\ \hline
 Chunking and embedding & -- & 0.1--0.2 s for 1--3 page documents; 26 s for the 65-page Contract Act (190 chunks, CPU) \\ \hline
-Automated test suite & -- & 26 tests in 99.5 s \\ \hline
+Automated test suite & -- & 34 tests in 97 s \\ \hline
 \end{tabularx}
 \end{table}
 
@@ -156,7 +166,8 @@ much as common ones.
 TF-IDF + logistic regression (baseline) & 10,000 & 10,000 & 81.7\% & 72.3\% \\ \hline
 TF-IDF + logistic regression (baseline) & 60,000 & 10,000 & 87.7\% & 82.5\% \\ \hline
 Fine-tuned all-MiniLM-L6-v2 (ours, CPU, 3 epochs) & 10,000 & 10,000 & 71.2\% & 45.9\% \\ \hline
-\textbf{Fine-tuned all-MiniLM-L6-v2 (ours, GPU, 5 epochs)} & \textbf{60,000} & \textbf{10,000} & \textbf{85.1\%} & \textbf{75.1\%} \\ \hline
+Fine-tuned all-MiniLM-L6-v2 (ours, GPU, 5 epochs) & 60,000 & 10,000 & 85.1\% & 75.1\% \\ \hline
+\textbf{Fine-tuned MiniLM + TF-IDF, averaged (ours, used by the system)} & \textbf{60,000} & \textbf{10,000} & \textbf{88.5\%} & \textbf{82.7\%} \\ \hline
 Zero-shot LLM (\code{gpt-oss-120b}, no training) & 0 & 198 & 65.2\% & 44.0\% \\ \hline
 \end{tabularx}
 \end{table}
@@ -166,15 +177,17 @@ The zero-shot LLM was tested on a random sample of 198 test provisions because o
 Training on all 60,000 provisions on a free Colab T4 GPU (13.2 minutes) raised the fine-tuned model from
 71.2\% to 85.1\% accuracy and from 45.9\% to 75.1\% macro-F1; only 4 of the 100 clause types are still never
 predicted. The laptop run had been under-trained: with 10,000 examples many rare classes had almost no
-training data. This GPU model is the one the system uses.
+training data.
 
-The TF-IDF baseline trained on the same 60,000 provisions remains slightly stronger (87.7\% accuracy,
-82.5\% macro-F1). LEDGAR clause types are signalled largely by vocabulary (``governing law'', ``indemnify''),
-which suits a keyword model, and MiniLM is a very small encoder (22 million parameters) chosen for fast CPU
-inference rather than accuracy. The fine-tuned model is still kept in the system because it labels clauses
-from their meaning, not only their keywords, and it clearly beats the zero-shot LLM (65.2\%) at no API cost.
-A larger encoder (DeBERTa-v3, provided as an option in the notebook) is the natural next step to overtake
-the baseline.
+On its own, the fine-tuned model is still below the TF-IDF baseline. LEDGAR clause types are signalled
+largely by vocabulary (``governing law'', ``indemnify''), which suits a keyword model, and MiniLM is a very
+small encoder (22 million parameters) chosen for fast CPU inference. The two models, however, make different
+mistakes: TF-IDF relies on exact wording, the transformer on meaning. The system therefore averages their
+predicted probabilities (\code{ml/train\_ensemble.py}). The weight of the transformer (0.25) was chosen on
+the 10,000 validation provisions only, and the test set was used once. In that run the combination reached
+\textbf{88.5\% accuracy and 82.7\% macro-F1}, better than TF-IDF (87.8\% / 82.1\%) and the fine-tuned model
+(85.1\% / 75.0\%) evaluated on the same test set. This combination labels clauses in the application. All
+trained models clearly beat the zero-shot LLM (65.2\%), at no API cost.
 
 \subsection{EV-2: Retrieval (CUAD)}
 For 60 CUAD contracts, 344 questions were asked about clauses that lawyers had marked. A result is a
@@ -223,10 +236,47 @@ so every value can be checked against its source.
 stop a renewal, while our notice period is any termination notice, so many correct values count as false
 positives. CUAD's \emph{Expiration Date} is often a duration (``continues for five years''), while the
 system stores an explicit date only when one is written, which lowers recall.
-\item \textbf{Limitation of the review rule.} Only 2 of the 34 wrong predictions were sent to review,
+\item \textbf{Limitation of the first review rule.} Only 2 of the 34 wrong predictions were sent to review,
 because most wrong values carry a real quote that answers a slightly different question. Confidence and
-grounding do not catch these; a second checking model is listed as future work.
+grounding alone do not catch these. Two improvements address this (below).
 \end{itemize}
+
+\paragraph*{Improvement 1: a second check.} After extraction, one more LLM call is asked a narrower question for
+each value: does this quote, on its own, prove the value \emph{as this field}? Values that fail go to the review
+queue with the model's reason (e.g.\ ``the quote is about a cure period, not termination notice''). Run on the
+same 176 saved predictions (\code{evaluation/eval\_verifier.py}, model \code{gpt-oss-20b}):
+
+\begin{table}[H]\centering
+\caption{Second Check on Extracted Values (176 predictions)}\label{tab:ev-verify}
+\begin{tabular}{|l|r|r|}\hline
+\textbf{Review rule} & \textbf{Wrong values flagged} & \textbf{Right values flagged} \\ \hline
+Confidence and grounding only & 2 of 34 (5.9\%) & 7 of 142 (4.9\%) \\ \hline
+\textbf{With the second check} & \textbf{11 of 34 (32.4\%)} & 17 of 142 (12.0\%) \\ \hline
+\end{tabular}
+\end{table}
+The check catches more than five times as many wrong values, mostly notice periods whose quote was really
+about a cure period or payment terms, at the cost of reviewers also confirming 10 more correct values. Several
+of those are signing dates quoted from ``IN WITNESS WHEREOF \dots{} as of the date above'', a quote that indeed
+does not contain the date, so checking them is reasonable. (The saved quotes are cut to 200 characters, so
+inside the pipeline the check sees slightly more text.)
+
+\paragraph*{Improvement 2: calculated expiry dates.} Many contracts state a term (``for three (3) years from the
+Effective Date'') instead of an end date. When no end date is written, the system now calculates it from the
+effective or signing date and the term (start + term $-$ 1 day), quotes the term as evidence and always sends
+the value to review. A written expiry date is never replaced. The 30 contracts without a written expiry date
+were extracted again and the expiry field was scored with and without the calculation on the same run
+(\code{evaluation/eval\_expiry.py}):
+
+\begin{table}[H]\centering
+\caption{Expiry Date with and without the Calculation (40 contracts)}\label{tab:ev-expiry}
+\begin{tabular}{|l|r|r|r|}\hline
+\textbf{Expiry date} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\ \hline
+Written dates only & 100.0\% & 35.7\% & 52.6\% \\ \hline
+\textbf{With calculated dates} & 94.7\% & \textbf{64.3\%} & \textbf{76.6\%} \\ \hline
+\end{tabular}
+\end{table}
+Nine dates were calculated and eight were right; the wrong one belongs to a contract the lawyers marked as
+having no fixed expiry, and like every calculated date it was sent to review.
 
 \subsection{EV-4: Query Routing}
 A set of 100 questions (40 LOOKUP, 35 KNOWLEDGE, 25 SEARCH) labelled by hand was routed by the keyword
@@ -271,39 +321,50 @@ $^{\ast}$The vision time includes waiting for the rate limit; a single uncontend
 
 
 \subsection{EV-6: Answer Quality}
-21 CUAD questions whose answer is in the contract and 10 whose answer is not
-(10 contracts) were asked through the full answer engine (model \code{gemini-flash-lite-latest}). Measures: answer judged correct against the
-lawyers' annotation, citation hit rate, and abstention (saying ``not in the document'') when the clause
-is absent. Correctness is graded by a second LLM call that sees the lawyers' annotation (LLM-as-judge).
+CUAD questions were asked through the full answer engine for 10 contracts: about 20 whose answer is in the
+contract and 10 whose answer is not. Measures: answer judged correct against the lawyers' annotation,
+citation hit rate, and abstention (saying ``not in the document'') when the clause is absent. Correctness is
+graded by a second LLM call that sees the lawyers' annotation (LLM-as-judge). Both runs used Gemini
+Flash-Lite, the system's configured fallback model, for answering and grading: a run with \code{gpt-oss-20b}
+hit the free daily token limit part-way (19 of 31 answers were ``model unavailable'' messages), so it was not
+used.
 
-The run used Gemini Flash-Lite, the system's configured fallback model, for both answering and grading: the
-first run with \code{gpt-oss-20b} hit the free daily token limit part-way, and 19 of its 31 answers were
-``model unavailable'' messages rather than answers, so it was not used. Because the same model graded its own
-answers, the 100\% correctness figure is optimistic and should be read together with the citation hit rate,
-which is measured directly against the lawyers' spans. Of the two absent-clause questions counted as not
-abstained, one answer did say that no warranty duration is stated, in wording the automatic check did not
-recognise; the other described related termination obligations (returning property) that CUAD's narrower
-\emph{Post-Termination Services} category does not include. The one wrongly declined question
-(\emph{Minimum Commitment}) involved a ``minimum percentage'' clause the model judged unrelated.
+\paragraph*{Improving ``not in the document'' answers.} In the first run the model sometimes presented a related
+clause as if it answered the question. The answering instructions were changed so that, when the sources do
+not contain the answer, the reply must begin with ``The documents do not say'' and then mention what related
+information they do contain, without presenting it as the answer. The automatic check for such replies was
+also widened (it had missed wording such as ``no specific duration is explicitly stated''); with the wider
+check alone, the first run already scores 9 of 10.
+
 \begin{table}[H]\centering
-\caption{Answer Quality Results}\label{tab:ev-answers}
-\begin{tabular}{|l|r|}\hline
-\textbf{Measure} & \textbf{Result} \\ \hline
-Answer judged correct & 100.0\% \\ \hline
-At least one citation contains the lawyers' span & 95.2\% \\ \hline
-Answers that cite their sources & 100.0\% \\ \hline
-Wrongly says ``not in the document'' when present & 4.8\% \\ \hline
-Correctly says ``not in the document'' when absent & 80.0\% \\ \hline
+\caption{Answer Quality Before and After the New Instructions}\label{tab:ev-answers}
+\begin{tabular}{|l|r|r|}\hline
+\textbf{Measure} & \textbf{Before} & \textbf{After (used)} \\ \hline
+Correctly says ``not in the document'' when absent & 80.0\% (8/10) & \textbf{100.0\% (10/10)} \\ \hline
+At least one citation contains the lawyers' span & 95.2\% & \textbf{100.0\%} \\ \hline
+Answers that cite their sources & 100.0\% & 100.0\% \\ \hline
+Wrongly says ``not in the document'' when present & 4.8\% (1/21) & 10.0\% (2/20) \\ \hline
+Answer judged correct & 100.0\% & 85.0\% (17/20) \\ \hline
 \end{tabular}
 \end{table}
+The new instructions make the system more careful: it no longer answers any question whose clause is absent,
+and every answer cites the lawyers' passage. The price is two over-cautious replies in borderline cases (a
+``minimum percentage'' clause for a \emph{Minimum Commitment} question, and a termination notice for a
+non-renewal notice question), where the reply nevertheless quotes and cites the relevant clause. For a legal
+records system an occasional over-cautious reply is safer than an invented answer, so the new instructions
+are used. (One question in the second run failed because the provider was overloaded; it is counted as an
+error, not as a wrong answer. A third, softer wording was also tried and rejected: it answered 4 of 10
+absent-clause questions with related clauses.) Because the same model graded its own answers, the
+correctness figures are estimates and should be read together with the citation hit rate, which is measured
+directly against the lawyers' spans.
 
 \section{Testing Summary}
 \begin{table}[H]\centering
 \caption{Test Summary}\label{tab:testsummary}
 \begin{tabular}{|l|r|r|r|}\hline
 \textbf{Test type} & \textbf{Cases} & \textbf{Passed} & \textbf{Failed} \\ \hline
-Unit (automated) & 23 & 23 & 0 \\ \hline
-Integration (3 automated, 2 manual) & 5 & 5 & 0 \\ \hline
+Unit (automated) & 31 & 31 & 0 \\ \hline
+Integration (3 automated, 3 manual) & 6 & 6 & 0 \\ \hline
 System (black box) & 12 & 12 & 0 \\ \hline
 Security checks & 9 & 9 & 0 \\ \hline
 \end{tabular}
