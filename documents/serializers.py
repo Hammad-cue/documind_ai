@@ -21,7 +21,7 @@ class FieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecordField
         fields = ('id', 'key', 'label', 'value_text', 'value_date', 'value_number', 'confidence', 'source_page',
-                  'source_quote', 'grounded', 'status', 'updated_at', 'edit_count')
+                  'source_quote', 'grounded', 'status', 'review_reason', 'updated_at', 'edit_count')
 
 
 class FieldEditSerializer(serializers.ModelSerializer):
@@ -65,6 +65,16 @@ class DocumentListSerializer(serializers.ModelSerializer):
         return v.file_type if v else None
 
 
+ROMAN = set('IVXLCDM')
+
+
+def _heading_case(text):
+    """'CHAPTER II' -> 'Chapter II', 'PART 3' -> 'Part 3' (Roman numerals stay upper case)."""
+    words = text.split()
+    return ' '.join(w if (set(w.upper()) <= ROMAN or any(ch.isdigit() for ch in w)) and i else w.capitalize()
+                    for i, w in enumerate(words))
+
+
 class DocumentDetailSerializer(DocumentListSerializer):
     versions = VersionSerializer(many=True, read_only=True)
     current_version_number = serializers.IntegerField(source='current_version.number', default=None, read_only=True)
@@ -73,9 +83,32 @@ class DocumentDetailSerializer(DocumentListSerializer):
     allowed_users = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
+    outline = serializers.SerializerMethodField()
+
     class Meta(DocumentListSerializer.Meta):
         fields = DocumentListSerializer.Meta.fields + ('kind_locked', 'versions', 'current_version_number',
-                                                       'record_fields', 'clauses', 'allowed_users', 'can_edit')
+                                                       'record_fields', 'clauses', 'allowed_users', 'can_edit', 'outline')
+
+    def get_outline(self, d):
+        """Top-level sections of a reference document (e.g. the chapters of an Act) with the page each starts on.
+        A table of contents mentions every chapter first, so the *last* run of passages under a heading is the
+        real chapter."""
+        if d.kind != 'REFERENCE' or not d.current_version_id:
+            return None
+        runs, cur, passages = {}, None, 0
+        for c in d.current_version.chunks.order_by('sequence').values('section_path', 'page_start', 'text'):
+            passages += 1
+            top = c['section_path'].split(' > ')[0].strip()
+            if not top:
+                cur = None
+                continue
+            if cur is None or cur['key'] != top:
+                lines = [l.strip() for l in c['text'].splitlines() if l.strip()]
+                name = lines[1] if len(lines) > 1 and lines[0] == top and lines[1].isupper() and len(lines[1]) > 3 else ''
+                cur = {'key': top, 'title': _heading_case(top), 'name': name.capitalize(), 'page': c['page_start']}
+                runs[top] = cur          # later runs replace earlier ones
+        sections = [{k: r[k] for k in ('title', 'name', 'page')} for r in sorted(runs.values(), key=lambda r: r['page'])][:60]
+        return {'sections': sections, 'passages': passages, 'pages': d.current_version.page_count}
 
     def get_clauses(self, d):
         """Clause types found by the fine-tuned classifier, grouped: [{label, count, pages, snippet, confidence}]."""

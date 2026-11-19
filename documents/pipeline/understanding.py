@@ -150,7 +150,111 @@ def ground(quote, page_text):
     return sum(w in page_words for w in words) / len(words) >= 0.8
 
 
-def extract_fields(pages):
+# ---------------- expiry from start date + term ----------------
+
+UNITS = {w: i for i, w in enumerate('zero one two three four five six seven eight nine ten eleven twelve thirteen '
+                                     'fourteen fifteen sixteen seventeen eighteen nineteen'.split())}
+TENS = {'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60, 'seventy': 70, 'eighty': 80, 'ninety': 90}
+
+
+def _words_to_digits(t):
+    """'thirty six' -> '36', 'twelve' -> '12', 'a year' -> '1 year'."""
+    t = re.sub(r'\b(' + '|'.join(TENS) + r')(?:\s+(one|two|three|four|five|six|seven|eight|nine))?\b',
+               lambda m: str(TENS[m.group(1)] + (UNITS[m.group(2)] if m.group(2) else 0)), t)
+    t = re.sub(r'\b(' + '|'.join(sorted(UNITS, key=len, reverse=True)) + r')\b', lambda m: str(UNITS[m.group(1)]), t)
+    return re.sub(r'\ban?\s+(?=(?:year|month|week|day)\b)', '1 ', t)
+
+
+def parse_term(text):
+    """'3 years', 'three (3) years', 'thirty-six months', '90 days', 'one year' -> ('months', 36) / ('days', 90).
+    Returns None for open-ended or unclear terms ('until terminated', 'perpetual')."""
+    if not text:
+        return None
+    t = str(text).lower().replace('-', ' ')
+    if re.search(r'\b(perpetual|indefinite|until terminated|evergreen)\b', t):
+        return None
+    t = _words_to_digits(t)
+    m = re.search(r'\b(\d{1,3})\s*(?:\(\s*\d{1,3}\s*\)\s*)?(year|month|week|day)s?\b', t)
+    if not m:
+        return None
+    n = int(m.group(1))
+    unit = m.group(2)
+    if n <= 0:
+        return None
+    if unit == 'year':
+        return ('months', n * 12)
+    if unit == 'month':
+        return ('months', n)
+    return ('days', n * 7 if unit == 'week' else n)
+
+
+def add_months(d, months):
+    y, m = divmod(d.month - 1 + months, 12)
+    year, month = d.year + y, m + 1
+    for day in (d.day, 30, 29, 28):          # clamp 31 Jan + 1 month -> 28/29 Feb
+        try:
+            return date(year, month, day)
+        except ValueError:
+            continue
+
+
+def derive_expiry(by_key):
+    """If no explicit expiry was found but the start date and a fixed term were, calculate the end date
+    (start + term - 1 day, e.g. 1 Apr 2025 + 3 years -> 31 Mar 2028). Always sent for human review."""
+    if by_key.get('expiry_date', {}).get('value_date'):
+        return None
+    start = next((by_key[k] for k in ('effective_date', 'signed_date') if by_key.get(k, {}).get('value_date')), None)
+    term = by_key.get('term')
+    parsed = parse_term(term['value_text']) if term else None
+    if not start or not parsed:
+        return None
+    unit, n = parsed
+    from datetime import timedelta
+    end = (add_months(start['value_date'], n) if unit == 'months' else start['value_date'] + timedelta(days=n)) - timedelta(days=1)
+    return {
+        'key': 'expiry_date', 'label': FIELD_LABELS['expiry_date'], 'value_text': end.isoformat(), 'value_date': end,
+        'value_number': None, 'confidence': round(min(start['confidence'], term['confidence']) * 0.8, 3),
+        'source_page': term['source_page'], 'source_quote': term['source_quote'], 'grounded': term['grounded'],
+        'status': 'NEEDS_REVIEW',
+        'review_reason': f"Calculated: {FIELD_LABELS[start['key']].lower()} {start['value_date']:%d %b %Y} + term "
+                         f"“{term['value_text'][:60]}”. Check the contract does not say otherwise.",
+    }
+
+
+# ---------------- second check ----------------
+
+def verify_fields(items, deadline=60):
+    """Ask the model a narrower question for each extracted value: does this quote actually prove *this* field?
+    items: [{'key', 'value_text', 'source_quote'}]. Returns {key: (supported, reason)}; {} if the check fails."""
+    items = [i for i in items if i.get('value_text')]
+    if not items or not llm.is_configured():
+        return {}
+    listing = '\n'.join(
+        f'- {i["key"]} (definition: {FIELD_DESCRIPTIONS[i["key"]]})\n  value: {i["value_text"]}\n  quote: "{(i.get("source_quote") or "")[:400]}"'
+        for i in items)
+    prompt = f"""You check facts extracted from a contract. For each field, decide whether the quoted text, on its own,
+supports the value AS THAT FIELD. Be strict about the field definition: a quote about renewal does not prove a
+termination notice period; a date the agreement was signed is not an effective date unless it says it takes
+effect then; a quote that only mentions a party does not prove the governing law. Small formatting differences
+(date formats, abbreviations) are fine.
+
+{listing}
+
+Return JSON: {{"results": {{"<field>": {{"supported": true or false, "reason": "short reason if not supported"}}}}}}"""
+    try:
+        out = llm.chat_json([{'role': 'user', 'content': prompt}], max_tokens=700, temperature=0.0, deadline=deadline)
+    except (llm.LLMError, ValueError):
+        return {}
+    res = out.get('results', out) if isinstance(out, dict) else {}
+    checked = {}
+    for i in items:
+        r = res.get(i['key'])
+        if isinstance(r, dict) and 'supported' in r:
+            checked[i['key']] = (bool(r['supported']), str(r.get('reason') or '')[:200])
+    return checked
+
+
+def extract_fields(pages, verify=True):
     """Returns list of dicts ready for RecordField(...)."""
     text = _paged_text(pages, 22000)
     field_spec = '\n'.join(f'- {k}: {FIELD_DESCRIPTIONS[k]}' for k in FIELD_KEYS)
@@ -209,11 +313,29 @@ DOCUMENT:
 
         needs_review = (conf < settings.REVIEW_CONFIDENCE_THRESHOLD or not grounded
                         or page_source.get(page) in ('HANDWRITING', 'OCR'))
+        reason = ('Read from handwriting or a scan' if page_source.get(page) in ('HANDWRITING', 'OCR') else
+                  'The quote was not found on the cited page' if not grounded else
+                  'Low confidence' if needs_review else '')
         results.append({
             'key': key, 'label': FIELD_LABELS[key],
             'value_text': value_date.isoformat() if value_date else value,
             'value_date': value_date, 'value_number': value_number,
             'confidence': round(conf, 3), 'source_page': page, 'source_quote': quote,
-            'grounded': grounded, 'status': 'NEEDS_REVIEW' if needs_review else 'AUTO',
+            'grounded': grounded, 'status': 'NEEDS_REVIEW' if needs_review else 'AUTO', 'review_reason': reason,
         })
+
+    # 1. a fixed term with a start date but no written end date -> calculate the end date (flagged for review)
+    derived = derive_expiry({r['key']: r for r in results})
+    if derived:
+        results = [r for r in results if r['key'] != 'expiry_date'] + [derived]
+
+    # 2. second check: does each quote really prove *its* field? Mismatches go to the review queue.
+    if verify:
+        checked = verify_fields([r for r in results if r is not derived])
+        for r in results:
+            ok, why = checked.get(r['key'], (True, ''))
+            if not ok:
+                r['confidence'] = round(r['confidence'] * 0.6, 3)
+                r['status'] = 'NEEDS_REVIEW'
+                r['review_reason'] = f'Second check: {why}' if why else 'The second check could not confirm this value'
     return results

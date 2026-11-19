@@ -154,6 +154,8 @@ class RecordField(models.Model):
     source_quote = models.TextField(blank=True)
     grounded = models.BooleanField(default=False, help_text='The quoted evidence was found in the page text.')
     status = models.CharField(max_length=12, choices=Status.choices, default=Status.AUTO)
+    review_reason = models.CharField(max_length=300, blank=True,
+                                     help_text='Why the value needs a person to check it (e.g. calculated, failed the second check).')
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

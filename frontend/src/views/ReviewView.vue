@@ -21,11 +21,14 @@
               <div class="mt-3 text-xs font-medium text-muted">{{ f.label }}</div>
               <div class="mt-0.5 text-[24px] leading-tight font-bold tracking-[-0.02em]">{{ fmtValue(f.value_text) }}</div>
               <p v-if="f.source_quote" class="mt-3 rounded-[12px] bg-mark/40 px-3 py-2 text-[13px] leading-relaxed text-ink-2">“{{ f.source_quote }}”</p>
+              <p v-if="f.review_reason && /^(Calculated|Second check)/.test(f.review_reason)" class="mt-2 rounded-[12px] bg-warn-soft/60 px-3 py-2 text-[13px] leading-relaxed text-ink-2">{{ f.review_reason }}</p>
               <div class="mt-3 flex flex-wrap gap-1.5">
                 <span class="chip bg-black/5 text-ink-2">{{ Math.round(f.confidence * 100) }}% confidence</span>
                 <span v-if="f.page_source === 'HANDWRITING'" class="chip bg-[#FCE7F3] text-[#A21C6B]">Read from handwriting</span>
                 <span v-if="f.page_source === 'OCR'" class="chip bg-warn-soft text-warn">Read from a scan</span>
                 <span v-if="!f.grounded" class="chip bg-bad-soft text-bad">Quote not found on the page</span>
+                <span v-if="f.review_reason?.startsWith('Calculated')" class="chip bg-accent-soft text-accent">Calculated date</span>
+                <span v-if="f.review_reason?.startsWith('Second check')" class="chip bg-warn-soft text-warn">Failed second check</span>
               </div>
             </div>
             <div class="flex shrink-0 gap-2">

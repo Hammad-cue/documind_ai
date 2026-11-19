@@ -2,7 +2,8 @@
   <div v-if="doc" class="flex h-full flex-col gap-4 overflow-y-auto px-4 pt-6 pb-4 scroll-thin sm:px-6 lg:overflow-hidden lg:pt-4 lg:pr-0 lg:pl-2">
     <!-- header -->
     <header class="flex flex-wrap items-center gap-x-4 gap-y-3">
-      <div class="min-w-0 flex-1">
+      <!-- the title keeps at least ~420px; when the row is too narrow the tabs and buttons wrap below together -->
+      <div class="min-w-[min(100%,420px)] flex-1">
         <router-link to="/app/documents" class="inline-flex items-center gap-1 text-[13px] font-medium text-muted hover:text-ink">
           <ChevronLeft :size="15" aria-hidden="true" />Documents<span v-if="doc.department_name"> / {{ doc.department_name }}</span>
         </router-link>
@@ -14,11 +15,13 @@
           <span>Version {{ viewVersion }}<span v-if="doc.current_version_number && viewVersion !== doc.current_version_number"> (current is {{ doc.current_version_number }})</span></span>
         </div>
       </div>
+      <div class="ml-auto flex flex-wrap items-center gap-3">
       <Segmented v-model="tab" label="Document sections" :options="tabs" />
       <div class="flex items-center gap-2">
         <button v-if="doc.can_edit" type="button" class="btn-ghost w-11 px-0" aria-label="Settings and access" title="Settings and access" @click="showSettings = true"><Settings2 :size="18" /></button>
         <button v-if="doc.can_edit" type="button" class="btn-ghost" @click="showUpload = true"><Upload :size="16" aria-hidden="true" />New version</button>
         <router-link :to="{ path: '/app/ask', query: { doc: doc.id, title: doc.title } }" class="btn-dark"><Search :size="16" aria-hidden="true" />Ask about it</router-link>
+      </div>
       </div>
     </header>
 
@@ -64,6 +67,7 @@
                   </button>
                   <div v-if="selected === f.id" class="px-3.5 pb-3.5">
                     <p v-if="f.source_quote" class="rounded-[12px] bg-mark/40 px-3 py-2 text-[13px] leading-relaxed text-ink-2">“{{ f.source_quote }}”</p>
+                    <p v-if="f.status === 'NEEDS_REVIEW' && f.review_reason && /^(Calculated|Second check)/.test(f.review_reason)" class="rounded-[12px] bg-warn-soft/60 px-3 py-2 text-[13px] leading-relaxed text-ink-2">{{ f.review_reason }}</p>
                     <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
                       <span v-if="f.source_page">Page {{ f.source_page }}</span>
                       <span>{{ Math.round(f.confidence * 100) }}% confidence</span>
@@ -125,7 +129,23 @@
               <span><b>{{ verifiedCount }} of {{ doc.record_fields.length }} facts confirmed by a person.</b> Each one links to the page it came from.</span>
             </div>
           </template>
-          <p v-else class="mt-4 rounded-[16px] bg-white/60 p-4 text-sm text-ink-2">This is a reference document. Ask questions about it and answers will cite its sections and pages.</p>
+          <div v-else class="mt-4 space-y-4">
+            <p class="rounded-[16px] bg-white/60 p-4 text-sm text-ink-2">
+              Reference material: ask questions about it and every answer cites the section and page.
+              <span v-if="doc.outline" class="mt-1 block text-[13px] text-muted">{{ doc.outline.pages }} pages · {{ doc.outline.passages }} passages indexed for search</span>
+            </p>
+            <div v-if="doc.outline?.sections?.length">
+              <h2 class="mb-2 text-[15px] font-semibold">Contents</h2>
+              <ol class="stagger space-y-1">
+                <li v-for="s in doc.outline.sections" :key="s.title + s.page">
+                  <button type="button" class="flex w-full items-baseline gap-3 rounded-[12px] px-3 py-2 text-left text-sm hover:bg-white/70" @click="jump(s.page)">
+                    <span class="min-w-0 flex-1"><span class="font-semibold">{{ s.title }}</span><span v-if="s.name" class="text-ink-2"> — {{ s.name }}</span></span>
+                    <span class="shrink-0 text-xs text-muted">p. {{ s.page }}</span>
+                  </button>
+                </li>
+              </ol>
+            </div>
+          </div>
         </div>
 
         <!-- VERSIONS -->

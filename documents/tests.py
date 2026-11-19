@@ -197,3 +197,54 @@ class PipelineAndHistoryTests(TestCase):
         aud = APIClient()
         aud.force_authenticate(self.f.auditor)
         self.assertGreater(aud.get('/api/audit/').json()['count'], 0)
+
+
+class ExpiryAndSecondCheckTests(TestCase):
+    def _field(self, key, value, conf=0.9, **extra):
+        from documents.schema import FIELD_LABELS
+        return {'key': key, 'label': FIELD_LABELS[key], 'value_text': value, 'value_date': extra.pop('d', None),
+                'value_number': None, 'confidence': conf, 'source_page': 1, 'source_quote': extra.pop('q', 'quote'),
+                'grounded': True, 'status': 'AUTO', 'review_reason': ''}
+
+    def test_term_parsing(self):
+        from documents.pipeline.understanding import parse_term
+        self.assertEqual(parse_term('three (3) years'), ('months', 36))
+        self.assertEqual(parse_term('thirty-six months'), ('months', 36))
+        self.assertEqual(parse_term('90 days'), ('days', 90))
+        self.assertIsNone(parse_term('until terminated by either party'))
+        self.assertIsNone(parse_term('reasonable period'))
+
+    def test_expiry_is_calculated_from_start_and_term_and_sent_for_review(self):
+        from documents.pipeline.understanding import derive_expiry
+        fields = {'effective_date': self._field('effective_date', '2025-04-01', d=date(2025, 4, 1)),
+                  'term': self._field('term', '3 years', q='This Agreement shall remain in force for three (3) years')}
+        out = derive_expiry(fields)
+        self.assertEqual(out['value_date'], date(2028, 3, 31))
+        self.assertEqual(out['status'], 'NEEDS_REVIEW')
+        self.assertIn('Calculated', out['review_reason'])
+        self.assertEqual(out['source_quote'], fields['term']['source_quote'])
+
+    def test_written_expiry_is_never_replaced(self):
+        from documents.pipeline.understanding import derive_expiry
+        fields = {'effective_date': self._field('effective_date', '2025-04-01', d=date(2025, 4, 1)),
+                  'term': self._field('term', '3 years'),
+                  'expiry_date': self._field('expiry_date', '2027-12-31', d=date(2027, 12, 31))}
+        self.assertIsNone(derive_expiry(fields))
+
+    def test_second_check_sends_unsupported_values_to_review(self):
+        from unittest import mock
+        from documents.pipeline import understanding
+        from documents.pipeline.extract import PageText
+
+        extracted = {'fields': {
+            'governing_law': {'value': 'Pakistan', 'page': 1, 'quote': 'governed by the laws of Pakistan', 'confidence': 0.95},
+            'notice_period': {'value': '60 days', 'page': 1, 'quote': 'renews for successive one year terms unless 60 days', 'confidence': 0.95}}}
+        verdict = {'results': {'governing_law': {'supported': True},
+                               'notice_period': {'supported': False, 'reason': 'the quote is about renewal, not termination'}}}
+        page = PageText(1, 'This Agreement is governed by the laws of Pakistan. It renews for successive one year terms unless 60 days notice is given.', 'DIGITAL')
+        with mock.patch.object(understanding.llm, 'chat_json', side_effect=[extracted, verdict]), \
+             mock.patch.object(understanding.llm, 'is_configured', return_value=True):
+            fields = {f['key']: f for f in understanding.extract_fields([page])}
+        self.assertEqual(fields['governing_law']['status'], 'AUTO')
+        self.assertEqual(fields['notice_period']['status'], 'NEEDS_REVIEW')
+        self.assertIn('renewal', fields['notice_period']['review_reason'])
