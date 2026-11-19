@@ -56,9 +56,20 @@ def heuristic_plan(text):
     return plan
 
 
+def confident_search(text):
+    """'Find/show/list ...' requests that mention no record field are always document searches (21 of 21 in the
+    labelled router set), so they skip the LLM routing call and save API quota."""
+    t = text.lower().strip()
+    return bool(re.search(SEARCH_START, t)) and not any(re.search(rx, t) for _, rx in FIELD_SYNONYMS)
+
+
 def plan_query(text, history=None):
     if not llm.is_configured():
         return heuristic_plan(text)
+    if confident_search(text) and not history:
+        plan = heuristic_plan(text)
+        plan.update(intent='SEARCH', method='keyword rules (confident search)')
+        return plan
     hist = ''
     if history:
         hist = 'Previous questions in this conversation (resolve words like "it" / "that contract"):\n' + \

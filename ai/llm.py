@@ -141,6 +141,99 @@ def _chat_once(messages, provider, model, json_mode, temperature, max_tokens, ti
     raise LLMError(f'{provider} call failed ({last_error or "out of time"})')
 
 
+def chat_stream(messages, *, temperature=0.1, max_tokens=1500, deadline=60):
+    """Like chat(), but yields the answer piece by piece as the model writes it.
+
+    The deadline applies to the *first* piece (after that the answer is visibly arriving). If the main provider
+    fails before writing anything, the fallback provider is tried; a failure after text has been sent raises
+    LLMError, and the caller decides how to finish the answer."""
+    started = time.monotonic()
+    providers = []
+    if not (_cooling(settings.LLM_PROVIDER) and _has_fallback()):
+        providers.append((settings.LLM_PROVIDER, settings.LLM_MODEL))
+    if _has_fallback():
+        providers.append((settings.LLM_FALLBACK_PROVIDER, settings.LLM_FALLBACK_MODEL))
+    errors = []
+    for provider, model in providers:
+        remaining = max(15.0, deadline - (time.monotonic() - started))
+        sent = False
+        try:
+            for piece in _stream_once(messages, provider, model, temperature, max_tokens, remaining):
+                sent = True
+                yield piece
+            return
+        except LLMError as exc:
+            if sent:
+                raise
+            errors.append(str(exc))
+    raise LLMError('; '.join(errors) or 'no language model configured')
+
+
+def _has_fallback():
+    fb = settings.LLM_FALLBACK_PROVIDER
+    return bool(fb) and fb != settings.LLM_PROVIDER and is_configured(fb)
+
+
+def _stream_once(messages, provider, model, temperature, max_tokens, deadline):
+    base, key = _endpoint(provider)
+    started = time.monotonic()
+    optional = {'reasoning_effort': 'low'} if 'gpt-oss' in model else {}
+    last_error = None
+    for attempt in range(3):
+        left = deadline - (time.monotonic() - started)
+        if left <= 0:
+            break
+        body = {'model': model, 'messages': messages, 'temperature': temperature, 'max_tokens': max_tokens,
+                'stream': True, **optional}
+        try:
+            with httpx.stream('POST', f'{base}/chat/completions', json=body, headers={'Authorization': f'Bearer {key}'},
+                              timeout=httpx.Timeout(max(5.0, left), read=max(5.0, left))) as resp:
+                if resp.status_code == 429:
+                    resp.read()
+                    try:
+                        retry_after = float(resp.headers.get('retry-after', 5))
+                    except ValueError:
+                        retry_after = 5.0
+                    if retry_after > 60 or resp.headers.get('x-should-retry') == 'false':
+                        _cooldown[provider] = time.monotonic() + retry_after
+                        raise LLMError(f'{provider} rate limited for {retry_after / 60:.0f} min (quota used up)')
+                    last_error = 'rate limited'
+                    if retry_after >= deadline - (time.monotonic() - started):
+                        break
+                    time.sleep(retry_after)
+                    continue
+                if resp.status_code in (500, 502, 503, 504):
+                    resp.read()
+                    last_error = f'{resp.status_code} (provider overloaded)'
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                if resp.status_code == 400 and optional:
+                    resp.read()
+                    optional, last_error = {}, resp.text[:300]
+                    continue
+                if resp.status_code != 200:
+                    resp.read()
+                    raise LLMError(f'{provider} returned {resp.status_code}: {resp.text[:300]}')
+                for line in resp.iter_lines():
+                    if not line.startswith('data:'):
+                        continue
+                    data = line[5:].strip()
+                    if data == '[DONE]':
+                        return
+                    try:
+                        choice = (json.loads(data).get('choices') or [{}])[0]
+                    except json.JSONDecodeError:
+                        continue
+                    piece = (choice.get('delta') or {}).get('content')
+                    if piece:
+                        yield piece
+                return
+        except httpx.HTTPError as exc:
+            last_error = f'network error: {exc}'
+            continue
+    raise LLMError(f'{provider} call failed ({last_error or "out of time"})')
+
+
 def parse_json(text):
     text = text.strip()
     text = re.sub(r'^```(?:json)?\s*|\s*```$', '', text)

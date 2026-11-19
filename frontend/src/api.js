@@ -35,6 +35,49 @@ api.interceptors.response.use(
   }
 )
 
+/**
+ * POST and read the response as it arrives: one JSON object per line (used for streamed answers).
+ * Calls onEvent(obj) for each line. Refreshes an expired session once, like the axios client.
+ * Throws an Error with .status and .data when the server rejects the request.
+ */
+export async function postStream(path, body, onEvent, retried = false) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('access_token') || ''}` },
+    body: JSON.stringify(body),
+  })
+  if (res.status === 401 && !retried && localStorage.getItem('refresh_token')) {
+    try {
+      refreshing = refreshing || axios.post(`${API_BASE}/auth/token/refresh/`, { refresh: localStorage.getItem('refresh_token') })
+      const { data } = await refreshing
+      localStorage.setItem('access_token', data.access)
+    } finally { refreshing = null }
+    return postStream(path, body, onEvent, true)
+  }
+  if (!res.ok || !res.body) {
+    const err = new Error(`Request failed (${res.status})`)
+    err.status = res.status
+    try { err.data = await res.json() } catch { /* not JSON */ }
+    err.response = { status: res.status, data: err.data }
+    throw err
+  }
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    let nl
+    while ((nl = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, nl).trim()
+      buffer = buffer.slice(nl + 1)
+      if (line) onEvent(JSON.parse(line))
+    }
+  }
+  if (buffer.trim()) onEvent(JSON.parse(buffer))
+}
+
 /** Turn a DRF error response into one readable sentence. */
 export function errorText(e, fallback = 'Something went wrong.') {
   const d = e?.response?.data

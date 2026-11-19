@@ -1,3 +1,4 @@
+import json
 import tempfile
 from pathlib import Path
 from datetime import date
@@ -80,3 +81,53 @@ class AssistantTests(TestCase):
         other = APIClient()
         other.force_authenticate(self.f.legal_emp)
         self.assertEqual(other.get(f"/api/assistant/conversations/{r['conversation_id']}/").status_code, 404)
+
+    def _stream(self, client, body):
+        r = client.post('/api/assistant/ask/stream/', body, format='json')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r['Content-Type'], 'application/x-ndjson')
+        return [json.loads(line) for line in b''.join(r.streaming_content).decode().splitlines() if line.strip()]
+
+    def test_stream_endpoint_sends_events_and_saves_history(self):
+        c = APIClient()
+        c.force_authenticate(self.f.hr_emp)
+        events = self._stream(c, {'query': 'When was the NDA with Acme signed?'})
+        types = [e['type'] for e in events]
+        self.assertEqual(types[0], 'plan')
+        self.assertIn('sources', types)
+        self.assertEqual(types[-1], 'done')
+        answer = ''.join(e['text'] for e in events if e['type'] == 'delta')
+        self.assertIn('12 March 2025', answer)
+        done = events[-1]
+        self.assertEqual(done['answer'], answer)
+        conv = c.get(f"/api/assistant/conversations/{done['conversation_id']}/").json()
+        self.assertEqual(len(conv['queries']), 1)
+
+    def test_stream_endpoint_never_leaks_forbidden_documents(self):
+        c = APIClient()
+        c.force_authenticate(self.f.hr_emp)
+        events = self._stream(c, {'query': 'what is the settlement codeword?', 'document_ids': [self.secret.id]})
+        sources = [s for e in events if e['type'] == 'sources' for s in e['sources']]
+        self.assertNotIn(self.secret.id, {s['document_id'] for s in sources})
+        self.assertNotIn('pineapple', ''.join(e.get('text', '') for e in events))
+
+    def test_repeated_question_is_answered_from_cache_per_access(self):
+        from django.core.cache import cache
+        cache.clear()
+        q = 'Find the Acme NDA'
+        first = engine.answer(self.f.legal_emp, q)
+        self.assertNotIn('cached', first['plan'])
+        second = engine.answer(self.f.legal_emp, q)
+        self.assertTrue(second['plan'].get('cached'))
+        self.assertEqual(second['answer'], first['answer'])
+        # someone who can see different documents must not receive the cached answer
+        other = engine.answer(self.f.hr_emp, q)
+        self.assertNotIn('cached', other['plan'])
+
+
+class ConfidentSearchTests(TestCase):
+    def test_search_requests_without_record_fields_skip_the_llm(self):
+        self.assertTrue(router.confident_search('Find the lease for the Lahore office'))
+        self.assertTrue(router.confident_search('Show me all handwritten affidavits'))
+        self.assertFalse(router.confident_search('Show me the expiry dates of all our leases'))
+        self.assertFalse(router.confident_search('When was the NDA with Acme signed?'))

@@ -130,3 +130,24 @@ kbd { font-family: inherit; }
 /* PDF text layer: invisible text used for selection + highlighting */
 .vue-pdf-embed .textLayer span { color: transparent; }
 .scroll-thin { scrollbar-width: thin; scrollbar-color: rgb(11 18 32 / 0.18) transparent; }
+
+/* soften the cut-off edge of a scrolling list (an opacity mask, not a colour gradient) */
+@utility fade-bottom {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
+}
+
+/* blinking caret at the end of an answer that is still being written */
+.streaming-caret > :last-child::after {
+  content: '';
+  display: inline-block;
+  width: 0.45em;
+  height: 1.05em;
+  margin-left: 3px;
+  vertical-align: -0.15em;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.55;
+  animation: caret-blink 1s steps(2, start) infinite;
+}
+@keyframes caret-blink { to { visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .streaming-caret > :last-child::after { animation: none; } }

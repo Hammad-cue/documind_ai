@@ -24,11 +24,12 @@
         <!-- answers -->
         <div class="space-y-6">
           <TransitionGroup name="rise">
-            <article v-for="q in queries" :key="q.id" class="panel p-6 sm:p-7">
+            <article v-for="q in queries" :key="q._key || q.id" class="panel p-6 sm:p-7">
               <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-medium text-muted">
                 <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full" :class="INTENT[q.intent]?.dot" aria-hidden="true" />{{ INTENT[q.intent]?.label }}</span>
-                <span>{{ (q.latency_ms / 1000).toFixed(1) }} s</span>
-                <span v-if="q.plan?.fallback" class="chip bg-warn-soft text-warn">read the text instead</span>
+                <span v-if="!q._streaming">{{ (q.latency_ms / 1000).toFixed(1) }} s</span>
+                <span v-else class="inline-flex items-center gap-1.5 text-accent"><span class="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden="true" />{{ q._stage }}</span>
+                <span v-if="q.plan?.fallback" class="chip bg-warn-soft text-warn" :title="q.plan.fallback">Answered from the text</span>
                 <span class="ml-auto flex items-center gap-1">
                   <button type="button" class="rounded-lg px-2 py-1 hover:bg-black/5 hover:text-ink" @click="q._plan = !q._plan">
                     {{ q._plan ? 'Hide details' : 'How this was answered' }}
@@ -73,13 +74,17 @@
               </div>
 
               <!-- written answer -->
+              <div v-else-if="q._streaming && !q.answer" class="mt-4 space-y-2" aria-hidden="true">
+                <div class="shimmer h-3.5 w-full rounded-md" /><div class="shimmer h-3.5 w-11/12 rounded-md" /><div class="shimmer h-3.5 w-3/5 rounded-md" />
+              </div>
               <div v-else class="prose prose-slate mt-3 max-w-none text-[16px] leading-[1.7] text-ink-2 prose-p:my-2 prose-strong:text-ink prose-li:my-0.5"
+                   :class="q._streaming && 'streaming-caret'" :aria-busy="q._streaming ? 'true' : null"
                    v-html="render(q)" v-reveal="q._fresh" @click="onAnswerClick($event, q)" />
 
               <!-- sources -->
-              <div v-if="q.sources.length && q.intent !== 'LOOKUP'" class="mt-5 grid gap-2.5" :class="q.intent === 'SEARCH' ? 'sm:grid-cols-2' : ''">
+              <div v-if="q.sources.length && q.intent !== 'LOOKUP'" class="mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5" :class="q.intent === 'SEARCH' ? 'sm:grid-cols-2' : ''">
                 <button v-for="s in visibleSources(q)" :key="s.id" type="button" :id="`src-${q.id}-${s.id}`"
-                        class="flex items-center gap-3.5 rounded-[18px] bg-white/70 p-3 text-left transition hover:bg-white"
+                        class="flex min-w-0 items-center gap-3.5 rounded-[18px] bg-white/70 p-3 text-left transition hover:bg-white"
                         @click="open(s.document_id, s.page, s.snippet)">
                   <PageThumb class="shrink-0" />
                   <span class="min-w-0 flex-1">
@@ -87,7 +92,10 @@
                       <span v-if="q.intent === 'KNOWLEDGE'" class="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-soft px-1 text-[11px] font-bold text-accent">{{ s.id }}</span>
                       <span class="truncate text-[14px] font-semibold">{{ s.document_title }}</span>
                     </span>
-                    <span class="mt-0.5 block truncate text-[13px] text-muted">{{ s.section ? s.section.replaceAll(' > ', ' › ') + ' · ' : '' }}page {{ s.page }}</span>
+                    <span class="mt-0.5 flex min-w-0 gap-1 text-[13px] text-muted" :title="s.section ? s.section.replaceAll(' > ', ' › ') : ''">
+                      <span v-if="s.section" class="truncate">{{ s.section.replaceAll(' > ', ' › ') }} ·</span>
+                      <span class="shrink-0">page {{ s.page }}</span>
+                    </span>
                   </span>
                   <ChevronRight :size="18" class="shrink-0 text-muted" aria-hidden="true" />
                 </button>
@@ -100,7 +108,7 @@
           </TransitionGroup>
 
           <!-- thinking -->
-          <div v-if="busy" class="panel p-6 sm:p-7" aria-live="polite">
+          <div v-if="busy && !live" class="panel p-6 sm:p-7" aria-live="polite">
             <h2 class="text-[21px] leading-snug font-semibold tracking-[-0.02em]">{{ pending }}</h2>
             <ol class="mt-4 space-y-2.5">
               <li v-for="(s, i) in STEPS" :key="s" class="flex items-center gap-3 text-[14px] transition-opacity duration-300"
@@ -180,9 +188,9 @@
 import { ArrowRight, ArrowUp, CalendarClock, Check, ChevronRight, Copy, FileSearch, FileText, Files, ScrollText, Search, Table2, X } from '@lucide/vue'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import api, { errorText } from '../api'
+import api, { errorText, postStream } from '../api'
 import Modal from '../components/Modal.vue'
 import PageThumb from '../components/PageThumb.vue'
 import StatusPill from '../components/StatusPill.vue'
@@ -224,6 +232,7 @@ const convId = ref(null)
 const input = ref('')
 const busy = ref(false)
 const pending = ref('')
+const live = ref(null)      // the answer currently being written
 const error = ref('')
 const thread = ref(null)
 const inputEl = ref(null)
@@ -334,24 +343,56 @@ async function ask(text) {
   busy.value = true
   error.value = ''
   step.value = 0
-  stepTimers = [600, 1400, 2600].map((ms, i) => setTimeout(() => { step.value = i + 1 }, ms))
+  stepTimers = [600, 1400].map((ms, i) => setTimeout(() => { step.value = Math.max(step.value, i + 1) }, ms))
   scrollDown()
+  let entry = null
+  let frame = 0
   try {
-    const { data } = await api.post('/assistant/ask/', {
+    // The answer arrives as events: plan -> sources -> pieces of text -> done (saved to history).
+    await postStream('/assistant/ask/stream/', {
       query: q, conversation_id: convId.value, document_ids: scope.value.map(d => d.id),
+    }, ev => {
+      if (ev.type === 'plan') {
+        if (!entry) {
+          entry = reactive({ _key: `live-${Date.now()}`, id: null, query: q, intent: ev.intent, plan: ev.plan, answer: '',
+                             sources: [], results: [], latency_ms: 0, _streaming: true, _stage: 'Reading the relevant pages' })
+          queries.value.push(entry)
+          live.value = entry
+          scrollDown()
+        } else {
+          entry.intent = ev.intent
+          entry.plan = ev.plan
+        }
+      } else if (ev.type === 'sources') {
+        entry.sources = ev.sources
+        entry.results = ev.results
+        entry._stage = 'Writing the answer'
+      } else if (ev.type === 'delta') {
+        entry.answer += ev.text
+        cancelAnimationFrame(frame)
+        frame = requestAnimationFrame(() => scrollDown(false))
+      } else if (ev.type === 'done') {
+        const { type, ...saved } = ev
+        Object.assign(entry, saved, { _streaming: false, _fresh: saved.intent === 'LOOKUP' })
+        if (convId.value !== saved.conversation_id) {
+          convId.value = saved.conversation_id
+          router.replace({ path: `/app/ask/${saved.conversation_id}`, query: route.query })
+        }
+      } else if (ev.type === 'error') {
+        throw new Error(ev.message)
+      }
     })
-    queries.value.push({ ...data, _fresh: true })
-    if (convId.value !== data.conversation_id) {
-      convId.value = data.conversation_id
-      router.replace({ path: `/app/ask/${data.conversation_id}`, query: route.query })
-    }
+    if (entry?._streaming) throw new Error('The answer stopped before it finished. Please ask again.')
     loadRecent()
   } catch (e) {
-    error.value = e.response?.status === 429 ? 'You are asking a little too quickly. Wait a moment and try again.' : errorText(e)
-    input.value = q
+    if (entry && !entry.answer) queries.value = queries.value.filter(x => x !== entry)
+    else if (entry) entry._streaming = false
+    error.value = e.status === 429 ? 'You are asking a little too quickly. Wait a moment and try again.' : errorText(e)
+    if (!entry?.answer) input.value = q
   } finally {
     stepTimers.forEach(clearTimeout)
     busy.value = false
+    live.value = null
     scrollDown()
     nextTick(() => inputEl.value?.focus())
   }

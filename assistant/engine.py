@@ -1,4 +1,9 @@
 """Executes a routed query and builds the answer + sources the frontend renders."""
+import copy
+import hashlib
+import json
+
+from django.core.cache import cache
 from django.db.models import Q
 
 from ai import llm
@@ -102,30 +107,43 @@ def run_lookup(user, plan, document_ids):
 
 SYSTEM_PROMPT = """You are the research assistant of an organization's legal records system.
 Answer ONLY from the numbered sources provided. After every factual statement cite its source like [1] or [2][3].
-Quote short exact wording for legal provisions when useful. If the sources do not contain the answer,
-say so plainly instead of guessing. Be concise and well structured (use short paragraphs or bullet points).
-You provide information from documents, not legal advice."""
+Quote short exact wording for legal provisions when useful. Be concise and well structured (use short
+paragraphs or bullet points). You provide information from documents, not legal advice.
+If the sources do not contain the answer, begin your reply with exactly "The documents do not say" and then,
+in one or two sentences, mention what related information they do contain (with citations). Never fill the gap
+with general knowledge, and do not present a related clause as if it answered the question."""
 
 
-def run_knowledge(user, plan, text, document_ids):
+def prepare_knowledge(user, plan, text, document_ids):
+    """Retrieve the passages and build the prompt. Returns (sources, messages, ready_answer):
+    ready_answer is set when no LLM call is needed (nothing found, or no LLM configured)."""
     hits = retrieval.hybrid_search(user, plan.get('keywords') or text, document_ids, k=8)
     if not hits:
-        return NOT_FOUND, [], []
+        return [], None, NOT_FOUND
     sources = [_source_from_hit(i + 1, h) for i, h in enumerate(hits)]
     if not llm.is_configured():
         top = sources[0]
-        return f"Most relevant passage, from **{top['document_title']}** (page {top['page']}) [1]:\n\n> {top['snippet'][:500]}", sources, []
-
+        return sources, None, f"Most relevant passage, from **{top['document_title']}** (page {top['page']}) [1]:\n\n> {top['snippet'][:500]}"
     context = '\n\n'.join(
         f"[{s['id']}] {s['document_title']} — {s['section'] or 'text'} (page {s['page']})\n{h.chunk.text}"
         for s, h in zip(sources, hits))
+    messages = [{'role': 'system', 'content': SYSTEM_PROMPT},
+                {'role': 'user', 'content': f'SOURCES:\n{context}\n\nQUESTION: {text}'}]
+    return sources, messages, None
+
+
+def llm_unavailable(exc):
+    return f'The language model is unavailable right now ({exc}). The most relevant passages are listed as sources.'
+
+
+def run_knowledge(user, plan, text, document_ids):
+    sources, messages, ready = prepare_knowledge(user, plan, text, document_ids)
+    if ready is not None:
+        return ready, sources, []
     try:
-        answer = llm.chat([
-            {'role': 'system', 'content': SYSTEM_PROMPT},
-            {'role': 'user', 'content': f'SOURCES:\n{context}\n\nQUESTION: {text}'},
-        ], max_tokens=1000, temperature=0.1, deadline=35)
+        answer = llm.chat(messages, max_tokens=1000, temperature=0.1, deadline=35)
     except llm.LLMError as exc:
-        return f'The language model is unavailable right now ({exc}). The most relevant passages are listed as sources.', sources, []
+        return llm_unavailable(exc), sources, []
     return answer, sources, []
 
 
@@ -182,7 +200,46 @@ def run_search(user, plan, text, document_ids):
 
 # ---------------- entry point ----------------
 
+# ---------------- answer cache ----------------
+# Identical questions are answered from a cache to save LLM quota. The key includes everything that can
+# change the answer: organisation, question, scope, recent turns, and the exact documents *and versions* this
+# user may open - so people with different access never share an answer, and a new version invalidates it.
+# Record lookups are not cached because a reviewer can correct a field at any time.
+CACHE_SECONDS = 6 * 3600
+
+
+def _cache_key(user, text, document_ids, history):
+    from documents.access import visible_documents
+    visible = sorted(visible_documents(user).values_list('id', 'current_version_id'))
+    payload = json.dumps([user.membership.organization_id, ' '.join(text.lower().split()), sorted(document_ids or []),
+                          list(history or []), visible], default=str)
+    return 'answer:' + hashlib.sha256(payload.encode()).hexdigest()
+
+
+def _cached(key):
+    out = cache.get(key)
+    if out:
+        out = copy.deepcopy(out)
+        out['plan']['cached'] = True
+    return out
+
+
+def _store(key, out):
+    if out['intent'] != 'LOOKUP' and not out['answer'].startswith('The language model is unavailable'):
+        cache.set(key, out, CACHE_SECONDS)
+
+
 def answer(user, text, document_ids=None, history=None):
+    key = _cache_key(user, text, document_ids, history)
+    hit = _cached(key)
+    if hit:
+        return hit
+    out = _answer(user, text, document_ids, history)
+    _store(key, out)
+    return out
+
+
+def _answer(user, text, document_ids=None, history=None):
     plan = router.plan_query(text, history)
     intent = plan['intent']
     if intent == 'LOOKUP':
@@ -197,3 +254,56 @@ def answer(user, text, document_ids=None, history=None):
         out = run_knowledge(user, plan, text, document_ids)
     answer_text, sources, results = out
     return {'intent': intent, 'plan': plan, 'answer': answer_text, 'sources': sources, 'results': results}
+
+
+def answer_events(user, text, document_ids=None, history=None):
+    """The same answer as answer(), as a stream of events for the UI:
+       {'type': 'plan'} -> {'type': 'sources'} -> {'type': 'delta', 'text'}... -> {'type': 'final', ...}
+    Written answers arrive piece by piece; lookups and searches arrive as one piece."""
+    key = _cache_key(user, text, document_ids, history)
+    hit = _cached(key)
+    if hit:
+        yield {'type': 'plan', 'intent': hit['intent'], 'plan': hit['plan']}
+        yield {'type': 'sources', 'sources': hit['sources'], 'results': hit['results']}
+        yield {'type': 'delta', 'text': hit['answer']}
+        yield {'type': 'final', **hit}
+        return
+    for event in _answer_events(user, text, document_ids, history):
+        if event['type'] == 'final':
+            _store(key, {k: v for k, v in event.items() if k != 'type'})
+        yield event
+
+
+def _answer_events(user, text, document_ids=None, history=None):
+    plan = router.plan_query(text, history)
+    intent = plan['intent']
+    yield {'type': 'plan', 'intent': intent, 'plan': plan}
+
+    if intent in ('LOOKUP', 'SEARCH'):
+        out = run_lookup(user, plan, document_ids) if intent == 'LOOKUP' else run_search(user, plan, text, document_ids)
+        if out is not None:
+            answer_text, sources, results = out
+            yield {'type': 'sources', 'sources': sources, 'results': results}
+            yield {'type': 'delta', 'text': answer_text}
+            yield {'type': 'final', 'intent': intent, 'plan': plan, 'answer': answer_text, 'sources': sources, 'results': results}
+            return
+        plan['fallback'] = 'no matching record fields; answered from document text'
+        intent = 'KNOWLEDGE'
+        yield {'type': 'plan', 'intent': intent, 'plan': plan}
+
+    sources, messages, ready = prepare_knowledge(user, plan, text, document_ids)
+    yield {'type': 'sources', 'sources': sources, 'results': []}
+    if ready is not None:
+        parts = [ready]
+        yield {'type': 'delta', 'text': ready}
+    else:
+        parts = []
+        try:
+            for piece in llm.chat_stream(messages, max_tokens=1000, temperature=0.1, deadline=35):
+                parts.append(piece)
+                yield {'type': 'delta', 'text': piece}
+        except llm.LLMError as exc:
+            note = llm_unavailable(exc) if not parts else '\n\n_(The answer was cut off because the language model stopped responding.)_'
+            parts.append(note)
+            yield {'type': 'delta', 'text': note}
+    yield {'type': 'final', 'intent': intent, 'plan': plan, 'answer': ''.join(parts).strip(), 'sources': sources, 'results': []}
