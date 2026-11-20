@@ -46,7 +46,7 @@
           <div class="label">People with access</div>
           <div class="max-h-40 space-y-0.5 overflow-y-auto rounded-[14px] border border-black/10 bg-white/60 p-2 scroll-thin">
             <label v-for="m in members" :key="m.id" class="flex min-h-10 items-center gap-2.5 rounded-lg px-2 text-sm hover:bg-white">
-              <input type="checkbox" :value="m.id" v-model="allowed" class="h-4 w-4 accent-[#2F4BE0]" /> {{ m.full_name }}
+              <input type="checkbox" :value="m.id" v-model="allowed" class="h-4 w-4 accent-accent" /> {{ m.full_name }}
               <span class="ml-auto text-xs text-muted">{{ m.role.toLowerCase() }}</span>
             </label>
           </div>
@@ -55,7 +55,7 @@
       <div v-else><label class="label" for="up-note">What changed?</label><input id="up-note" v-model="changeNote" class="input" placeholder="e.g. Renewed for two more years" /></div>
 
       <label class="flex min-h-10 items-center gap-2.5 text-sm text-ink-2">
-        <input type="checkbox" v-model="handwritten" class="h-4 w-4 accent-[#2F4BE0]" /> It's handwritten — read it with the handwriting model
+        <input type="checkbox" v-model="handwritten" class="h-4 w-4 accent-accent" /> It's handwritten — read it with the handwriting model
       </label>
 
       <p v-if="error" class="rounded-[14px] bg-bad-soft px-3.5 py-2.5 text-sm text-bad">{{ error }}</p>

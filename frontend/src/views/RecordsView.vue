@@ -29,7 +29,7 @@
               <th class="px-3 py-3 font-semibold">Value</th><th class="px-6 py-3"><span class="sr-only">Status</span></th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-line">
+          <tbody class="stagger divide-y divide-line">
             <tr v-for="r in rows" :key="r.id" class="cursor-pointer transition hover:bg-white/70" @click="$router.push(`/app/documents/${r.id}`)">
               <td class="px-6 py-3.5">
                 <router-link :to="`/app/documents/${r.id}`" class="font-semibold text-ink hover:text-accent" @click.stop>{{ r.title }}</router-link>

@@ -17,7 +17,7 @@
       <nav aria-label="Main" class="relative mt-4 flex flex-col gap-0.5 text-sm font-medium">
         <!-- the white pill glides to the active page -->
         <span v-if="activeIndex >= 0" aria-hidden="true"
-              class="absolute inset-x-0 top-0 h-[42px] rounded-[12px] bg-white shadow-[0_2px_10px_rgb(28_38_90/0.08),inset_0_1px_0_white] transition-transform duration-[400ms] ease-[var(--ease-spring)]"
+              class="absolute inset-x-0 top-0 h-[42px] rounded-[12px] bg-white shadow-[0_2px_10px_rgb(28_38_90/0.08),inset_0_1px_0_var(--glass-hi)] transition-transform duration-[400ms] ease-[var(--ease-spring)]"
               :style="{ transform: `translateY(${activeIndex * 44}px)` }" />
         <router-link v-for="(item, i) in nav" :key="item.to" :to="item.to" @click="open = false"
           :aria-current="i === activeIndex ? 'page' : undefined"
@@ -25,23 +25,19 @@
                    i === activeIndex ? 'text-ink' : 'text-ink-2 hover:bg-white/50 hover:text-ink']">
           <component :is="item.icon" :size="18" :stroke-width="i === activeIndex ? 2.1 : 1.8" aria-hidden="true" />
           <span class="flex-1">{{ item.label }}</span>
-          <span v-if="item.badge" :key="item.badge" class="animate-pop flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-accent px-1.5 text-xs font-semibold text-white">{{ item.badge }}</span>
+          <span v-if="item.badge" :key="item.badge" class="animate-pop flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-accent px-1.5 text-xs font-semibold text-on-accent">{{ item.badge }}</span>
         </router-link>
       </nav>
 
-      <div v-if="session.recent.length" class="fade-bottom mt-7 min-h-0 flex-1 overflow-y-auto px-2 pb-3 scroll-thin">
-        <div class="mb-1.5 text-xs font-semibold text-muted">Recent</div>
-        <router-link v-for="c in session.recent" :key="c.id" :to="`/app/ask/${c.id}`" @click="open = false"
-          class="block truncate rounded-lg py-1.5 text-[13px] text-ink-2 hover:text-ink" active-class="!text-accent font-semibold">
-          {{ c.title }}
-        </router-link>
-      </div>
-      <div v-else class="flex-1" />
+      <!-- earlier questions live on the Ask screen (History), where they are not squeezed out by the menu -->
+      <div class="flex-1" />
+
+      <ThemeSwitch />
 
       <div class="mt-3 flex items-center gap-2 rounded-[18px] bg-white/50 p-2">
         <router-link to="/app/profile" class="flex min-w-0 flex-1 items-center gap-2.5 rounded-[12px] p-1 hover:bg-white/60" @click="open = false">
           <img v-if="me?.avatar" :src="me.avatar" alt="" class="h-9 w-9 rounded-full object-cover" />
-          <div v-else aria-hidden="true" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E4E8FB] text-sm font-semibold text-[#2A3A9C]">
+          <div v-else aria-hidden="true" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-avatar text-sm font-semibold text-avatar-ink">
             {{ (me?.full_name || '?')[0].toUpperCase() }}
           </div>
           <div class="min-w-0 text-[13px] leading-tight">
@@ -55,7 +51,7 @@
         </button>
       </div>
     </aside>
-    <Transition name="fade"><div v-if="open" class="fixed inset-0 z-30 bg-ink/20 lg:hidden" @click="open = false" /></Transition>
+    <Transition name="fade"><div v-if="open" class="fixed inset-0 z-30 bg-scrim lg:hidden" @click="open = false" /></Transition>
 
     <!-- content -->
     <div class="flex min-w-0 flex-1 flex-col">
@@ -82,6 +78,7 @@ import { useRoute, useRouter } from 'vue-router'
 import CommandPalette from '../components/CommandPalette.vue'
 import Logo from '../components/Logo.vue'
 import NotificationBell from '../components/NotificationBell.vue'
+import ThemeSwitch from '../components/ThemeSwitch.vue'
 import { loadRecent, loadReviewCount, logout, session } from '../session'
 
 const router = useRouter()

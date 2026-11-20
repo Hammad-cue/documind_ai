@@ -1,7 +1,7 @@
 <template>
   <div ref="root" role="tablist" :aria-label="label" class="glass-soft relative inline-flex rounded-[14px] p-1">
     <!-- the white thumb glides to the selected option -->
-    <span aria-hidden="true" class="absolute top-1 bottom-1 rounded-[10px] bg-white shadow-[0_2px_8px_rgb(28_38_90/0.1),inset_0_1px_0_white] transition-[left,width] duration-300 ease-[var(--ease-out)]"
+    <span aria-hidden="true" class="absolute top-1 bottom-1 rounded-[10px] bg-white shadow-[0_2px_8px_rgb(28_38_90/0.1),inset_0_1px_0_var(--glass-hi)] transition-[left,width] duration-300 ease-[var(--ease-out)]"
           :style="{ left: `${thumb.left}px`, width: `${thumb.width}px`, opacity: thumb.width ? 1 : 0 }" />
     <button v-for="o in options" :key="o.value" ref="buttons" type="button" role="tab" :aria-selected="modelValue === o.value"
             @click="emit('update:modelValue', o.value)"

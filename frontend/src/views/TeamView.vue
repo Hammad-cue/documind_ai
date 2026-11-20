@@ -8,13 +8,13 @@
       <div class="mt-7 grid gap-5 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <section class="panel overflow-hidden">
           <h2 class="border-b border-line px-6 py-4 text-[15px] font-semibold">People · {{ members.length }}</h2>
-          <ul class="divide-y divide-line">
+          <ul class="stagger divide-y divide-line">
             <!-- The person block never shrinks below a readable width: when the row is too narrow, the controls
                  move to their own line instead of truncating the name. -->
             <li v-for="m in members" :key="m.id" class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 sm:px-6">
               <span class="flex min-w-[220px] flex-1 items-center gap-3">
                 <img v-if="m.avatar" :src="m.avatar" alt="" class="h-10 w-10 shrink-0 rounded-full object-cover" />
-                <span v-else aria-hidden="true" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E4E8FB] text-[#2A3A9C] font-semibold">{{ initials(m) }}</span>
+                <span v-else aria-hidden="true" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-avatar text-avatar-ink font-semibold">{{ initials(m) }}</span>
                 <span class="min-w-0">
                   <span class="flex items-center gap-2">
                     <span class="truncate font-semibold" :class="!m.is_active && 'text-muted line-through'">{{ m.full_name }}</span>

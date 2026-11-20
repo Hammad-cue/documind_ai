@@ -1,8 +1,24 @@
 <template>
   <div class="relative flex h-full flex-col">
+    <!-- history and a fresh start, always at hand -->
+    <div class="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end gap-2 px-4 pt-3 sm:px-6">
+      <Transition name="fade">
+        <button v-if="queries.length" type="button" class="glass-soft pointer-events-auto flex min-h-10 items-center gap-2 rounded-[12px] px-3 text-[13px] font-medium text-ink-2 transition hover:bg-white/85 hover:text-ink active:scale-[0.97]"
+                @click="newQuestion">
+          <SquarePen :size="15" aria-hidden="true" /><span class="hidden sm:inline">New question</span>
+        </button>
+      </Transition>
+      <button type="button" class="glass-soft pointer-events-auto flex min-h-10 items-center gap-2 rounded-[12px] px-3 text-[13px] font-medium text-ink-2 transition hover:bg-white/85 hover:text-ink active:scale-[0.97]"
+              aria-label="Your earlier questions" @click="historyOpen = true">
+        <History :size="15" aria-hidden="true" /><span class="hidden sm:inline">History</span>
+        <span v-if="session.conversations.length" class="rounded-full bg-black/5 px-1.5 text-[11px] font-semibold tabular-nums text-muted">{{ session.conversations.length }}</span>
+      </button>
+    </div>
+    <HistoryDrawer :open="historyOpen" :current-id="convId" @close="historyOpen = false" />
+
     <!-- thread -->
-    <div ref="thread" class="min-h-0 flex-1 overflow-y-auto scroll-thin">
-      <div class="mx-auto max-w-[800px] px-4 pt-10 pb-44 sm:px-6 lg:pt-16">
+    <div ref="thread" class="fade-top min-h-0 flex-1 overflow-y-auto scroll-thin">
+      <div class="mx-auto max-w-[800px] px-4 pt-16 pb-44 sm:px-6">
         <!-- empty state -->
         <Transition name="rise" appear>
           <div v-if="!queries.length && !busy">
@@ -17,6 +33,24 @@
                 </span>
                 <span class="mt-2 block text-[15px] font-medium text-ink">{{ ex.q }}</span>
               </button>
+            </div>
+
+            <div v-if="session.recent.length" class="mt-10">
+              <div class="flex items-baseline justify-between gap-3">
+                <h2 class="text-sm font-semibold text-muted">Pick up where you left off</h2>
+                <button type="button" class="link text-[13px]" @click="historyOpen = true">All {{ session.conversations.length }} questions</button>
+              </div>
+              <div class="stagger mt-3 grid gap-2 sm:grid-cols-2">
+                <router-link v-for="c in session.recent.slice(0, 4)" :key="c.id" :to="`/app/ask/${c.id}`"
+                             class="glass-soft lift group flex min-w-0 items-center gap-3 rounded-[16px] px-4 py-3">
+                  <MessageSquare :size="16" class="shrink-0 text-muted" aria-hidden="true" />
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-[14px] font-medium text-ink">{{ c.title || 'Untitled question' }}</span>
+                    <span class="block text-xs text-muted">{{ fmtAgo(c.updated_at) }}</span>
+                  </span>
+                  <ChevronRight :size="16" class="shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
+                </router-link>
+              </div>
             </div>
           </div>
         </Transition>
@@ -57,7 +91,7 @@
                       <th v-for="c in q.plan.columns" :key="c.key" scope="col" class="px-4 py-3 font-semibold">{{ c.label }}</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-line">
+                  <tbody class="stagger divide-y divide-line">
                     <tr v-for="r in q.results" :key="r.document_id" class="align-top">
                       <th scope="row" class="px-4 py-3 font-semibold">
                         <button type="button" class="text-left hover:text-accent" @click="open(r.document_id, 1, '')">{{ r.document_title }}</button>
@@ -95,7 +129,7 @@
               </div>
 
               <!-- several records -->
-              <div v-else-if="q.intent === 'LOOKUP' && q.results.length" class="mt-4 divide-y divide-line overflow-hidden rounded-[20px] bg-white/75">
+              <div v-else-if="q.intent === 'LOOKUP' && q.results.length" class="stagger mt-4 divide-y divide-line overflow-hidden rounded-[20px] bg-white/75">
                 <button v-for="r in q.results" :key="r.field_id" type="button" @click="open(r.document_id, r.page, r.quote)"
                         class="flex w-full flex-wrap items-center gap-x-4 gap-y-1 px-5 py-3.5 text-left hover:bg-white">
                   <span class="min-w-0 flex-1"><span class="block font-semibold">{{ r.document_title }}</span><span class="block text-[13px] text-muted">{{ r.label }}</span></span>
@@ -109,12 +143,12 @@
               <div v-else-if="q._streaming && !q.answer" class="mt-4 space-y-2" aria-hidden="true">
                 <div class="shimmer h-3.5 w-full rounded-md" /><div class="shimmer h-3.5 w-11/12 rounded-md" /><div class="shimmer h-3.5 w-3/5 rounded-md" />
               </div>
-              <div v-else class="prose prose-slate mt-3 max-w-none text-[16px] leading-[1.7] text-ink-2 prose-p:my-2 prose-strong:text-ink prose-li:my-0.5"
+              <div v-else class="prose prose-slate dark:prose-invert mt-3 max-w-none text-[16px] leading-[1.7] text-ink-2 prose-p:my-2 prose-strong:text-ink prose-li:my-0.5"
                    :class="q._streaming && 'streaming-caret'" :aria-busy="q._streaming ? 'true' : null"
                    v-html="render(q)" v-reveal="q._fresh" @click="onAnswerClick($event, q)" />
 
               <!-- sources -->
-              <div v-if="q.sources.length && q.intent !== 'LOOKUP' && q.intent !== 'COMPARE'" class="mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5" :class="q.intent === 'SEARCH' ? 'sm:grid-cols-2' : ''">
+              <div v-if="q.sources.length && q.intent !== 'LOOKUP' && q.intent !== 'COMPARE'" class="stagger mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5" :class="q.intent === 'SEARCH' ? 'sm:grid-cols-2' : ''">
                 <button v-for="s in visibleSources(q)" :key="s.id" type="button" :id="`src-${q.id}-${s.id}`"
                         class="flex min-w-0 items-center gap-3.5 rounded-[18px] bg-white/70 p-3 text-left transition hover:bg-white"
                         @click="open(s.document_id, s.page, s.snippet)">
@@ -180,7 +214,7 @@
                class="min-h-11 min-w-0 flex-1 bg-transparent text-[17px] text-ink outline-none placeholder:text-muted/80" />
         <kbd class="hidden shrink-0 rounded-md border border-line px-1.5 py-0.5 text-xs text-muted sm:block" title="Press / to type here">/</kbd>
         <button type="submit" aria-label="Ask" :disabled="busy || !input.trim()"
-                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_20px_rgb(47_75_224/0.3)] transition hover:bg-accent-hover disabled:opacity-40">
+                class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent shadow-[0_8px_20px_rgb(47_75_224/0.3)] transition hover:bg-accent-hover disabled:opacity-40">
           <ArrowUp :size="20" :stroke-width="2.2" />
         </button>
       </form>
@@ -195,7 +229,7 @@
       <ul class="mt-3 max-h-[46vh] space-y-1 overflow-y-auto pr-1 scroll-thin">
         <li v-for="d in pickable" :key="d.id">
           <label :class="['flex min-h-12 cursor-pointer items-center gap-3 rounded-[14px] px-3 transition', picked.has(d.id) ? 'bg-accent-soft' : 'hover:bg-white/70']">
-            <input type="checkbox" :checked="picked.has(d.id)" class="h-4 w-4 accent-[#2F4BE0]" @change="togglePick(d)" />
+            <input type="checkbox" :checked="picked.has(d.id)" class="h-4 w-4 accent-accent" @change="togglePick(d)" />
             <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-semibold">{{ d.title }}</span>
               <span class="block truncate text-xs text-muted">{{ d.doc_type || d.kind.toLowerCase() }}</span>
@@ -217,13 +251,15 @@
 </template>
 
 <script setup>
-import { ArrowRight, ArrowUp, CalendarClock, Check, ChevronRight, Copy, FileSearch, FileText, Files, ScrollText, Search, Table2, X } from '@lucide/vue'
+import { ArrowRight, ArrowUp, CalendarClock, Check, ChevronRight, Copy, FileSearch, FileText, Files, History, MessageSquare, ScrollText, Search, SquarePen, Table2, X } from '@lucide/vue'
 import DOMPurify from 'dompurify'
 import { marked } from 'marked'
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { errorText, postStream } from '../api'
+import HistoryDrawer from '../components/HistoryDrawer.vue'
 import Modal from '../components/Modal.vue'
+import { fmtAgo } from '../format'
 import PageThumb from '../components/PageThumb.vue'
 import StatusPill from '../components/StatusPill.vue'
 import { loadRecent, session } from '../session'
@@ -269,6 +305,16 @@ const error = ref('')
 const thread = ref(null)
 const inputEl = ref(null)
 const scope = ref(route.query.doc ? [{ id: Number(route.query.doc), title: route.query.title || 'Selected document' }] : [])
+const historyOpen = ref(false)
+
+function newQuestion() {
+  if (busy.value) return
+  convId.value = null
+  queries.value = []
+  error.value = ''
+  if (route.params.conversationId) router.push('/app/ask')
+  nextTick(() => inputEl.value?.focus())
+}
 
 /* ---- choose which documents to search ---- */
 const pickerOpen = ref(false)
@@ -345,7 +391,7 @@ function render(q) {
   if (q.intent !== 'KNOWLEDGE' && q.intent !== 'COMPARE') return html
   return html.replace(/\[(\d{1,2})\]/g, (m, n) =>
     q.sources.some(s => s.id === +n)
-      ? `<a href="#" data-cite="${n}" class="not-prose mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[rgb(47_75_224/0.1)] px-1.5 align-[2px] text-[11px] font-bold text-[#2F4BE0] no-underline hover:bg-[rgb(47_75_224/0.2)]">${n}</a>`
+      ? `<a href="#" data-cite="${n}" class="not-prose mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-soft px-1.5 align-[2px] text-[11px] font-bold text-accent no-underline hover:bg-accent/25">${n}</a>`
       : m)
 }
 

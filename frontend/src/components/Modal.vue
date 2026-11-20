@@ -2,7 +2,7 @@
   <DialogRoot :open="open" @update:open="v => !v && emit('close')">
     <DialogPortal>
       <Transition name="fade">
-        <DialogOverlay v-if="open" class="fixed inset-0 z-50 bg-ink/25 backdrop-blur-[3px]" />
+        <DialogOverlay v-if="open" class="fixed inset-0 z-50 bg-scrim backdrop-blur-[3px]" />
       </Transition>
       <Transition name="rise">
         <DialogContent v-if="open"

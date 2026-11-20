@@ -13,7 +13,7 @@
       <TransitionGroup name="rise" tag="div" class="mt-5 space-y-3">
         <article v-for="f in items" :key="f.id" class="panel p-5 sm:p-6">
           <div class="flex flex-wrap items-start justify-between gap-4">
-            <div class="min-w-0 flex-1">
+            <div class="min-w-0 flex-1 basis-[260px]">
               <router-link :to="{ path: `/app/documents/${f.document_id}`, query: { page: f.source_page || 1, hl: f.source_quote } }"
                            class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:text-accent-hover">
                 <FileText :size="14" aria-hidden="true" />{{ f.document_title }}<span class="font-normal text-muted"> · page {{ f.source_page || '–' }}</span>
@@ -24,7 +24,7 @@
               <p v-if="f.review_reason && /^(Calculated|Second check)/.test(f.review_reason)" class="mt-2 rounded-[12px] bg-warn-soft/60 px-3 py-2 text-[13px] leading-relaxed text-ink-2">{{ f.review_reason }}</p>
               <div class="mt-3 flex flex-wrap gap-1.5">
                 <span class="chip bg-black/5 text-ink-2">{{ Math.round(f.confidence * 100) }}% confidence</span>
-                <span v-if="f.page_source === 'HANDWRITING'" class="chip bg-[#FCE7F3] text-[#A21C6B]">Read from handwriting</span>
+                <span v-if="f.page_source === 'HANDWRITING'" class="chip bg-pink-soft text-pink">Read from handwriting</span>
                 <span v-if="f.page_source === 'OCR'" class="chip bg-warn-soft text-warn">Read from a scan</span>
                 <span v-if="!f.grounded" class="chip bg-bad-soft text-bad">Quote not found on the page</span>
                 <span v-if="f.review_reason?.startsWith('Calculated')" class="chip bg-accent-soft text-accent">Calculated date</span>

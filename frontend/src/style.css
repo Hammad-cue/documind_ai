@@ -20,6 +20,15 @@
   --color-bad: #B42318;
   --color-bad-soft: #FEE4E2;
   --color-mark: #FFE7A3;            /* evidence highlight */
+  --color-on-accent: #FFFFFF;       /* text on accent and status fills */
+  --color-violet: #5B3FD9;          /* record badges */
+  --color-violet-soft: #EEEAFF;
+  --color-pink: #A21C6B;            /* handwriting badges */
+  --color-pink-soft: #FCE7F3;
+  --color-avatar: #E4E8FB;
+  --color-avatar-ink: #2A3A9C;
+  --color-scrim: rgb(11 18 32 / 0.22);   /* behind dialogs and the mobile menu */
+  --color-paper-line: #D7DCE7;      /* the lines on page thumbnails */
 
   --radius-panel: 26px;
   --radius-card: 20px;
@@ -35,7 +44,66 @@
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.05 0 0 0 0 0.07 0 0 0 0 0.13 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  /* glass edges and highlights */
+  --glass-edge: rgb(255 255 255 / 0.9);
+  --glass-hi: rgb(255 255 255 / 0.95);
+  --color-accent-fill: var(--color-accent);   /* accent used as a fill behind white text */
+  /* colours of the moving background (r g b) */
+  --scene-ink: 11 18 32;
+  --scene-accent: 47 75 224;
+  --scene-alpha: 1;
+  --dot: rgb(11 18 32 / 0.13);
 }
+
+/* ---------- dark mode: the same design, re-lit. "white" surfaces become raised dark glass and the faint
+   black hover tints become faint light ones, so components follow without per-component dark rules. ---------- */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-canvas: #0B0E15;
+  --color-white: #262D3F;
+  --color-black: #FFFFFF;
+  --color-ink: #E8ECF4;
+  --color-ink-2: #C1C8D6;
+  --color-muted: #8E97AB;
+  --color-line: rgb(232 236 244 / 0.09);
+  --color-accent: #7D90FF;
+  --color-accent-hover: #93A3FF;
+  --color-accent-soft: rgb(125 144 255 / 0.16);
+  --color-accent-fill: #4D64EC;
+  --color-ok: #5BD69A;
+  --color-ok-soft: rgb(91 214 154 / 0.13);
+  --color-warn: #F4BD55;
+  --color-warn-soft: rgb(244 189 85 / 0.13);
+  --color-bad: #FF8173;
+  --color-bad-soft: rgb(255 129 115 / 0.14);
+  --color-mark: #7A5D1C;
+  --color-violet: #B9A8FF;
+  --color-violet-soft: rgb(150 120 255 / 0.16);
+  --color-pink: #FF92CB;
+  --color-pink-soft: rgb(255 120 190 / 0.14);
+  --color-avatar: rgb(125 144 255 / 0.18);
+  --color-avatar-ink: #C6CEFF;
+  --color-scrim: rgb(0 0 0 / 0.55);
+  --color-paper-line: #3A4256;
+  --shadow-glass: 0 18px 50px rgb(0 0 0 / 0.35);
+  --shadow-float: 0 24px 60px rgb(0 0 0 / 0.45);
+  --shadow-paper: 0 30px 70px rgb(0 0 0 / 0.5);
+  --glass-edge: rgb(255 255 255 / 0.07);
+  --glass-hi: rgb(255 255 255 / 0.06);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --scene-ink: 232 236 244;
+  --scene-accent: 125 144 255;
+  --scene-alpha: 0.85;
+  --dot: rgb(232 236 244 / 0.11);
+}
+/* accent fills carry white text, so in dark mode they use a deeper blue than accent text does */
+@layer utilities {
+  [data-theme="dark"] .bg-accent { background-color: var(--color-accent-fill); }
+  [data-theme="dark"] .hover\:bg-accent-hover:hover { background-color: #5A70F2; }
+}
+/* switching modes fades colours instead of snapping (the class is added for a moment by setTheme) */
+html.theme-fade, html.theme-fade * { transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, fill 0.4s ease !important; }
 
 html, body, #app { height: 100%; }
 body { @apply bg-canvas font-sans text-ink antialiased; font-feature-settings: "cv11", "ss01"; }
@@ -46,52 +114,62 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 /* ---------- surfaces ---------- */
 /* Frosted glass: translucent white + the same fine grain as the page, a bright top edge and layered soft shadows. */
 @utility glass {
-  background-color: rgb(255 255 255 / 0.68);
+  background-color: color-mix(in srgb, var(--color-white) 68%, transparent);
   background-image: var(--grain);
   background-size: 160px 160px;
   backdrop-filter: blur(28px) saturate(160%);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
-  border: 1px solid rgb(255 255 255 / 0.9);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 1px 2px rgb(16 24 40 / 0.04), var(--shadow-glass);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 1px 2px rgb(16 24 40 / 0.04), var(--shadow-glass);
 }
 @utility glass-strong {
-  background-color: rgb(255 255 255 / 0.84);
+  background-color: color-mix(in srgb, var(--color-white) 84%, transparent);
   background-image: var(--grain);
   background-size: 160px 160px;
   backdrop-filter: blur(30px) saturate(170%);
   -webkit-backdrop-filter: blur(30px) saturate(170%);
-  border: 1px solid rgb(255 255 255 / 0.95);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), 0 2px 4px rgb(16 24 40 / 0.04), var(--shadow-float);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 2px 4px rgb(16 24 40 / 0.04), var(--shadow-float);
 }
 @utility glass-soft {
-  background-color: rgb(255 255 255 / 0.48);
+  background-color: color-mix(in srgb, var(--color-white) 48%, transparent);
   background-image: var(--grain);
   background-size: 160px 160px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgb(255 255 255 / 0.75);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8);
+  border: 1px solid var(--glass-edge);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
 }
 @utility panel { @apply glass rounded-[26px]; }
-@utility card { @apply rounded-[20px] bg-white/75 border border-white; box-shadow: 0 6px 24px rgb(28 38 90 / 0.06); }
+@utility card { @apply rounded-[20px] bg-white/75 border; border-color: var(--glass-edge); box-shadow: 0 6px 24px rgb(28 38 90 / 0.06); }
 
 /* ---------- controls ---------- */
 @utility btn { @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-[14px] px-4 text-sm font-semibold transition duration-150 select-none disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98]; }
-@utility btn-primary { @apply btn bg-accent text-white hover:bg-accent-hover; box-shadow: 0 8px 20px rgb(47 75 224 / 0.28); }
-@utility btn-dark { @apply btn bg-ink text-white hover:bg-[#1c2436]; }
-@utility btn-ghost { @apply btn border border-white bg-white/60 text-ink-2 hover:bg-white/90; }
-@utility btn-danger { @apply btn border border-white bg-white/60 text-bad hover:bg-bad-soft; }
+@utility btn-primary { @apply btn text-on-accent; background-color: var(--color-accent-fill); box-shadow: 0 8px 20px rgb(47 75 224 / 0.28);
+  &:hover { background-color: var(--color-accent-hover); }
+  [data-theme="dark"] &:hover { background-color: #5A70F2; } }
+@utility btn-dark { @apply btn bg-ink text-canvas hover:bg-ink-2; }
+@utility btn-ghost { @apply btn border bg-white/60 text-ink-2 hover:bg-white/90; border-color: var(--glass-edge); }
+@utility btn-danger { @apply btn border bg-white/60 text-bad hover:bg-bad-soft; border-color: var(--glass-edge); }
 @utility input { @apply min-h-11 w-full rounded-[14px] border border-line bg-white/80 px-3.5 text-sm text-ink outline-none transition placeholder:text-muted/80 focus:border-accent/50 focus:bg-white focus:ring-4 focus:ring-accent/10; }
 @utility label { @apply mb-1.5 block text-xs font-semibold text-muted; }
 @utility chip { @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap; }
 @utility link { @apply font-semibold text-accent hover:text-accent-hover; }
 
 /* ---------- page transitions ---------- */
-.page-enter-active, .page-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
-.page-enter-from { opacity: 0; transform: translateY(6px); }
-.page-leave-to { opacity: 0; }
-.rise-enter-active { transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
-.rise-enter-from { opacity: 0; transform: translateY(12px) scale(0.99); }
+/* a new page comes into focus: it rises slightly and sharpens */
+.page-enter-active { transition: opacity 0.32s var(--ease-out), transform 0.32s var(--ease-out), filter 0.32s var(--ease-out); }
+.page-leave-active { transition: opacity 0.14s ease, filter 0.14s ease; }
+.page-enter-from { opacity: 0; transform: translateY(10px); filter: blur(6px); }
+.page-leave-to { opacity: 0; filter: blur(3px); }
+.rise-enter-active { transition: opacity 0.4s ease, transform 0.45s var(--ease-spring); }
+.rise-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.rise-enter-from { opacity: 0; transform: translateY(14px) scale(0.97); }
+.rise-leave-to { opacity: 0; transform: scale(0.98); }
+/* side panel (history) slides in from the right */
+.drawer-enter-active { transition: transform 0.45s var(--ease-spring), opacity 0.25s ease; }
+.drawer-leave-active { transition: transform 0.2s ease, opacity 0.2s ease; }
+.drawer-enter-from, .drawer-leave-to { opacity: 0; transform: translateX(40px); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
@@ -114,7 +192,22 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { outline: non
 .stagger > *:nth-child(4) { animation-delay: 0.15s; } .stagger > *:nth-child(5) { animation-delay: 0.2s; }
 .stagger > *:nth-child(6) { animation-delay: 0.25s; } .stagger > *:nth-child(n+7) { animation-delay: 0.3s; }
 .lift { transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), background-color 0.2s; }
-.lift:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.95), 0 2px 4px rgb(16 24 40 / 0.04), 0 24px 50px rgb(28 38 90 / 0.12); }
+.lift:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 var(--glass-hi), 0 2px 4px rgb(16 24 40 / 0.04), 0 24px 50px rgb(28 38 90 / 0.12); }
+[data-theme="dark"] .lift:hover { box-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 50px rgb(0 0 0 / 0.45); }
+.lift:active { transform: translateY(0) scale(0.985); transition-duration: 0.08s; }
+
+/* menu icons nudge when hovered; the active one gets a small bounce */
+nav a svg { transition: transform 0.3s var(--ease-spring); }
+nav a:hover svg { transform: translateX(2px) rotate(-4deg); }
+nav a[aria-current="page"] svg { animation: pop 0.45s var(--ease-spring); }
+
+/* panels and cards that scroll into view rise in once (v-inview adds .is-in) */
+.inview { opacity: 0; transform: translateY(18px); transition: opacity 0.5s var(--ease-out), transform 0.6s var(--ease-out); }
+.inview.is-in { opacity: 1; transform: none; }
+
+/* a value that has just changed (a count, a status) flashes its background once */
+@keyframes flash { 0% { background-color: rgb(47 75 224 / 0.16); } 100% { background-color: transparent; } }
+.animate-flash { animation: flash 1.2s ease-out; }
 .toast-enter-active { transition: all 0.35s var(--ease-spring); }
 .toast-leave-active { transition: all 0.25s ease; }
 .toast-enter-from { opacity: 0; transform: translateY(-12px) scale(0.96); }
@@ -124,6 +217,8 @@ kbd { font-family: inherit; }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-word { opacity: 1; animation: none; }
+  .inview { opacity: 1; transform: none; }
+  .page-enter-from, .page-leave-to { filter: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
 
@@ -151,3 +246,8 @@ kbd { font-family: inherit; }
 }
 @keyframes caret-blink { to { visibility: hidden; } }
 @media (prefers-reduced-motion: reduce) { .streaming-caret > :last-child::after { animation: none; } }
+
+/* content scrolling under the floating buttons at the top of the Ask screen fades out (an opacity mask) */
+@utility fade-top {
+  mask-image: linear-gradient(to bottom, transparent 0, transparent 12px, #000 68px);
+}

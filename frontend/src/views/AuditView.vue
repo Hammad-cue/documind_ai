@@ -20,7 +20,7 @@
       </div>
 
       <div class="panel mt-4 overflow-hidden">
-        <ol class="divide-y divide-line">
+        <ol class="stagger divide-y divide-line">
           <li v-for="e in rows" :key="e.id" class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 px-4 py-3.5 sm:grid-cols-[150px_auto_minmax(0,1fr)] sm:px-6">
             <span class="hidden text-[13px] text-muted tabular-nums sm:block">{{ fmtDateTime(e.created_at) }}</span>
             <span :class="['flex h-8 w-8 items-center justify-center rounded-[10px]', TONE[e.action] || 'bg-black/5 text-ink-2']" aria-hidden="true">
@@ -64,7 +64,7 @@ const ACTION_LABEL = { LOGIN: 'Signed in', UPLOAD: 'Uploaded', NEW_VERSION: 'Upl
 const ICON = { LOGIN: LogIn, UPLOAD: FilePlus, NEW_VERSION: Layers, VIEW: Eye, DOWNLOAD: Download, SEARCH: Search, FIELD_EDIT: Pencil,
   FIELD_VERIFY: Check, ACCESS_CHANGE: Lock, ARCHIVE: Archive, REPROCESS: RotateCw, MEMBER_ADD: UserPlus, MEMBER_UPDATE: Users }
 const TONE = { ACCESS_CHANGE: 'bg-bad-soft text-bad', ARCHIVE: 'bg-bad-soft text-bad', DOWNLOAD: 'bg-warn-soft text-warn',
-  FIELD_VERIFY: 'bg-ok-soft text-ok', FIELD_EDIT: 'bg-accent-soft text-accent', SEARCH: 'bg-accent-soft text-accent', UPLOAD: 'bg-[#EEEAFF] text-[#5B3FD9]', NEW_VERSION: 'bg-[#EEEAFF] text-[#5B3FD9]' }
+  FIELD_VERIFY: 'bg-ok-soft text-ok', FIELD_EDIT: 'bg-accent-soft text-accent', SEARCH: 'bg-accent-soft text-accent', UPLOAD: 'bg-violet-soft text-violet', NEW_VERSION: 'bg-violet-soft text-violet' }
 
 const rows = ref([])
 const actions = ref([])

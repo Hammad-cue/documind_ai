@@ -3,7 +3,7 @@
     <PopoverTrigger :aria-label="unread ? `Notifications, ${unread} unread` : 'Notifications'"
       class="relative flex h-10 w-10 items-center justify-center rounded-[12px] text-ink-2 transition hover:bg-white/70 hover:text-ink">
       <Bell :size="18" :class="ring && 'animate-[ring_0.8s_ease]'" />
-      <span v-if="unread" :key="unread" class="animate-pop absolute top-1.5 right-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-bad px-1 text-[10px] font-bold text-white ring-2 ring-white">{{ unread > 9 ? '9+' : unread }}</span>
+      <span v-if="unread" :key="unread" class="animate-pop absolute top-1.5 right-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-bad px-1 text-[10px] font-bold text-on-accent ring-2 ring-white">{{ unread > 9 ? '9+' : unread }}</span>
     </PopoverTrigger>
     <PopoverPortal>
       <PopoverContent side="right" align="start" :side-offset="12" :collision-padding="16"

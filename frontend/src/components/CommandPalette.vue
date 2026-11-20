@@ -2,7 +2,7 @@
   <DialogRoot :open="open" @update:open="v => emit('update:open', v)">
     <DialogPortal>
       <Transition name="fade">
-        <DialogOverlay v-if="open" class="fixed inset-0 z-50 bg-ink/20 backdrop-blur-[2px]" />
+        <DialogOverlay v-if="open" class="fixed inset-0 z-50 bg-scrim backdrop-blur-[2px]" />
       </Transition>
       <Transition name="rise">
         <DialogContent v-if="open"
@@ -85,7 +85,7 @@ const groups = computed(() => {
     .map(d => ({
       key: `d-${d.id}`, label: d.title, hint: d.doc_type, to: `/app/documents/${d.id}`,
       icon: d.kind === 'REFERENCE' ? BookOpen : d.file_type === 'IMAGE' ? PenLine : FileText,
-      tint: d.kind === 'RECORD' ? 'bg-[#EEEAFF] text-[#5B3FD9]' : 'bg-accent-soft text-accent',
+      tint: d.kind === 'RECORD' ? 'bg-violet-soft text-violet' : 'bg-accent-soft text-accent',
     }))
 
   const recent = session.recent
@@ -94,7 +94,7 @@ const groups = computed(() => {
     .map(c => ({ key: `c-${c.id}`, label: c.title, icon: MessageSquare, to: `/app/ask/${c.id}`, hint: 'Earlier question' }))
 
   const ask = q.value.trim()
-    ? [{ key: 'ask', label: `Ask “${q.value.trim()}”`, hint: 'Answer from the documents you can access', icon: Sparkles, tint: 'bg-accent text-white',
+    ? [{ key: 'ask', label: `Ask “${q.value.trim()}”`, hint: 'Answer from the documents you can access', icon: Sparkles, tint: 'bg-accent text-on-accent',
          to: { path: '/app/ask', query: { q: q.value.trim() } } }]
     : []
 

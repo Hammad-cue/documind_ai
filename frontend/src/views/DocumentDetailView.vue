@@ -191,7 +191,7 @@
             <li v-for="v in doc.versions" :key="v.id"
                 :class="['rounded-[18px] p-4 transition', v.number === viewVersion ? 'bg-white shadow-[0_6px_20px_rgb(28_38_90/0.08)]' : 'bg-white/50']">
               <div class="flex items-center gap-3">
-                <span :class="['flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-xs font-bold', v.number === doc.current_version_number ? 'bg-accent text-white' : 'bg-black/5 text-ink-2']">v{{ v.number }}</span>
+                <span :class="['flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-xs font-bold', v.number === doc.current_version_number ? 'bg-accent text-on-accent' : 'bg-black/5 text-ink-2']">v{{ v.number }}</span>
                 <div class="min-w-0 flex-1">
                   <div class="truncate font-semibold">{{ v.change_note || (v.number === 1 ? 'Original upload' : 'New version') }}</div>
                   <div class="text-xs text-muted">{{ v.uploaded_by_name }} · {{ fmtDateTime(v.uploaded_at) }}</div>
@@ -200,7 +200,7 @@
               </div>
               <div v-if="v.change_summary" class="mt-2.5 rounded-[12px] bg-accent-soft/40 p-3">
                 <div class="text-[11px] font-semibold tracking-wide text-accent uppercase">What changed from v{{ v.change_summary_from }}</div>
-                <div class="prose prose-sm mt-1 max-w-none text-[13px] leading-relaxed text-ink-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5" v-html="md(v.change_summary)" />
+                <div class="prose prose-sm dark:prose-invert mt-1 max-w-none text-[13px] leading-relaxed text-ink-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5" v-html="md(v.change_summary)" />
               </div>
               <div class="mt-2 flex items-center justify-between gap-2 text-xs text-muted">
                 <span class="truncate">{{ v.original_filename }} · {{ v.page_count }} page{{ v.page_count === 1 ? '' : 's' }} · {{ fmtSize(v.file_size) }}</span>
@@ -223,7 +223,7 @@
             <div v-if="comparison" class="mt-4 space-y-4 text-sm">
               <div v-if="comparison.summary" class="rounded-[12px] bg-white p-3">
                 <div class="text-xs font-semibold text-muted">Summary</div>
-                <div class="prose prose-sm mt-1 max-w-none text-[13px] leading-relaxed text-ink-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5" v-html="md(comparison.summary)" />
+                <div class="prose prose-sm dark:prose-invert mt-1 max-w-none text-[13px] leading-relaxed text-ink-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5" v-html="md(comparison.summary)" />
               </div>
               <div>
                 <div class="text-xs font-semibold text-muted">Facts</div>
@@ -252,7 +252,7 @@
           <div v-for="p in pages" :key="p.number" class="rounded-[16px] bg-white/70 p-3.5">
             <div class="mb-2 flex items-center justify-between">
               <button type="button" class="link text-[13px]" @click="jump(p.number)">Page {{ p.number }}</button>
-              <span :class="['chip', p.source === 'HANDWRITING' ? 'bg-[#FCE7F3] text-[#A21C6B]' : p.source === 'OCR' ? 'bg-warn-soft text-warn' : 'bg-black/5 text-ink-2']">
+              <span :class="['chip', p.source === 'HANDWRITING' ? 'bg-pink-soft text-pink' : p.source === 'OCR' ? 'bg-warn-soft text-warn' : 'bg-black/5 text-ink-2']">
                 {{ p.source === 'HANDWRITING' ? 'Handwriting model' : p.source === 'OCR' ? `Scanned · ${Math.round(p.ocr_confidence || 0)}%` : 'Digital text' }}
               </span>
             </div>
@@ -293,7 +293,7 @@
             <select id="st-dept" v-model="settings.department" class="input"><option :value="null">None</option><option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option></select></div>
         </div>
         <label v-if="settings.kind === 'REFERENCE'" class="flex items-start gap-3 rounded-[14px] border border-black/10 bg-white/60 p-3 text-sm">
-          <input v-model="settings.use_as_policy" type="checkbox" class="mt-0.5 h-4 w-4 accent-[#2F4BE0]" />
+          <input v-model="settings.use_as_policy" type="checkbox" class="mt-0.5 h-4 w-4 accent-accent" />
           <span><span class="font-semibold">Use as company policy</span><br>
             <span class="text-[13px] text-muted">Every record is checked against the rules in this document, and problems are flagged.</span></span>
         </label>
@@ -311,7 +311,7 @@
           <div class="label">Also shared with</div>
           <div class="max-h-40 space-y-0.5 overflow-y-auto rounded-[14px] border border-black/10 bg-white/60 p-2 scroll-thin">
             <label v-for="m in members" :key="m.id" class="flex min-h-10 items-center gap-2.5 rounded-lg px-2 text-sm hover:bg-white">
-              <input type="checkbox" :value="m.id" v-model="settings.allowed_user_ids" class="h-4 w-4 accent-[#2F4BE0]" /> {{ m.full_name }}
+              <input type="checkbox" :value="m.id" v-model="settings.allowed_user_ids" class="h-4 w-4 accent-accent" /> {{ m.full_name }}
             </label>
           </div>
         </div>

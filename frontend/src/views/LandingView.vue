@@ -3,6 +3,7 @@
     <header class="glass sticky top-4 z-10 mx-4 flex items-center justify-between rounded-[22px] px-5 py-2.5 sm:mx-auto sm:max-w-[1120px]">
       <Logo />
       <nav class="flex items-center gap-2" aria-label="Account">
+        <ThemeSwitch compact class="hidden sm:grid" />
         <router-link to="/login" class="btn text-ink-2 hover:bg-white/70">Sign in</router-link>
         <router-link to="/register" class="btn-dark">Get started</router-link>
       </nav>
@@ -23,7 +24,7 @@
       </section>
 
       <!-- self-playing demo -->
-      <section aria-label="How it works, shown as a short looping example" class="mx-auto mt-16 max-w-[760px]">
+      <section v-inview aria-label="How it works, shown as a short looping example" class="mx-auto mt-16 max-w-[760px]">
         <div class="relative min-h-[250px]" aria-hidden="true">
           <Transition name="rise" mode="out-in">
             <div v-if="phase === 'thinking'" key="t" class="panel p-6">
@@ -57,12 +58,12 @@
         <div class="glass-strong mx-auto mt-4 flex max-w-[680px] items-center gap-3 rounded-[30px] py-2 pr-2 pl-5" aria-hidden="true">
           <Search :size="19" class="shrink-0 text-muted" />
           <span class="min-w-0 flex-1 truncate text-[16px]" :class="typed ? 'text-ink' : 'text-muted'">{{ typed || 'Ask about a contract, a date or a clause…' }}<span v-if="phase === 'typing'" class="ml-px inline-block h-5 w-[2px] translate-y-1 animate-pulse bg-accent" /></span>
-          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white transition" :class="phase === 'typing' && typed.length === demo.q.length ? 'scale-110 bg-accent-hover' : 'bg-accent'"><ArrowUp :size="19" /></span>
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-on-accent transition" :class="phase === 'typing' && typed.length === demo.q.length ? 'scale-110 bg-accent-hover' : 'bg-accent'"><ArrowUp :size="19" /></span>
         </div>
         <p class="sr-only">Example: asking “When was the NDA with Acme signed?” returns 12 March 2025 from page 3 of the agreement.</p>
       </section>
 
-      <section class="stagger mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section v-inview class="stagger mt-24 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div v-for="f in features" :key="f.title" class="panel lift p-5">
           <span class="flex h-10 w-10 items-center justify-center rounded-[12px] bg-white text-accent shadow-[0_4px_12px_rgb(28_38_90/0.08)]"><component :is="f.icon" :size="19" aria-hidden="true" /></span>
           <h2 class="mt-4 font-semibold">{{ f.title }}</h2>
@@ -74,6 +75,7 @@
 </template>
 
 <script setup>
+import ThemeSwitch from '../components/ThemeSwitch.vue'
 import { ArrowRight, ArrowUp, BookOpen, Lock, PenLine, Search, Table2 } from '@lucide/vue'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import Logo from '../components/Logo.vue'

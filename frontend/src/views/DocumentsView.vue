@@ -28,7 +28,7 @@
             <router-link :to="`/app/documents/${d.id}`"
               class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3.5 transition hover:bg-white/70 sm:px-6 lg:grid-cols-[minmax(0,1fr)_140px_150px] xl:grid-cols-[minmax(0,1fr)_130px_140px_150px_100px]">
               <span class="flex min-w-0 items-center gap-3.5">
-                <span :class="['flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px]', d.kind === 'RECORD' ? 'bg-[#EEEAFF] text-[#5B3FD9]' : d.kind === 'REFERENCE' ? 'bg-accent-soft text-accent' : 'bg-black/5 text-muted']" aria-hidden="true">
+                <span :class="['flex h-11 w-11 shrink-0 items-center justify-center rounded-[13px]', d.kind === 'RECORD' ? 'bg-violet-soft text-violet' : d.kind === 'REFERENCE' ? 'bg-accent-soft text-accent' : 'bg-black/5 text-muted']" aria-hidden="true">
                   <component :is="d.kind === 'REFERENCE' ? BookOpen : d.file_type === 'IMAGE' ? PenLine : FileText" :size="19" />
                 </span>
                 <span class="min-w-0">
