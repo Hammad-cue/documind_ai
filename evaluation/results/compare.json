@@ -1,0 +1,1151 @@
+{
+  "name": "compare",
+  "created": "2026-11-20 14:53",
+  "model": "groq/openai/gpt-oss-20b",
+  "routing": {
+    "keyword": {
+      "comparisons_routed": "20/20",
+      "recall": 1.0,
+      "look_alikes_routed_as_comparison": "0/20",
+      "precision": 1.0,
+      "misses": [],
+      "rows": [
+        {
+          "q": "Compare the termination notice in all our NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the NDAs with Acme and Orion",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "How do our leases differ on rent and notice?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the confidentiality obligations in our NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [],
+          "aspect": "confidentiality obligations"
+        },
+        {
+          "q": "Compare the termination rights in the NDA and the lease",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [
+            "lease",
+            "nda"
+          ],
+          "aspect": "termination rights"
+        },
+        {
+          "q": "Show the expiry dates of all our contracts side by side",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "expiry_date"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "How do our contracts differ on governing law?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "governing_law"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the duration of the Acme and Orion NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "term"
+          ],
+          "records": [
+            "Acme",
+            "Orion NDAs"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "Compare the governing law of the courier agreement and the supply agreement",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "governing_law"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Put the notice periods of all our commercial contracts side by side",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "How do the payment terms differ across our service agreements?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [],
+          "aspect": "payment terms service"
+        },
+        {
+          "q": "Compare the renewal terms in our leases",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "auto_renewal"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the NDA with Acme and the NDA with Orion on term and notice",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "notice_period",
+            "term"
+          ],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "What are the differences between our NDAs?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the signing dates of the employment contract and the lease",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "signed_date"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Contrast the confidentiality clauses of the Acme and Orion NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [
+            "Acme",
+            "Orion NDAs"
+          ],
+          "aspect": "contrast confidentiality clauses"
+        },
+        {
+          "q": "Acme NDA versus Orion NDA: which is stricter on confidentiality?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [
+            "Orion NDA"
+          ],
+          "aspect": "acme which stricter confidentiality"
+        },
+        {
+          "q": "Compare the contract value of our supply and courier agreements",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "contract_value"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "How do our NDAs compare on governing law?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "governing_law"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Give me a side-by-side of the expiry dates in our leases and NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [
+            "expiry_date"
+          ],
+          "records": [
+            "lease",
+            "nda"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "What is the difference between a void and a voidable agreement?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "How does a counter-offer differ from an acceptance?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Compare void agreements with voidable contracts under the Contract Act",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the difference between coercion and undue influence?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "How does the Contract Act treat minors compared to persons of unsound mind?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What does the Acme NDA say about confidentiality?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Does the handbook allow NDAs longer than five years?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What are the confidentiality obligations in the Orion NDA?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "When was the NDA with Acme signed?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Which contracts expire in 2027?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the notice period in the Orion NDA?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "List the expiry dates of all our leases",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Who are the parties to the office lease?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the term of the NDA with Orion?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the monthly fee in the courier agreement?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Find the lease for the Lahore office",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Show me all handwritten documents",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Find the courier agreement",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Open the contracts handbook",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Find agreements that mention arbitration",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "heuristic",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        }
+      ]
+    },
+    "llm": {
+      "comparisons_routed": "20/20",
+      "recall": 1.0,
+      "look_alikes_routed_as_comparison": "0/20",
+      "precision": 1.0,
+      "misses": [],
+      "rows": [
+        {
+          "q": "Compare the termination notice in all our NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the NDAs with Acme and Orion",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": "confidentiality obligations"
+        },
+        {
+          "q": "How do our leases differ on rent and notice?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the confidentiality obligations in our NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": "confidentiality obligations"
+        },
+        {
+          "q": "Compare the termination rights in the NDA and the lease",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [
+            "NDA",
+            "lease"
+          ],
+          "aspect": "termination rights"
+        },
+        {
+          "q": "Show the expiry dates of all our contracts side by side",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm, comparison wording",
+          "fields": [
+            "expiry_date"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "How do our contracts differ on governing law?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm, comparison wording",
+          "fields": [
+            "governing_law"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the duration of the Acme and Orion NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "term"
+          ],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "Compare the governing law of the courier agreement and the supply agreement",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "governing_law"
+          ],
+          "records": [
+            "courier agreement",
+            "supply agreement"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "Put the notice periods of all our commercial contracts side by side",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm, comparison wording",
+          "fields": [
+            "notice_period"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "How do the payment terms differ across our service agreements?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [],
+          "records": [],
+          "aspect": "payment terms service"
+        },
+        {
+          "q": "Compare the renewal terms in our leases",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "auto_renewal"
+          ],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the NDA with Acme and the NDA with Orion on term and notice",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "term",
+            "notice_period"
+          ],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "What are the differences between our NDAs?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "heuristic",
+          "fields": [],
+          "records": [],
+          "aspect": null
+        },
+        {
+          "q": "Compare the signing dates of the employment contract and the lease",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "signed_date"
+          ],
+          "records": [
+            "employment contract",
+            "lease"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "Contrast the confidentiality clauses of the Acme and Orion NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": "confidentiality clauses"
+        },
+        {
+          "q": "Acme NDA versus Orion NDA: which is stricter on confidentiality?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": "confidentiality obligations"
+        },
+        {
+          "q": "Compare the contract value of our supply and courier agreements",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "contract_value"
+          ],
+          "records": [
+            "supply agreement",
+            "courier agreement"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "How do our NDAs compare on governing law?",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm",
+          "fields": [
+            "governing_law"
+          ],
+          "records": [
+            "Acme",
+            "Orion"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "Give me a side-by-side of the expiry dates in our leases and NDAs",
+          "comparison": true,
+          "intent": "COMPARE",
+          "method": "llm, comparison wording",
+          "fields": [
+            "expiry_date"
+          ],
+          "records": [
+            "lease",
+            "nda"
+          ],
+          "aspect": null
+        },
+        {
+          "q": "What is the difference between a void and a voidable agreement?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "How does a counter-offer differ from an acceptance?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Compare void agreements with voidable contracts under the Contract Act",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the difference between coercion and undue influence?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "How does the Contract Act treat minors compared to persons of unsound mind?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What does the Acme NDA say about confidentiality?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Does the handbook allow NDAs longer than five years?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What are the confidentiality obligations in the Orion NDA?",
+          "comparison": false,
+          "intent": "KNOWLEDGE",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "When was the NDA with Acme signed?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Which contracts expire in 2027?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the notice period in the Orion NDA?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "List the expiry dates of all our leases",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Who are the parties to the office lease?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the term of the NDA with Orion?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "What is the monthly fee in the courier agreement?",
+          "comparison": false,
+          "intent": "LOOKUP",
+          "method": "llm",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Find the lease for the Lahore office",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "keyword rules (confident search)",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Show me all handwritten documents",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "keyword rules (confident search)",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Find the courier agreement",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "keyword rules (confident search)",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Open the contracts handbook",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "keyword rules (confident search)",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        },
+        {
+          "q": "Find agreements that mention arbitration",
+          "comparison": false,
+          "intent": "SEARCH",
+          "method": "keyword rules (confident search)",
+          "fields": null,
+          "records": null,
+          "aspect": null
+        }
+      ]
+    }
+  },
+  "tables": {
+    "cases": [
+      {
+        "q": "Compare the termination notice in all our NDAs",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Termination notice period"
+        ],
+        "cells": [
+          {
+            "column": "notice",
+            "record": "NDA - Acme Corp",
+            "expected": "60 days",
+            "got": "60 days written notice",
+            "ok": true
+          },
+          {
+            "column": "notice",
+            "record": "NDA - Orion Ventures",
+            "expected": null,
+            "got": null,
+            "ok": true
+          }
+        ],
+        "answer": "Compared **2** records on termination notice period.\n\n- **Termination notice period**: only NDA - Acme Corp states it: 60 days written notice [1]. Not stated in NDA - Orion Ventures.",
+        "seconds": 43.7
+      },
+      {
+        "q": "How do our contracts differ on governing law and expiry?",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Governing law",
+          "Expiry / end date"
+        ],
+        "cells": [
+          {
+            "column": "law",
+            "record": "NDA - Acme Corp",
+            "expected": "pakistan",
+            "got": "Pakistan",
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "NDA - Orion Ventures",
+            "expected": "pakistan",
+            "got": "Pakistan",
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "Courier Services Agreement - FastTrack Logistics",
+            "expected": "pakistan",
+            "got": "Pakistan",
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "Supply Agreement - Delta Traders",
+            "expected": "pakistan",
+            "got": "Pakistan",
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "Office Lease - Gulberg Lahore",
+            "expected": null,
+            "got": null,
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "Employment Contract - Hira Ahmed",
+            "expected": null,
+            "got": null,
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "Security Deposit Receipt (handwritten)",
+            "expected": null,
+            "got": null,
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "NDA - Acme Corp",
+            "expected": "31 march 2028",
+            "got": "31 March 2028",
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "NDA - Orion Ventures",
+            "expected": "2 september 2032",
+            "got": "2 September 2032",
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "Courier Services Agreement - FastTrack Logistics",
+            "expected": "11 december 2026",
+            "got": "11 December 2026",
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "Supply Agreement - Delta Traders",
+            "expected": "30 june 2027",
+            "got": "30 June 2027",
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "Office Lease - Gulberg Lahore",
+            "expected": "30 june 2027",
+            "got": "30 June 2027",
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "Employment Contract - Hira Ahmed",
+            "expected": null,
+            "got": null,
+            "ok": true
+          },
+          {
+            "column": "expir",
+            "record": "Security Deposit Receipt (handwritten)",
+            "expected": null,
+            "got": null,
+            "ok": true
+          }
+        ],
+        "answer": "Compared **7** records on governing law, expiry / end date.\n\n- **Governing law**: the same in all 4 records that state it: Pakistan [1][3][5][8]. Not stated in Employment Contract - Hira Ahmed, Office Lease - Gulberg Lahore, Security Deposit Receipt (handwritten).\n- **Expiry / end date**: earliest Courier Services Agreement - FastTrack Logistics (11 December 2026) [2], latest NDA - Orion Ventures (2 September 2032) [6]. Not stated in Employment Contract - Hira Ahmed, Security Deposit Receipt (handwritten).\n\n_Some values have not been confirmed by a person yet._",
+        "seconds": 5.5
+      },
+      {
+        "q": "Compare the confidentiality obligations in the NDAs with Acme and Orion",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Confidentiality obligations"
+        ],
+        "cells": [
+          {
+            "column": "confiden",
+            "record": "NDA - Acme Corp",
+            "expected": "confiden",
+            "got": "The receiving party must keep information confidential and not disclose it without written consent.",
+            "ok": true
+          },
+          {
+            "column": "confiden",
+            "record": "NDA - Orion Ventures",
+            "expected": null,
+            "got": null,
+            "ok": true
+          }
+        ],
+        "answer": "Compared **2** records on confidentiality obligations.\n\n- **Confidentiality obligations**: only NDA - Acme Corp states it: The receiving party must keep information confidential and not disclose it without written consent. [1]. Not stated in NDA - Orion Ventures.\n\n_Some values have not been confirmed by a person yet._",
+        "seconds": 20.9
+      },
+      {
+        "q": "Compare the duration of the Acme and Orion NDAs",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Term / duration"
+        ],
+        "cells": [
+          {
+            "column": "term|duration",
+            "record": "NDA - Acme Corp",
+            "expected": "3 years",
+            "got": "3 years",
+            "ok": true
+          },
+          {
+            "column": "term|duration",
+            "record": "NDA - Orion Ventures",
+            "expected": "7 years",
+            "got": "7 years",
+            "ok": true
+          }
+        ],
+        "answer": "Compared **2** records on term / duration.\n\n- **Term / duration**: shortest NDA - Acme Corp (3 years) [1], longest NDA - Orion Ventures (7 years) [2].",
+        "seconds": 1.6
+      },
+      {
+        "q": "Compare the notice periods of the courier agreement and the supply agreement",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Termination notice period"
+        ],
+        "cells": [
+          {
+            "column": "notice",
+            "record": "Courier Services Agreement - FastTrack Logistics",
+            "expected": "30 days",
+            "got": "30 days written notice",
+            "ok": true
+          },
+          {
+            "column": "notice",
+            "record": "Supply Agreement - Delta Traders",
+            "expected": "15 days",
+            "got": "15 days written notice",
+            "ok": true
+          }
+        ],
+        "answer": "Compared **2** records on termination notice period.\n\n- **Termination notice period**: shortest Supply Agreement - Delta Traders (15 days written notice) [2], longest Courier Services Agreement - FastTrack Logistics (30 days written notice) [1].",
+        "seconds": 4.6
+      },
+      {
+        "q": "Compare the purpose of our NDAs",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Purpose"
+        ],
+        "cells": [
+          {
+            "column": "purpose",
+            "record": "NDA - Acme Corp",
+            "expected": "software",
+            "got": "To evaluate a possible software development partnership",
+            "ok": true
+          },
+          {
+            "column": "purpose",
+            "record": "NDA - Orion Ventures",
+            "expected": "renewable",
+            "got": "To explore a joint investment in a renewable energy project",
+            "ok": true
+          }
+        ],
+        "answer": "Compared **2** records on purpose.\n\n_Some values have not been confirmed by a person yet._\n\n- The Acme Corp NDA specifies a purpose of evaluating a potential software development partnership [1], whereas the Orion Ventures NDA focuses on exploring a joint investment in a renewable energy project [2].",
+        "seconds": 4.0
+      },
+      {
+        "q": "Compare the governing law of the NDA with Acme and the lease",
+        "intent": "COMPARE",
+        "rows_ok": true,
+        "missing_rows": [],
+        "extra_rows": [],
+        "columns": [
+          "Governing law"
+        ],
+        "cells": [
+          {
+            "column": "law",
+            "record": "NDA - Acme Corp",
+            "expected": "pakistan",
+            "got": "Pakistan",
+            "ok": true
+          },
+          {
+            "column": "law",
+            "record": "Office Lease - Gulberg Lahore",
+            "expected": null,
+            "got": null,
+            "ok": true
+          }
+        ],
+        "answer": "Compared **2** records on governing law.\n\n- **Governing law**: only NDA - Acme Corp states it: Pakistan [1]. Not stated in Office Lease - Gulberg Lahore.",
+        "seconds": 1.8
+      }
+    ],
+    "summary": {
+      "questions": 7,
+      "routed_compare": 7,
+      "right_records": 7,
+      "cells_correct": "26/26",
+      "cell_accuracy": 1.0,
+      "filled_cells_grounded": "18/18",
+      "mean_seconds": 11.7
+    }
+  }
+}

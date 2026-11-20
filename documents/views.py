@@ -22,10 +22,12 @@ from rest_framework.viewsets import ViewSet
 from accounts.models import Department
 from accounts.permissions import CanUpload, CanVerify, IsOrgMember
 from audit.models import AuditEvent
+from ai import llm
 from audit.service import record
 
 from .access import can_edit, visible_documents
 from .models import Document, DocumentVersion, FieldEdit, RecordField
+from .pipeline import changes, policy
 from .pipeline.queue import enqueue
 from .pipeline.understanding import parse_date, parse_money
 from .schema import FIELD_KEYS, FIELD_LABELS, FIELD_TYPES
@@ -72,6 +74,20 @@ def _int_list(v):
     except ValueError:
         raise ValidationError({'allowed_user_ids': 'Must be a list of user ids.'})
 
+
+
+def _in_background(fn, *args):
+    """Run slow follow-up work (LLM calls for many records) without holding up the request."""
+    import threading
+
+    from django.db import connection
+
+    def run():
+        try:
+            fn(*args)
+        finally:
+            connection.close()
+    threading.Thread(target=run, daemon=True).start()
 
 class DocumentViewSet(ViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -177,6 +193,11 @@ class DocumentViewSet(ViewSet):
             doc.access_level = d['access_level']
         if 'department' in d:
             doc.department = self._department(d['department'])
+        policy_turned_on = d.get('use_as_policy') and not doc.use_as_policy
+        if 'use_as_policy' in d:
+            if d['use_as_policy'] and doc.kind != Document.Kind.REFERENCE:
+                raise ValidationError({'use_as_policy': 'Only reference documents can be used as policies.'})
+            doc.use_as_policy = d['use_as_policy']
         if doc.access_level == Document.Access.DEPARTMENT and doc.department_id is None:
             raise ValidationError({'department': 'Department-only documents need a department.'})
         doc.save()
@@ -187,6 +208,8 @@ class DocumentViewSet(ViewSet):
         access_changed = any(before[k] != after[k] for k in ('access_level', 'department', 'allowed_users'))
         record(request.user, AuditEvent.Action.ACCESS_CHANGE if access_changed else AuditEvent.Action.UPDATE_DOCUMENT,
                doc, request, before=before, after=after)
+        if policy_turned_on and doc.current_version_id:
+            _in_background(policy.recheck_organization, doc.organization_id)
         return Response(DocumentDetailSerializer(doc, context={'request': request}).data)
 
     def destroy(self, request, pk=None):
@@ -223,34 +246,35 @@ class DocumentViewSet(ViewSet):
 
     @action(detail=True, methods=['get'])
     def compare(self, request, pk=None):
-        """What changed between two versions: extracted fields and page text."""
+        """What changed between two versions: extracted facts, page text and (with ?summary=1) a short summary."""
         doc = self._get(pk)
         try:
             a = doc.versions.get(number=int(request.query_params.get('a')))
             b = doc.versions.get(number=int(request.query_params.get('b')))
         except (TypeError, ValueError, DocumentVersion.DoesNotExist):
             raise ValidationError({'detail': 'Pass ?a=<version>&b=<version> with existing version numbers.'})
-        fa = {f.key: f for f in a.fields.all()}
-        fb = {f.key: f for f in b.fields.all()}
-        field_changes = []
-        for key in FIELD_KEYS:
-            va = fa[key].value_text if key in fa else None
-            vb = fb[key].value_text if key in fb else None
-            if va != vb:
-                field_changes.append({'key': key, 'label': FIELD_LABELS[key], 'from': va, 'to': vb})
-        pa = {p.number: p.text for p in a.pages.all()}
-        pb = {p.number: p.text for p in b.pages.all()}
-        page_changes = []
-        for n in sorted(set(pa) | set(pb)):
-            ta, tb = pa.get(n, ''), pb.get(n, '')
-            if ta == tb:
-                continue
-            ratio = difflib.SequenceMatcher(None, ta, tb, autojunk=False).quick_ratio() if ta and tb else 0.0
-            diff = list(difflib.unified_diff(ta.splitlines(), tb.splitlines(), lineterm='', n=0))[2:60]
-            page_changes.append({'page': n, 'similarity': round(ratio, 3),
-                                 'status': 'added' if not ta else 'removed' if not tb else 'changed', 'diff': diff})
-        return Response({'a': a.number, 'b': b.number, 'field_changes': field_changes, 'page_changes': page_changes,
-                         'pages_a': len(pa), 'pages_b': len(pb)})
+        out = changes.diff_versions(a, b)
+        if request.query_params.get('summary') in ('1', 'true'):
+            try:
+                out['summary'] = changes.summary_between(a, b, doc.title)
+            except llm.LLMError:
+                out['summary'] = ''
+        return Response(out)
+
+    @action(detail=True, methods=['post'], url_path='check-policies')
+    def check_policies(self, request, pk=None):
+        """Re-check the current version of a record against the organization's policy documents."""
+        doc = self._get(pk)
+        m = request.user.membership
+        if not (can_edit(request.user, doc) or m.can_verify):
+            raise PermissionDenied('Only managers, admins and the uploader can run the policy check.')
+        if doc.kind != Document.Kind.RECORD or doc.current_version is None:
+            raise ValidationError({'detail': 'Only processed records can be checked against policies.'})
+        try:
+            policy.check_policies(doc.current_version, notify_people=False)
+        except llm.LLMError as exc:
+            return Response({'detail': f'The language model is unavailable right now ({exc}).'}, status=503)
+        return Response(DocumentDetailSerializer(doc, context={'request': request}).data['policy'])
 
     @action(detail=True, methods=['get'])
     def file(self, request, pk=None):
@@ -321,13 +345,17 @@ class RecordListView(APIView):
         for f in fields:
             by_version.setdefault(f.version_id, {})[f.key] = {
                 'id': f.id, 'value': f.value_text, 'status': f.status, 'page': f.source_page}
+        from .models import PolicyFinding
+        issues = dict(PolicyFinding.objects.filter(version_id__in=docs.values('current_version_id'), status='ISSUE')
+                      .values_list('version_id').annotate(n=Count('id')))
         rows = []
         for d in docs.order_by('title')[:500]:
             values = by_version.get(d.current_version_id, {})
             rows.append({'id': d.id, 'title': d.title, 'doc_type': d.doc_type,
                          'department': d.department.name if d.department_id else None,
                          'ready': d.current_version_id is not None, 'fields': values,
-                         'needs_review': sum(1 for v in values.values() if v['status'] == 'NEEDS_REVIEW')})
+                         'needs_review': sum(1 for v in values.values() if v['status'] == 'NEEDS_REVIEW'),
+                         'policy_issues': issues.get(d.current_version_id, 0)})
         if p.get('needs_review') == '1':
             rows = [r for r in rows if r['needs_review']]
         return Response(rows)

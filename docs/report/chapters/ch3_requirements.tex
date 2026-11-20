@@ -55,13 +55,13 @@ Employee use cases; Auditors have read-only use cases and the audit log.
 
 \begin{figure}[H]\centering
 \begin{tikzpicture}[x=1cm,y=1cm]
-\node[draw,rounded corners=4pt,minimum width=9.6cm,minimum height=15.6cm,label={[font=\small\bfseries]north:\sysname{}}] (sys) at (0,0) {};
+\node[draw,rounded corners=4pt,minimum width=9.6cm,minimum height=17.0cm,label={[font=\small\bfseries]north:\sysname{}}] (sys) at (0,0) {};
 \foreach \n/\y/\t in {
-  u11/7.0/Register organization, u12/6.0/Log in, u13/5.0/Manage members \& departments,
-  u21/4.0/Upload document, u22/3.0/Upload new version \& compare, u23/2.0/Change document access,
-  u31/1.0/Browse records register, u32/0.0/Verify / correct field,
-  u41/-1.0/Ask fact lookup, u42/-2.0/Ask question from law book, u43/-3.0/Search \& open source document,
-  u44/-4.0/View query history, u51/-5.0/View audit log, u52/-6.0/Receive reminders}
+  u11/7.5/Register organization, u12/6.5/Log in, u13/5.5/Manage members \& departments,
+  u21/4.5/Upload document, u22/3.5/Upload new version \& compare, u23/2.5/Change document access,
+  u31/1.5/Browse records register, u32/0.5/Verify or correct field, u33/-0.5/Check record against policy,
+  u41/-1.5/Ask fact lookup, u42/-2.5/Ask question from law book, u43/-3.5/Search \& open source document,
+  u45/-4.5/Compare records, u44/-5.5/View query history, u51/-6.5/View audit log, u52/-7.5/Receive reminders}
   {\node[usecase,minimum width=62mm] (\n) at (0,\y) {\t};}
 \actor{adm}{(-7,4.6)}{Admin}
 \actor{mgr}{(-7,0.6)}{Manager}
@@ -69,10 +69,10 @@ Employee use cases; Auditors have read-only use cases and the audit log.
 \actor{aud}{(7,-1.4)}{Auditor}
 \actor{wrk}{(7,3.4)}{Background\\Worker}
 \foreach \u in {u11,u12,u13,u23,u51} \draw ([shift={(0.32,0.15)}]adm) -- (\u.west);
-\foreach \u in {u12,u22,u31,u32} \draw ([shift={(0.32,0.15)}]mgr) -- (\u.west);
-\foreach \u in {u12,u21,u41,u42,u43,u44,u52} \draw ([shift={(0.32,0.15)}]emp) -- (\u.west);
+\foreach \u in {u12,u22,u31,u32,u33} \draw ([shift={(0.32,0.15)}]mgr) -- (\u.west);
+\foreach \u in {u12,u21,u41,u42,u43,u45,u44,u52} \draw ([shift={(0.32,0.15)}]emp) -- (\u.west);
 \foreach \u in {u12,u31,u43,u51} \draw ([shift={(-0.32,0.15)}]aud) -- (\u.east);
-\foreach \u in {u21,u22,u52} \draw[dashed] ([shift={(-0.32,0.15)}]wrk) -- (\u.east);
+\foreach \u in {u21,u22,u33,u52} \draw[dashed] ([shift={(-0.32,0.15)}]wrk) -- (\u.east);
 \draw[-{Triangle[open]}] (-7,0.1) ++(0,-0.55) -- (-7,-2.7);
 \draw[-{Triangle[open]}] (-7,4.1) ++(0,-0.55) -- (-7,1.3);
 \end{tikzpicture}
@@ -216,6 +216,24 @@ Employee use cases; Auditors have read-only use cases and the audit log.
 \row{Alternative Flow}{Employees and Auditors receive HTTP 403 when trying to verify.}
 \end{spec}
 
+\begin{spec}{UC-3.3: Check Record Against Company Policy}{tab:uc33}
+\row{Use Case ID}{UC-3.3}
+\row{Use Case Name}{Check Record Against Company Policy}
+\row{Actors}{Manager, Admin (marking a policy, running the check); Background Worker (automatic check); all roles (viewing)}
+\row{Description}{The system compares a record's extracted facts with the rules written in the organization's policy documents and flags rules the record breaks.}
+\row{Trigger}{A record version is processed, a reference document is marked ``Use as company policy'', or a user selects ``Check again''.}
+\row{Preconditions}{At least one reference document is marked as company policy; the record has extracted fields.}
+\row{Postconditions}{Policy findings are stored for the record's current version; people responsible for the record are notified of issues.}
+\row{Normal Flow}{\begin{steps}
+\item Manager opens a reference document (e.g.\ the contracts handbook), selects \emph{Settings} and turns on \emph{Use as company policy}; all current records are re-checked in the background.
+\item For each record, the system selects the policy passages closest to the record and asks the LLM which specific rules apply and whether the facts follow them.
+\item Each finding's rule quote is checked against the policy text; findings whose rule cannot be found are dropped.
+\item The record page lists each rule as \emph{Complies}, \emph{Does not comply} or \emph{Check by hand}, with the quoted rule; selecting the quote opens the policy at that page with the rule highlighted.
+\item The records register shows the number of policy issues, and the responsible people receive a notification.
+\end{steps}}
+\row{Alternative Flow}{If no policy is marked, the record page explains how to mark one. Only reference documents can be marked as policy (HTTP 400 otherwise); Employees and Auditors cannot run the check (HTTP 403).}
+\end{spec}
+
 \subsubsection{Module 4: Legal Assistant}
 \begin{spec}{UC-4.1: Ask a Fact Lookup}{tab:uc41}
 \row{Use Case ID}{UC-4.1}
@@ -282,6 +300,23 @@ Employee use cases; Auditors have read-only use cases and the audit log.
 \row{Alternative Flow}{Another user's conversation id returns HTTP 404.}
 \end{spec}
 
+\begin{spec}{UC-4.5: Compare Records}{tab:uc45}
+\row{Use Case ID}{UC-4.5}
+\row{Use Case Name}{Compare Records}
+\row{Actors}{All roles}
+\row{Description}{The user compares the same point across several records, e.g.\ ``Compare the termination notice in all our NDAs''.}
+\row{Trigger}{User asks a comparison question in the Assistant.}
+\row{Preconditions}{User is signed in; at least one matching record is visible to the user.}
+\row{Postconditions}{The question, the table and its sources are saved in the conversation.}
+\row{Normal Flow}{\begin{steps}
+\item Router classifies the question as COMPARE and extracts the type, the named records and the points to compare (record fields or a free-text point such as ``confidentiality obligations'').
+\item System selects the matching records the user may open (at most 12).
+\item System fills a table: record fields come from the records table; other points are read from each record's own passages, and a value is kept only if its quote is found in the passage.
+\item System shows the table, each value linking to its page, and below it how the records differ (earliest / latest, shortest / longest, which agree).
+\end{steps}}
+\row{Alternative Flow}{If no visible record matches, the question is answered from document text (UC-4.2). A point a record does not state is shown as ``Not stated''.}
+\end{spec}
+
 \subsubsection{Module 5: History, Audit and Notifications}
 \begin{spec}{UC-5.1: View Audit Log}{tab:uc51}
 \row{Use Case ID}{UC-5.1}
@@ -327,6 +362,10 @@ User opens or downloads a document & Check access, stream the file, log VIEW / D
 Reviewer verifies or corrects a field & Update status/value, store FieldEdit, log FIELD\_VERIFY / FIELD\_EDIT. \\ \hline
 Admin changes a role or department & Update membership, log MEMBER\_UPDATE; access changes apply to the next request. \\ \hline
 Hourly reminder check & Create due expiry / notice reminders without duplicates. \\ \hline
+User asks a comparison question & Select the matching visible records, fill the table from record fields and grounded passages, compute the differences, save to history. \\ \hline
+New version of a document processed & Summarize what changed from the previous version and store it with the version. \\ \hline
+Record processed while a company policy exists & Check the record against the policy, store the findings, notify responsible people of issues. \\ \hline
+Reference document marked as company policy & Re-check every current record of the organization in the background. \\ \hline
 LLM provider rate-limits a call & Retry within a deadline, then switch to the fallback provider; if both fail, show passages without a written answer. \\ \hline
 \end{tabularx}
 \end{table}
@@ -408,7 +447,7 @@ Each requirement below has an identifier used in the traceability matrix (Table~
 \begin{spec}{Functional Requirement -- Versions and Comparison}{tab:fr25}
 \row{Identifier}{FR-2.5}
 \row{Title}{Document versions}
-\row{Requirement}{Users who may edit a document shall be able to upload a new version with a change note. Older versions shall never be deleted, and any two versions shall be comparable (text differences and changed fields).}
+\row{Requirement}{Users who may edit a document shall be able to upload a new version with a change note. Older versions shall never be deleted, and any two versions shall be comparable (text differences and changed fields). Each new version shall carry a short AI-written summary of what changed from the previous version, citing pages.}
 \row{Source}{Supervisor (history)}
 \row{Dependencies}{FR-2.1}
 \row{Priority}{High}
@@ -454,12 +493,22 @@ Each requirement below has an identifier used in the traceability matrix (Table~
 \row{Priority}{High}
 \end{spec}
 
+\subsubsection{FR-3.4 Policy Compliance Check}
+\begin{spec}{Functional Requirement -- Policy Compliance Check}{tab:fr34}
+\row{Identifier}{FR-3.4}
+\row{Title}{Check records against company policy}
+\row{Requirement}{Managers and Admins shall be able to mark a reference document as company policy. Each record shall then be checked against the policy's specific rules (term limits, notice periods, approvals, required form); every finding shall state the rule, a status (complies, does not comply, unclear), a one-sentence reason and the rule quoted with its page, and the quote shall be found in the policy text. Records with issues shall be marked in the records register and the responsible people notified.}
+\row{Source}{Project team (organizations keep internal rules for contracts)}
+\row{Dependencies}{FR-3.1, FR-5.2}
+\row{Priority}{Medium}
+\end{spec}
+
 \subsection{Module 4: Legal Assistant}
 \subsubsection{FR-4.1 Query Routing}
 \begin{spec}{Functional Requirement -- Query Routing}{tab:fr41}
 \row{Identifier}{FR-4.1}
 \row{Title}{Query routing}
-\row{Requirement}{The system shall classify each question as LOOKUP, KNOWLEDGE or SEARCH and extract document type, party, field and date range, using an LLM plan in JSON with a keyword-rule fallback. The LLM shall never write SQL.}
+\row{Requirement}{The system shall classify each question as LOOKUP, KNOWLEDGE, SEARCH or COMPARE and extract document type, party, field and date range (for comparisons: the fields, the named records and any free-text point), using an LLM plan in JSON with a keyword-rule fallback. The LLM shall never write SQL.}
 \row{Dependencies}{FR-3.1}
 \row{Priority}{High}
 \end{spec}
@@ -490,6 +539,16 @@ Each requirement below has an identifier used in the traceability matrix (Table~
 \row{Title}{Conversation history}
 \row{Requirement}{Each question shall be stored with its route, filters, scope, answer, sources and response time in a conversation that only its owner can open.}
 \row{Source}{Supervisor (history)}
+\row{Priority}{Medium}
+\end{spec}
+
+\subsubsection{FR-4.5 Comparison Questions}
+\begin{spec}{Functional Requirement -- Comparison Questions}{tab:fr45}
+\row{Identifier}{FR-4.5}
+\row{Title}{Compare records}
+\row{Requirement}{COMPARE questions shall be answered with a table of the matching records the user may open (one row per record, one column per compared point, at most 12 records and 4 points). Each value shall link to its page; values not stored as record fields shall be read from the record's passages and kept only if their quote is found there; missing values shall be shown as ``Not stated''. The differences between records on each stored field shall be computed from the table, not written by the LLM.}
+\row{Source}{Project team (staff compare terms across many contracts)}
+\row{Dependencies}{FR-1.3, FR-3.1, FR-4.1}
 \row{Priority}{Medium}
 \end{spec}
 
@@ -594,15 +653,17 @@ FR-2.1 & Upload \& validation & UC-2.1 & documents/views.py & UT-08, UT-09, BB-0
 FR-2.2 & Extraction, OCR, handwriting & UC-2.1 & pipeline/\allowbreak{}extract.py, ai/ocr.py & IT-01, EV-5 \\ \hline
 FR-2.3 & Classification & UC-2.1 & pipeline/\allowbreak{}understanding.py & IT-01 \\ \hline
 FR-2.4 & Chunking \& indexing & UC-2.1 & pipeline/chunking.py & UT-03, EV-2 \\ \hline
-FR-2.5 & Versions \& comparison & UC-2.2 & documents/views.py & UT-10, BB-05 \\ \hline
+FR-2.5 & Versions, comparison \& change summary & UC-2.2 & documents/views.py, pipeline/changes.py & UT-10, UT-36, UT-37, BB-05, BB-14 \\ \hline
 FR-2.6 & Clause labelling & UC-2.1 & ai/clauses.py, ml/ & EV-1 \\ \hline
 FR-3.1 & Field extraction with evidence & UC-3.1 & pipeline/\allowbreak{}understanding.py & UT-01, UT-02, EV-3 \\ \hline
 FR-3.2 & Review queue & UC-3.2 & documents/views.py & UT-12, BB-07 \\ \hline
 FR-3.3 & Field history \& register & UC-3.1, 3.2 & documents/views.py & UT-11, BB-06 \\ \hline
-FR-4.1 & Query routing & UC-4.1--4.3 & assistant/router.py & UT-14 -- UT-16, EV-4 \\ \hline
+FR-3.4 & Policy compliance check & UC-3.3 & pipeline/policy.py & UT-32 -- UT-35, BB-13, EV-7 \\ \hline
+FR-4.1 & Query routing & UC-4.1--4.3, 4.5 & assistant/router.py & UT-14 -- UT-16, UT-38, UT-39, EV-4, EV-8 \\ \hline
 FR-4.2 & Answer engines & UC-4.1--4.3 & assistant/engine.py & UT-17, UT-24, UT-25, IT-02, IT-04, BB-08, BB-09 \\ \hline
 FR-4.3 & Source viewing & UC-4.1, 4.3 & DocumentViewer.vue & BB-10 \\ \hline
 FR-4.4 & Query history & UC-4.4 & assistant/views.py & UT-18, BB-11 \\ \hline
+FR-4.5 & Comparison questions & UC-4.5 & assistant/compare.py & UT-38 -- UT-47, BB-15, EV-8 \\ \hline
 FR-5.1 & Audit log & UC-5.1 & audit/ & UT-13, BB-12 \\ \hline
 FR-5.2 & Notifications \& reminders & UC-5.2 & notifications/ & UT-19 -- UT-23 \\ \hline
 \end{tabularx}

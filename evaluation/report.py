@@ -181,9 +181,9 @@ def main():
         if fb:
             lines += ['', f'> {fb} of the LLM router\'s answers came from the keyword fallback because the API rate-limited the call.']
         lines += ['', 'LLM router confusion (rows = correct route, columns = predicted):', '',
-                  '| | LOOKUP | KNOWLEDGE | SEARCH |', '|---|---:|---:|---:|']
+                  '| | LOOKUP | KNOWLEDGE | SEARCH | COMPARE |', '|---|---:|---:|---:|---:|']
         for g, row in rt['llm']['confusion'].items():
-            lines.append(f"| {g} | {row.get('LOOKUP', 0)} | {row.get('KNOWLEDGE', 0)} | {row.get('SEARCH', 0)} |")
+            lines.append(f"| {g} | {row.get('LOOKUP', 0)} | {row.get('KNOWLEDGE', 0)} | {row.get('SEARCH', 0)} | {row.get('COMPARE', 0)} |")
         lines.append('')
     else:
         lines += ['_not run yet_', '']
@@ -201,6 +201,43 @@ def main():
         if 'synthetic' in s['dataset']:
             lines += ['> Synthetic set (handwriting-style fonts). Real handwriting is harder: rerun with real scans via '
                       '`python -m evaluation.eval_handwriting --folder <scans>` before quoting these numbers.', '']
+    else:
+        lines += ['_not run yet_', '']
+
+    # 5b. policy check
+    pc = load('policy_check')
+    lines += ['## 5b. Policy compliance check (16 hand-written cases vs the demo Contracts Handbook)', '']
+    if pc:
+        s = pc['summary']
+        lines += [f"Model `{pc['model']}`, same `judge()` function as the app.", '',
+                  '| Measure | Result |', '|---|---:|',
+                  f"| Expected verdict for the targeted rule | {pct(s['target_verdict_accuracy'])} ({s['target_correct']}/{s['targeted']}) |",
+                  f"| Rule-breaking contracts flagged (recall) | {pct(s['issue_recall'])} |",
+                  f"| Flagged contracts that really break a rule (precision) | {pct(s['issue_precision'])} |",
+                  f"| Contracts with a false issue | {s['contracts_with_false_issues']} of {s['cases']} |",
+                  f"| Average time per contract | {s['mean_seconds']} s |", '',
+                  '| Case | Targeted rule | Expected | Got |', '|---|---|---|---|']
+        for c in pc['cases']:
+            lines.append(f"| {c['title']} | {c['target'] or '—'} | {' / '.join(c['accepted']) or 'no issue'} | "
+                         f"{c['got'] or '—'}{'' if c['correct'] else ' ✗'} |")
+        lines.append('')
+    else:
+        lines += ['_not run yet_', '']
+
+    # 5c. comparison questions
+    cm = load('compare')
+    lines += ['## 5c. Comparison questions', '']
+    if cm:
+        r, t = cm['routing'], cm['tables']['summary']
+        lines += [f"Model `{cm['model']}`. Routing: 20 comparison questions and 20 look-alikes (concept differences, "
+                  'lookups, lists, searches).', '',
+                  '| Router | Comparisons routed to COMPARE | Look-alikes wrongly routed to COMPARE |', '|---|---:|---:|',
+                  f"| Keyword rules | {r['keyword']['comparisons_routed']} | {r['keyword']['look_alikes_routed_as_comparison']} |",
+                  f"| LLM router (as used) | {r['llm']['comparisons_routed']} | {r['llm']['look_alikes_routed_as_comparison']} |", '',
+                  f"Tables on the demo records ({t['questions']} questions): routed to COMPARE {t['routed_compare']}/{t['questions']}, "
+                  f"right set of records {t['right_records']}/{t['questions']}, expected cell values {t['cells_correct']}, "
+                  f"filled cells whose quote is on the cited page {t['filled_cells_grounded']}, "
+                  f"{t['mean_seconds']} s per question on average.", '']
     else:
         lines += ['_not run yet_', '']
 

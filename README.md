@@ -108,6 +108,8 @@ On a GPU (Colab/Kaggle) drop `--train-limit` and raise `--epochs` for the best s
 | `python -m evaluation.eval_extraction --n 40` | Record-field extraction on CUAD vs lawyers' annotations (P/R/F1), grounding check, review-queue catch rate |
 | `python -m evaluation.eval_router` | Routing accuracy on 100 labelled questions, LLM vs keyword fallback |
 | `python -m evaluation.eval_handwriting [--folder scans]` | Tesseract vs vision model CER/WER (synthetic set by default; pass real scans) |
+| `python -m evaluation.eval_policy` | Policy compliance check on 16 labelled cases against the demo Contracts Handbook |
+| `python -m evaluation.eval_compare` | Comparison questions: routing on 40 questions, and table correctness on the demo records |
 | `python -m evaluation.report` | Writes every result into **[docs/EVALUATION.md](docs/EVALUATION.md)** |
 
 Raw results are kept in `evaluation/results/*.json`.

@@ -11,6 +11,7 @@ class Notification(models.Model):
         PROCESSED = 'PROCESSED', 'Document ready'
         FAILED = 'FAILED', 'Processing failed'
         REVIEW = 'REVIEW', 'Needs review'
+        POLICY = 'POLICY', 'Policy issue'
 
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     organization = models.ForeignKey('accounts.Organization', on_delete=models.CASCADE, related_name='notifications')

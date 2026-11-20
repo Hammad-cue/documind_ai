@@ -10,7 +10,13 @@ such as the Contract Act 1872 with page citations; opens the source page for eve
 query history, document versions, field-edit history and an append-only audit log. A clause classifier
 was fine-tuned on LEDGAR, and every AI component was evaluated on public datasets. On CUAD, the final
 retrieval design raised Hit@5 from 82.8\% to 93.0\% over the first version's design, and field
-extraction reached a micro-F1 of 75.9\% with 99.4\% of evidence quotes found on the cited page. Calculating expiry dates from the start date and term raised expiry-date recall from 35.7\% to 64.3\%, and a second check on each value sends five times as many wrong values to human review. Combining the fine-tuned clause model with a TF-IDF model reached 88.5\% accuracy on 100 clause types, above both. The query router chose the correct path for 94\% of 100 labelled questions, and every answer to CUAD questions cited a passage containing the lawyers' answer, while all questions about absent clauses were answered with ``the documents do not say''.
+extraction reached a micro-F1 of 75.9\% with 99.4\% of evidence quotes found on the cited page. Calculating expiry dates from the start date and term raised expiry-date recall from 35.7\% to 64.3\%, and a second check on each value sends five times as many wrong values to human review. Combining the fine-tuned clause model with a TF-IDF model reached 88.5\% accuracy on 100 clause types, above both. The query router chose the correct path for 94\% of 100 labelled questions, and every answer to CUAD questions cited a passage containing the lawyers' answer, while all questions about absent clauses were answered with ``the documents do not say''. Records are
+also checked against the organization's own policies, with every rule quoted from the policy: on 16
+labelled cases the check gave the expected verdict for 13 of 14 targeted rules, flagged every contract that
+broke a rule and raised no false issues. Each new version carries a short summary of what changed, and
+comparison questions (``Compare the termination notice in all our NDAs'') are answered with a table of the
+records the user may open, each value linked to its page and the differences computed rather than
+generated.
 
 \section{Limitations}
 \begin{itemize}
@@ -19,6 +25,12 @@ combination of both (88.5\%) beats it. A larger encoder could remove the need fo
 \item Free LLM tiers limit throughput; heavy use falls back to a second provider or to passages only.
 \item Even with the second check, two thirds of wrong extracted values are not flagged, and the check adds
 some correct values to the review queue.
+\item The policy check compares extracted facts with written rules. Rules about the wording of whole
+clauses are outside it, it was evaluated only on a small hand-written set, and boundary cases (exactly five
+years) may be reported as ``unclear''.
+\item Comparisons cover at most 12 records and 4 points at a time, and free-text points are read from each
+record's two most relevant passages only, so a clause elsewhere in a long contract can be reported as
+``Not stated''.
 \item English only; no native mobile application.
 \end{itemize}
 
@@ -27,6 +39,7 @@ some correct values to the review queue.
 \item A larger fine-tuned encoder for both clause labelling and the second check on extracted values.
 \item Urdu document and handwriting support.
 \item A fully local deployment with an open-weight LLM for organizations that cannot use cloud APIs.
-\item Clause-level comparison against a company's standard templates and risk flags.
+\item Comparing whole clauses with a company's standard templates; the policy check now compares the key
+facts of each record with the company's written rules.
 \item Contract obligations tracking and calendar integration for reminders.
 \end{itemize}

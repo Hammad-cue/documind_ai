@@ -44,6 +44,7 @@
               <td class="px-3 py-3.5 text-ink-2">{{ r.fields.contract_value?.value || '—' }}</td>
               <td class="px-6 py-3.5 text-right">
                 <span v-if="r.needs_review" class="chip bg-warn-soft text-warn">{{ r.needs_review }} to review</span>
+                <span v-if="r.policy_issues" class="chip bg-bad-soft text-bad">{{ r.policy_issues }} policy issue{{ r.policy_issues > 1 ? 's' : '' }}</span>
                 <StatusPill v-else-if="!r.ready" status="PROCESSING" />
               </td>
             </tr>

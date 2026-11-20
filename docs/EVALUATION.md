@@ -92,11 +92,11 @@ Correctness is graded by a second LLM call that sees the lawyers' annotation (LL
 
 LLM router confusion (rows = correct route, columns = predicted):
 
-| | LOOKUP | KNOWLEDGE | SEARCH |
-|---|---:|---:|---:|
-| LOOKUP | 40 | 0 | 0 |
-| KNOWLEDGE | 1 | 34 | 0 |
-| SEARCH | 2 | 3 | 20 |
+| | LOOKUP | KNOWLEDGE | SEARCH | COMPARE |
+|---|---:|---:|---:|---:|
+| LOOKUP | 40 | 0 | 0 | 0 |
+| KNOWLEDGE | 1 | 34 | 0 | 0 |
+| SEARCH | 2 | 3 | 20 | 0 |
 
 ## 5. Handwriting recognition
 
@@ -109,6 +109,48 @@ Dataset: synthetic handwriting-style fonts (30 pages). Character / word error ra
 | Pipeline (vision only when Tesseract is unsure; 5/30 pages sent) | 2.6% | | |
 
 > Synthetic set (handwriting-style fonts). Real handwriting is harder: rerun with real scans via `python -m evaluation.eval_handwriting --folder <scans>` before quoting these numbers.
+
+## 5b. Policy compliance check (16 hand-written cases vs the demo Contracts Handbook)
+
+Model `groq/openai/gpt-oss-20b`, same `judge()` function as the app.
+
+| Measure | Result |
+|---|---:|
+| Expected verdict for the targeted rule | 92.9% (13/14) |
+| Rule-breaking contracts flagged (recall) | 100.0% |
+| Flagged contracts that really break a rule (precision) | 100.0% |
+| Contracts with a false issue | 0 of 16 |
+| Average time per contract | 1.4 s |
+
+| Case | Targeted rule | Expected | Got |
+|---|---|---|---|
+| NDA - Bright Foods | nda_term | OK | OK |
+| NDA - Sialkot Sports | nda_term | OK | OK |
+| NDA - Delta Textiles | nda_term | OK | UNCLEAR ✗ |
+| NDA - Orion Ventures | nda_term | ISSUE | ISSUE |
+| NDA - Northwind Capital | nda_term | ISSUE | ISSUE |
+| NDA - Lahore Labs | nda_term | UNCLEAR / none | UNCLEAR |
+| Cleaning Services Agreement | notice | ISSUE | ISSUE |
+| Supply Agreement - Punjab Paper | notice | ISSUE | ISSUE |
+| IT Support Agreement | notice | OK | OK |
+| Distribution Agreement - Indus Traders | notice | OK | OK |
+| Consulting Agreement - R. Malik | notice | UNCLEAR / none | UNCLEAR |
+| Office Lease - Gulberg | lease_notice | OK | OK |
+| Office Lease - Model Town | lease_notice | ISSUE / UNCLEAR | ISSUE |
+| NDA - Crescent Bank | nda_term | OK | OK |
+| Employment Contract - Hira Ahmed | — | no issue | — |
+| Payment Receipt - Stationery | — | no issue | — |
+
+## 5c. Comparison questions
+
+Model `groq/openai/gpt-oss-20b`. Routing: 20 comparison questions and 20 look-alikes (concept differences, lookups, lists, searches).
+
+| Router | Comparisons routed to COMPARE | Look-alikes wrongly routed to COMPARE |
+|---|---:|---:|
+| Keyword rules | 20/20 | 0/20 |
+| LLM router (as used) | 20/20 | 0/20 |
+
+Tables on the demo records (7 questions): routed to COMPARE 7/7, right set of records 7/7, expected cell values 26/26, filled cells whose quote is on the cited page 18/18, 11.7 s per question on average.
 
 ## 6. Access control
 

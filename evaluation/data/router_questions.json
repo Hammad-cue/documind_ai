@@ -62,7 +62,7 @@
   {"q": "Under the lease, who pays for repairs?", "intent": "KNOWLEDGE"},
   {"q": "Is a person of unsound mind able to enter into a contract?", "intent": "KNOWLEDGE"},
   {"q": "What must happen before sharing client information with a vendor?", "intent": "KNOWLEDGE"},
-  {"q": "Compare the termination rights in the NDA and the lease", "intent": "KNOWLEDGE"},
+  {"q": "Compare the termination rights in the NDA and the lease", "intent": "COMPARE"},
   {"q": "Are there any penalties for breaching the NDA?", "intent": "KNOWLEDGE"},
   {"q": "What does 'receiving party' mean in the NDA?", "intent": "KNOWLEDGE"},
   {"q": "What does the law say about agreements made under coercion?", "intent": "KNOWLEDGE"},

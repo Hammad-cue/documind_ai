@@ -8,7 +8,7 @@ from django.utils import timezone
 from ai import clauses, embeddings, llm
 from documents.models import Chunk, Document, DocumentVersion, Page, RecordField
 
-from . import chunking, extract, understanding
+from . import changes, chunking, extract, policy, understanding
 
 
 class _Log:
@@ -104,6 +104,32 @@ def process_version(version_id):
         latest_ready = document.versions.filter(status=DocumentVersion.Status.READY).order_by('-number').first()
         document.current_version = latest_ready
         document.save(update_fields=['current_version', 'updated_at'])
+
+        # 6. extras that need the published version; failures here never undo the processing above
+        extras = []
+        if version.number > 1:
+            t = time.perf_counter()
+            try:
+                changes.summarize_new_version(version)
+                extras.append(('change_summary', t, {}))
+            except llm.LLMError as exc:
+                extras.append(('change_summary', t, {'error': str(exc)[:200]}))
+        if document.kind == Document.Kind.RECORD and latest_ready == version:
+            t = time.perf_counter()
+            try:
+                found = policy.check_policies(version)
+                extras.append(('policy_check', t, {'findings': len(found),
+                                                   'issues': sum(f.status == 'ISSUE' for f in found)}))
+            except llm.LLMError as exc:
+                extras.append(('policy_check', t, {'error': str(exc)[:200]}))
+        if document.use_as_policy and latest_ready == version:
+            t = time.perf_counter()
+            extras.append(('policy_recheck_all_records', t, {'records': policy.recheck_organization(document.organization_id)}))
+        if extras:
+            for name, started, info in extras:
+                log.step(name, started, **info)
+            version.processing_log = log.steps
+            version.save(update_fields=['processing_log'])
         return version
 
     except Exception as exc:

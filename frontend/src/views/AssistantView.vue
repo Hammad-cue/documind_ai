@@ -48,6 +48,38 @@
 
               <h2 class="mt-3 text-[21px] leading-snug font-semibold tracking-[-0.02em]">{{ q.query }}</h2>
 
+              <!-- comparison: one row per record, each value opens its page -->
+              <div v-if="q.intent === 'COMPARE' && q.results.length && q.plan?.columns" class="mt-4 overflow-x-auto rounded-[20px] bg-white/75 scroll-thin">
+                <table class="w-full min-w-[520px] text-left text-[14px]">
+                  <thead>
+                    <tr class="border-b border-line text-[12px] font-semibold text-muted">
+                      <th scope="col" class="px-4 py-3 font-semibold">Record</th>
+                      <th v-for="c in q.plan.columns" :key="c.key" scope="col" class="px-4 py-3 font-semibold">{{ c.label }}</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-line">
+                    <tr v-for="r in q.results" :key="r.document_id" class="align-top">
+                      <th scope="row" class="px-4 py-3 font-semibold">
+                        <button type="button" class="text-left hover:text-accent" @click="open(r.document_id, 1, '')">{{ r.document_title }}</button>
+                        <span class="block text-[12px] font-normal text-muted">{{ r.doc_type }}</span>
+                      </th>
+                      <td v-for="c in q.plan.columns" :key="c.key" class="px-4 py-3">
+                        <template v-if="r.cells[c.key]?.value">
+                          <button type="button" class="group text-left" :title="r.cells[c.key].quote"
+                                  @click="open(r.document_id, r.cells[c.key].page, r.cells[c.key].quote)">
+                            <span class="font-medium text-ink group-hover:text-accent">{{ r.cells[c.key].value }}</span>
+                            <span v-if="r.cells[c.key].page" class="ml-1.5 text-[12px] font-semibold whitespace-nowrap text-accent">p.{{ r.cells[c.key].page }}</span>
+                          </button>
+                          <span v-if="r.cells[c.key].status === 'NEEDS_REVIEW'" class="mt-1 block text-[11px] font-medium text-warn">Needs review</span>
+                          <span v-else-if="r.cells[c.key].status === 'TEXT'" class="mt-1 block text-[11px] font-medium text-muted">Read from the text</span>
+                        </template>
+                        <span v-else class="text-muted">Not stated</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
               <!-- single record fact -->
               <div v-if="q.intent === 'LOOKUP' && q.results.length === 1" class="mt-4 flex flex-wrap items-end justify-between gap-4 rounded-[20px] bg-white/75 p-5">
                 <div>
@@ -82,7 +114,7 @@
                    v-html="render(q)" v-reveal="q._fresh" @click="onAnswerClick($event, q)" />
 
               <!-- sources -->
-              <div v-if="q.sources.length && q.intent !== 'LOOKUP'" class="mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5" :class="q.intent === 'SEARCH' ? 'sm:grid-cols-2' : ''">
+              <div v-if="q.sources.length && q.intent !== 'LOOKUP' && q.intent !== 'COMPARE'" class="mt-5 grid grid-cols-[minmax(0,1fr)] gap-2.5" :class="q.intent === 'SEARCH' ? 'sm:grid-cols-2' : ''">
                 <button v-for="s in visibleSources(q)" :key="s.id" type="button" :id="`src-${q.id}-${s.id}`"
                         class="flex min-w-0 items-center gap-3.5 rounded-[18px] bg-white/70 p-3 text-left transition hover:bg-white"
                         @click="open(s.document_id, s.page, s.snippet)">
@@ -268,10 +300,11 @@ const INTENT = {
   LOOKUP: { label: 'From the records register', dot: 'bg-[#7C5CFF]' },
   KNOWLEDGE: { label: 'Answered from documents', dot: 'bg-accent' },
   SEARCH: { label: 'Document search', dot: 'bg-[#0E9F8E]' },
+  COMPARE: { label: 'Compared across records', dot: 'bg-[#E08A2F]' },
 }
 const examples = [
   { kind: 'Record lookup', icon: CalendarClock, q: 'When was the NDA with Acme signed?' },
-  { kind: 'Record lookup', icon: Table2, q: 'Which contracts expire in 2027?' },
+  { kind: 'Compare records', icon: Table2, q: 'Compare the termination notice in all our NDAs' },
   { kind: 'From the law & policies', icon: ScrollText, q: 'Is an agreement without consideration valid?' },
   { kind: 'Find a document', icon: FileSearch, q: 'Find the lease for the Lahore office' },
 ]
@@ -299,14 +332,17 @@ function hiddenCount(q) {
 
 function planRows(plan) {
   const rows = {}
-  for (const k of ['intent', 'doc_type', 'party', 'field', 'date_from', 'date_to', 'keywords', 'method', 'fallback']) if (plan?.[k]) rows[k] = plan[k]
+  for (const k of ['intent', 'doc_type', 'party', 'field', 'fields', 'records', 'aspect', 'date_from', 'date_to', 'keywords', 'method', 'fallback']) {
+    const v = plan?.[k]
+    if (Array.isArray(v) ? v.length : v) rows[k] = Array.isArray(v) ? v.join(', ') : v
+  }
   return rows
 }
 
 /** Markdown -> safe HTML; [n] citations become small clickable pills. */
 function render(q) {
   const html = DOMPurify.sanitize(marked.parse(q.answer || ''))
-  if (q.intent !== 'KNOWLEDGE') return html
+  if (q.intent !== 'KNOWLEDGE' && q.intent !== 'COMPARE') return html
   return html.replace(/\[(\d{1,2})\]/g, (m, n) =>
     q.sources.some(s => s.id === +n)
       ? `<a href="#" data-cite="${n}" class="not-prose mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[rgb(47_75_224/0.1)] px-1.5 align-[2px] text-[11px] font-bold text-[#2F4BE0] no-underline hover:bg-[rgb(47_75_224/0.2)]">${n}</a>`
@@ -400,9 +436,13 @@ async function ask(text) {
 
 /** Copy the answer as plain text with its sources listed underneath. */
 async function copy(q) {
+  const cell = c => c?.value ? `${c.value}${c.page ? ` (page ${c.page})` : ''}` : 'Not stated'
   const answer = q.intent === 'LOOKUP' && q.results.length
     ? q.results.map(r => `${r.document_title} — ${r.label}: ${r.value}${r.page ? ` (page ${r.page})` : ''}`).join('\n')
-    : (q.answer || '').replace(/\*\*/g, '')
+    : q.intent === 'COMPARE' && q.results.length && q.plan?.columns
+      ? q.results.map(r => `${r.document_title}\n` + q.plan.columns.map(c => `  ${c.label}: ${cell(r.cells[c.key])}`).join('\n')).join('\n')
+        + '\n\n' + (q.answer || '').replace(/\*\*/g, '').replace(/\s*\[\d{1,2}\]/g, '')
+      : (q.answer || '').replace(/\*\*/g, '')
   const sources = q.intent === 'KNOWLEDGE'
     ? '\n\nSources:\n' + visibleSources(q).map(s => `[${s.id}] ${s.document_title}${s.section ? ', ' + s.section.replaceAll(' > ', ' › ') : ''}, page ${s.page}`).join('\n')
     : ''

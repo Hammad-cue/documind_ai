@@ -1,0 +1,472 @@
+{
+  "name": "policy_check",
+  "created": "2026-11-20 13:48",
+  "model": "groq/openai/gpt-oss-20b",
+  "summary": {
+    "cases": 16,
+    "errors": 0,
+    "target_verdict_accuracy": 0.929,
+    "target_correct": 13,
+    "targeted": 14,
+    "issue_recall": 1.0,
+    "issue_precision": 1.0,
+    "contracts_with_false_issues": 0,
+    "findings_total": 33,
+    "mean_seconds": 1.4
+  },
+  "cases": [
+    {
+      "title": "NDA - Bright Foods",
+      "target": "nda_term",
+      "accepted": [
+        "OK"
+      ],
+      "got": "OK",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Notice period for commercial contracts",
+          "status": "UNCLEAR",
+          "detail": "The policy requires at least thirty days written notice for termination, but the contract facts do not mention a notice period.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        },
+        {
+          "rule": "Stamp duty requirement",
+          "status": "UNCLEAR",
+          "detail": "The policy mandates that agreements executed in Punjab be written on stamp paper, but the contract facts do not state whether stamp paper was used.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Standard NDA term",
+          "status": "OK",
+          "detail": "The contract term is 2 years, matching the policy's standard NDA term of two years.",
+          "quote": "Our standard NDA term is two years."
+        }
+      ],
+      "seconds": 1.3,
+      "error": null
+    },
+    {
+      "title": "NDA - Sialkot Sports",
+      "target": "nda_term",
+      "accepted": [
+        "OK"
+      ],
+      "got": "OK",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Notice periods",
+          "status": "UNCLEAR",
+          "detail": "The contract does not specify a termination notice period, so it is unclear whether it meets the 30\u2011day written notice requirement for commercial contracts.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        },
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value, so compliance with the stamp duty requirement is unclear.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Standard NDA term",
+          "status": "OK",
+          "detail": "The contract term is 3 years, which is longer than the standard 2\u2011year term but less than the 5\u2011year threshold that requires partner approval.",
+          "quote": "Our standard NDA term is two years. Any term longer than five years needs partner approval."
+        }
+      ],
+      "seconds": 1.1,
+      "error": null
+    },
+    {
+      "title": "NDA - Delta Textiles",
+      "target": "nda_term",
+      "accepted": [
+        "OK"
+      ],
+      "got": "UNCLEAR",
+      "correct": false,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Standard NDA term",
+          "status": "UNCLEAR",
+          "detail": "The contract term is 5 years, which is longer than the standard 2\u2011year term but not longer than five years, so the policy does not specify whether this is acceptable.",
+          "quote": "Our standard NDA term is two years. Any term longer than five years needs partner approval."
+        }
+      ],
+      "seconds": 1.0,
+      "error": null
+    },
+    {
+      "title": "NDA - Orion Ventures",
+      "target": "nda_term",
+      "accepted": [
+        "ISSUE"
+      ],
+      "got": "ISSUE",
+      "correct": true,
+      "expect_issue": true,
+      "flagged": true,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "NDA term limit",
+          "status": "ISSUE",
+          "detail": "The NDA term is 7 years, which exceeds the policy limit of five years and requires partner approval.",
+          "quote": "Any term longer than five years needs partner approval."
+        },
+        {
+          "rule": "Stamp duty requirement",
+          "status": "UNCLEAR",
+          "detail": "The policy requires agreements executed in Punjab to be written on stamp paper, but the contract facts do not state whether this was done.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        }
+      ],
+      "seconds": 1.0,
+      "error": null
+    },
+    {
+      "title": "NDA - Northwind Capital",
+      "target": "nda_term",
+      "accepted": [
+        "ISSUE"
+      ],
+      "got": "ISSUE",
+      "correct": true,
+      "expect_issue": true,
+      "flagged": true,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "NDA term length",
+          "status": "ISSUE",
+          "detail": "The contract term is 10 years, which exceeds the policy limit of five years and requires partner approval.",
+          "quote": "Our standard NDA term is two years. Any term longer than five years needs partner approval."
+        }
+      ],
+      "seconds": 1.7,
+      "error": null
+    },
+    {
+      "title": "NDA - Lahore Labs",
+      "target": "nda_term",
+      "accepted": [
+        "UNCLEAR",
+        "none"
+      ],
+      "got": "UNCLEAR",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "NDA term length",
+          "status": "UNCLEAR",
+          "detail": "The contract does not specify a term length, so it is unclear whether it meets the policy\u2019s two\u2011year standard or exceeds five years.",
+          "quote": "Our standard NDA term is two years. Any term longer than five years needs partner approval."
+        },
+        {
+          "rule": "Stamp duty requirement",
+          "status": "UNCLEAR",
+          "detail": "The contract\u2019s use of stamp paper is not mentioned, so it is unclear if the required stamp duty was paid.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "NDA signing before sharing client info",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was signed before any client information was shared, so compliance is unclear.",
+          "quote": "Associates must put a signed NDA in place before sharing any client information with a prospective partner, vendor or investor."
+        }
+      ],
+      "seconds": 1.4,
+      "error": null
+    },
+    {
+      "title": "Cleaning Services Agreement",
+      "target": "notice",
+      "accepted": [
+        "ISSUE"
+      ],
+      "got": "ISSUE",
+      "correct": true,
+      "expect_issue": true,
+      "flagged": true,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Notice periods",
+          "status": "ISSUE",
+          "detail": "The contract specifies a 7\u2011day notice period, which is less than the required minimum of thirty days for commercial contracts.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        },
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value, so compliance with the stamp duty requirement cannot be confirmed.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        }
+      ],
+      "seconds": 3.8,
+      "error": null
+    },
+    {
+      "title": "Supply Agreement - Punjab Paper",
+      "target": "notice",
+      "accepted": [
+        "ISSUE"
+      ],
+      "got": "ISSUE",
+      "correct": true,
+      "expect_issue": true,
+      "flagged": true,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Notice periods",
+          "status": "ISSUE",
+          "detail": "The contract specifies a 15\u2011day notice period, which is less than the required minimum of thirty days.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        },
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        }
+      ],
+      "seconds": 0.9,
+      "error": null
+    },
+    {
+      "title": "IT Support Agreement",
+      "target": "notice",
+      "accepted": [
+        "OK"
+      ],
+      "got": "OK",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper, so compliance with the stamp duty requirement cannot be confirmed.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Notice periods",
+          "status": "OK",
+          "detail": "The contract specifies a 30\u2011day written notice period, meeting the policy requirement of at least thirty days.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        }
+      ],
+      "seconds": 0.9,
+      "error": null
+    },
+    {
+      "title": "Distribution Agreement - Indus Traders",
+      "target": "notice",
+      "accepted": [
+        "OK"
+      ],
+      "got": "OK",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The policy requires agreements executed in Punjab to be on correct stamp paper, but the contract facts do not state whether this was done.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Notice periods",
+          "status": "OK",
+          "detail": "The contract\u2019s 60\u2011day notice period meets the policy requirement of at least 30 days.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        }
+      ],
+      "seconds": 1.1,
+      "error": null
+    },
+    {
+      "title": "Consulting Agreement - R. Malik",
+      "target": "notice",
+      "accepted": [
+        "UNCLEAR",
+        "none"
+      ],
+      "got": "UNCLEAR",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Notice periods",
+          "status": "UNCLEAR",
+          "detail": "The contract does not specify a termination notice period, so it is unclear whether it meets the required thirty\u2011day written notice.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        },
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value, so it is unclear if it satisfies the stamp duty requirement for Punjab agreements.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        }
+      ],
+      "seconds": 2.2,
+      "error": null
+    },
+    {
+      "title": "Office Lease - Gulberg",
+      "target": "lease_notice",
+      "accepted": [
+        "OK"
+      ],
+      "got": "OK",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Stamp duty requirement",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value, so compliance cannot be confirmed.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Notice period for leases",
+          "status": "OK",
+          "detail": "The lease specifies a 90\u2011day notice period, matching the policy requirement for office premises leases.",
+          "quote": "Leases of office premises usually require ninety days notice."
+        }
+      ],
+      "seconds": 1.2,
+      "error": null
+    },
+    {
+      "title": "Office Lease - Model Town",
+      "target": "lease_notice",
+      "accepted": [
+        "ISSUE",
+        "UNCLEAR"
+      ],
+      "got": "ISSUE",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": true,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Notice Period for Leases",
+          "status": "ISSUE",
+          "detail": "The lease specifies a 30\u2011day notice period, but policy requires at least ninety days for office premises leases.",
+          "quote": "Leases of office premises usually require ninety days notice."
+        },
+        {
+          "rule": "Stamp Duty Requirement",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value, so compliance cannot be confirmed.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        }
+      ],
+      "seconds": 1.5,
+      "error": null
+    },
+    {
+      "title": "NDA - Crescent Bank",
+      "target": "nda_term",
+      "accepted": [
+        "OK"
+      ],
+      "got": "OK",
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The policy requires agreements executed in Punjab to be written on stamp paper of the correct value, but the contract facts do not indicate whether this was done.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Standard NDA term",
+          "status": "OK",
+          "detail": "The contract term is 2 years, matching the policy's standard NDA term of two years.",
+          "quote": "Our standard NDA term is two years."
+        },
+        {
+          "rule": "Notice period",
+          "status": "OK",
+          "detail": "The contract provides a 30\u2011day notice period, which meets the policy requirement of at least thirty days written notice.",
+          "quote": "Commercial contracts should allow termination with at least thirty days written notice."
+        }
+      ],
+      "seconds": 1.2,
+      "error": null
+    },
+    {
+      "title": "Employment Contract - Hira Ahmed",
+      "target": null,
+      "accepted": [],
+      "got": null,
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Stamp duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not state whether it was executed on stamp paper of the correct value, so compliance cannot be confirmed.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        },
+        {
+          "rule": "Notice periods",
+          "status": "OK",
+          "detail": "The contract specifies a 1\u2011month notice period, which equals the required minimum of thirty days.",
+          "quote": "Notice periods Commercial contracts should allow termination with at least thirty days written notice."
+        }
+      ],
+      "seconds": 1.1,
+      "error": null
+    },
+    {
+      "title": "Payment Receipt - Stationery",
+      "target": null,
+      "accepted": [],
+      "got": null,
+      "correct": true,
+      "expect_issue": false,
+      "flagged": false,
+      "false_issues": [],
+      "findings": [
+        {
+          "rule": "Stamp Duty",
+          "status": "UNCLEAR",
+          "detail": "The contract does not specify whether it was written on stamp paper of the correct value under the Stamp Act.",
+          "quote": "Agreements executed in Punjab must be written on stamp paper of the correct value under the Stamp Act."
+        }
+      ],
+      "seconds": 1.0,
+      "error": null
+    }
+  ]
+}

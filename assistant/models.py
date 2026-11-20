@@ -22,6 +22,7 @@ class Query(models.Model):
         LOOKUP = 'LOOKUP', 'Record lookup'
         KNOWLEDGE = 'KNOWLEDGE', 'Question answering'
         SEARCH = 'SEARCH', 'Document search'
+        COMPARE = 'COMPARE', 'Comparison across records'
 
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='queries')
     text = models.TextField()

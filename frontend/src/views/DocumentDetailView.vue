@@ -128,10 +128,47 @@
               <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ok-soft text-ok" aria-hidden="true"><Check :size="16" :stroke-width="2.4" /></span>
               <span><b>{{ verifiedCount }} of {{ doc.record_fields.length }} facts confirmed by a person.</b> Each one links to the page it came from.</span>
             </div>
+
+            <!-- policy check -->
+            <div v-if="doc.policy" class="mt-6">
+              <div class="mb-2 flex items-baseline justify-between gap-3">
+                <h2 class="text-[15px] font-semibold">Policy check</h2>
+                <button v-if="doc.policy.has_policies && (doc.can_edit || can('verify'))" type="button" class="link text-xs" :disabled="checking" @click="checkPolicies">
+                  {{ checking ? 'Checking…' : 'Check again' }}
+                </button>
+              </div>
+              <p v-if="!doc.policy.has_policies" class="rounded-[14px] bg-white/60 p-3 text-[13px] text-ink-2">
+                No company policy yet. Open a reference document such as a handbook, choose <b>Settings</b> and turn on
+                <b>Use as company policy</b>; records are then checked against its rules.
+              </p>
+              <p v-else-if="!doc.policy.checked_at" class="rounded-[14px] bg-white/60 p-3 text-[13px] text-muted">Not checked yet.</p>
+              <p v-else-if="!doc.policy.findings.length" class="rounded-[14px] bg-white/60 p-3 text-[13px] text-ink-2">No policy rule applies to this record.</p>
+              <ul v-else class="stagger space-y-2">
+                <li v-for="f in doc.policy.findings" :key="f.id" class="rounded-[14px] bg-white/70 p-3">
+                  <div class="flex items-start gap-2.5">
+                    <span :class="['mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', POLICY_STATUS[f.status].cls]" aria-hidden="true">
+                      <component :is="POLICY_STATUS[f.status].icon" :size="14" :stroke-width="2.4" />
+                    </span>
+                    <div class="min-w-0 flex-1">
+                      <div class="flex flex-wrap items-baseline gap-x-2">
+                        <span class="text-sm font-semibold">{{ f.rule }}</span>
+                        <span :class="['text-xs font-medium', POLICY_STATUS[f.status].text]">{{ POLICY_STATUS[f.status].label }}</span>
+                      </div>
+                      <p class="mt-0.5 text-[13px] leading-relaxed text-ink-2">{{ f.detail }}</p>
+                      <button v-if="f.policy_document" type="button" class="mt-1.5 block w-full rounded-[10px] bg-mark/30 px-2.5 py-1.5 text-left text-xs leading-relaxed text-ink-2 hover:bg-mark/50"
+                              @click="router.push({ path: `/app/documents/${f.policy_document}`, query: { page: f.policy_page || 1, hl: f.policy_quote } })">
+                        “{{ f.policy_quote }}” <span class="text-muted">— {{ f.policy_document_title }}, p. {{ f.policy_page }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </template>
           <div v-else class="mt-4 space-y-4">
             <p class="rounded-[16px] bg-white/60 p-4 text-sm text-ink-2">
               Reference material: ask questions about it and every answer cites the section and page.
+              <span v-if="doc.use_as_policy" class="mt-2 flex items-center gap-1.5 font-medium text-accent"><Check :size="14" aria-hidden="true" />Used as company policy: records are checked against its rules.</span>
               <span v-if="doc.outline" class="mt-1 block text-[13px] text-muted">{{ doc.outline.pages }} pages · {{ doc.outline.passages }} passages indexed for search</span>
             </p>
             <div v-if="doc.outline?.sections?.length">
@@ -161,6 +198,10 @@
                 </div>
                 <StatusPill :status="v.status" />
               </div>
+              <div v-if="v.change_summary" class="mt-2.5 rounded-[12px] bg-accent-soft/40 p-3">
+                <div class="text-[11px] font-semibold tracking-wide text-accent uppercase">What changed from v{{ v.change_summary_from }}</div>
+                <div class="prose prose-sm mt-1 max-w-none text-[13px] leading-relaxed text-ink-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5" v-html="md(v.change_summary)" />
+              </div>
               <div class="mt-2 flex items-center justify-between gap-2 text-xs text-muted">
                 <span class="truncate">{{ v.original_filename }} · {{ v.page_count }} page{{ v.page_count === 1 ? '' : 's' }} · {{ fmtSize(v.file_size) }}</span>
                 <button v-if="v.number !== viewVersion" type="button" class="link shrink-0" @click="viewVersion = v.number; page = 1">View</button>
@@ -178,8 +219,12 @@
               <label for="cmp-b" class="sr-only">To version</label>
               <select id="cmp-b" v-model.number="cmpB" class="input"><option v-for="v in doc.versions" :key="v.number" :value="v.number">Version {{ v.number }}</option></select>
             </div>
-            <button type="button" class="btn-dark mt-3 w-full" @click="compare">Compare</button>
+            <button type="button" class="btn-dark mt-3 w-full" :disabled="comparing" @click="compare">{{ comparing ? 'Comparing…' : 'Compare' }}</button>
             <div v-if="comparison" class="mt-4 space-y-4 text-sm">
+              <div v-if="comparison.summary" class="rounded-[12px] bg-white p-3">
+                <div class="text-xs font-semibold text-muted">Summary</div>
+                <div class="prose prose-sm mt-1 max-w-none text-[13px] leading-relaxed text-ink-2 prose-p:my-1 prose-ul:my-1 prose-li:my-0.5" v-html="md(comparison.summary)" />
+              </div>
               <div>
                 <div class="text-xs font-semibold text-muted">Facts</div>
                 <p v-if="!comparison.field_changes.length" class="mt-1 text-muted">No facts changed.</p>
@@ -247,6 +292,11 @@
           <div><label class="label" for="st-dept">Department</label>
             <select id="st-dept" v-model="settings.department" class="input"><option :value="null">None</option><option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option></select></div>
         </div>
+        <label v-if="settings.kind === 'REFERENCE'" class="flex items-start gap-3 rounded-[14px] border border-black/10 bg-white/60 p-3 text-sm">
+          <input v-model="settings.use_as_policy" type="checkbox" class="mt-0.5 h-4 w-4 accent-[#2F4BE0]" />
+          <span><span class="font-semibold">Use as company policy</span><br>
+            <span class="text-[13px] text-muted">Every record is checked against the rules in this document, and problems are flagged.</span></span>
+        </label>
         <fieldset>
           <legend class="label">Who can see it</legend>
           <div class="grid gap-2 sm:grid-cols-3">
@@ -282,7 +332,9 @@
 </template>
 
 <script setup>
-import { ArrowRight, Building2, Check, ChevronLeft, Globe, History, Lock, Pencil, Plus, RotateCw, Search, Settings2, Trash2, TriangleAlert, Upload } from '@lucide/vue'
+import { ArrowRight, Building2, Check, ChevronLeft, CircleHelp, Globe, History, Lock, Pencil, Plus, RotateCw, Search, Settings2, Trash2, TriangleAlert, Upload } from '@lucide/vue'
+import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { errorText } from '../api'
@@ -324,7 +376,7 @@ const editValue = ref('')
 const editReason = ref('')
 const fieldError = ref('')
 const newField = reactive({ key: '', value: '' })
-const settings = reactive({ title: '', kind: 'RECORD', department: null, access_level: 'ORG', allowed_user_ids: [] })
+const settings = reactive({ title: '', kind: 'RECORD', department: null, access_level: 'ORG', allowed_user_ids: [], use_as_policy: false })
 const settingsError = ref('')
 const showSettings = ref(false)
 const showUpload = ref(false)
@@ -351,7 +403,8 @@ async function load() {
     if (viewVersion.value === null || !data.versions.some(v => v.number === viewVersion.value))
       viewVersion.value = data.current_version_number || data.versions[0]?.number
     Object.assign(settings, { title: data.title, kind: data.kind === 'UNKNOWN' ? 'RECORD' : data.kind, department: data.department,
-                              access_level: data.access_level, allowed_user_ids: data.allowed_users.map(u => u.id) })
+                              access_level: data.access_level, allowed_user_ids: data.allowed_users.map(u => u.id),
+                              use_as_policy: data.use_as_policy })
     if (data.versions.length > 1) { cmpA.value = data.versions[1].number; cmpB.value = data.versions[0].number }
     clearTimeout(poll)
     if (['QUEUED', 'PROCESSING'].includes(data.versions[0]?.status)) poll = setTimeout(load, 4000)
@@ -421,7 +474,31 @@ async function archive() {
 }
 
 async function reprocess() { await api.post(`/documents/${doc.value.id}/reprocess/`); load() }
-async function compare() { comparison.value = (await api.get(`/documents/${doc.value.id}/compare/`, { params: { a: cmpA.value, b: cmpB.value } })).data }
+const comparing = ref(false)
+async function compare() {
+  comparing.value = true
+  try {
+    comparison.value = (await api.get(`/documents/${doc.value.id}/compare/`, { params: { a: cmpA.value, b: cmpB.value, summary: 1 } })).data
+  } finally { comparing.value = false }
+}
+
+const POLICY_STATUS = {
+  ISSUE: { label: 'Does not comply', icon: TriangleAlert, cls: 'bg-bad-soft text-bad', text: 'text-bad' },
+  UNCLEAR: { label: 'Check by hand', icon: CircleHelp, cls: 'bg-warn-soft text-warn', text: 'text-warn' },
+  OK: { label: 'Complies', icon: Check, cls: 'bg-ok-soft text-ok', text: 'text-ok' },
+}
+const checking = ref(false)
+async function checkPolicies() {
+  checking.value = true
+  try {
+    doc.value.policy = (await api.post(`/documents/${doc.value.id}/check-policies/`)).data
+    const issues = doc.value.policy.findings.filter(f => f.status === 'ISSUE').length
+    toast(issues ? `${issues} policy issue${issues > 1 ? 's' : ''} found` : 'Checked against company policy', { tone: issues ? 'bad' : undefined })
+  } catch (e) { toast(errorText(e), { tone: 'bad' }) } finally { checking.value = false }
+}
+
+/** Markdown from the language model -> safe HTML. */
+function md(text) { return DOMPurify.sanitize(marked.parse(text || '')) }
 
 watch(tab, loadSide)
 watch(viewVersion, loadSide)
@@ -431,6 +508,21 @@ watch(showSettings, async open => {
     departments.value = d.data
     members.value = m.data.filter(x => x.id !== session.me.id)
   }
+})
+// the same page is reused when a link opens another document (e.g. a policy quote) or another page of it
+watch(() => route.params.id, (id, old) => {
+  if (!id || id === old) return
+  doc.value = null
+  viewVersion.value = null
+  comparison.value = null
+  tab.value = 'facts'
+  page.value = Number(route.query.page) || 1
+  highlight.value = route.query.hl || ''
+  load()
+})
+watch(() => [route.query.page, route.query.hl], ([p, hl]) => {
+  if (p) page.value = Number(p)
+  highlight.value = hl || ''
 })
 load()
 onBeforeUnmount(() => clearTimeout(poll))

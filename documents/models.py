@@ -41,6 +41,8 @@ class Document(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='uploaded_documents')
     current_version = models.ForeignKey('DocumentVersion', on_delete=models.SET_NULL, null=True, blank=True, related_name='+')
     is_archived = models.BooleanField(default=False)
+    use_as_policy = models.BooleanField(default=False,
+                                        help_text='Reference document whose rules records are checked against.')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -85,6 +87,9 @@ class DocumentVersion(models.Model):
     error = models.TextField(blank=True)
     processing_log = models.JSONField(default=list, blank=True)
     processed_at = models.DateTimeField(null=True, blank=True)
+    change_summary = models.TextField(blank=True, help_text='What changed compared with an earlier version.')
+    change_summary_from = models.PositiveIntegerField(null=True, blank=True)
+    policy_checked_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('document', 'number')
@@ -164,6 +169,27 @@ class RecordField(models.Model):
 
     def __str__(self):
         return f'{self.key}={self.value_text}'
+
+
+class PolicyFinding(models.Model):
+    """The result of checking a record against one rule of a company policy document."""
+    class Status(models.TextChoices):
+        OK = 'OK', 'Complies'
+        ISSUE = 'ISSUE', 'Does not comply'
+        UNCLEAR = 'UNCLEAR', 'Cannot tell from the record'
+
+    version = models.ForeignKey(DocumentVersion, on_delete=models.CASCADE, related_name='policy_findings')
+    rule = models.CharField(max_length=300)
+    status = models.CharField(max_length=8, choices=Status.choices)
+    detail = models.TextField(blank=True)
+    policy_document = models.ForeignKey(Document, on_delete=models.SET_NULL, null=True, related_name='+')
+    policy_page = models.PositiveIntegerField(null=True, blank=True)
+    policy_quote = models.TextField(blank=True)
+    grounded = models.BooleanField(default=False, help_text='The quoted rule was found in the policy text.')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['version', 'id']
 
 
 class FieldEdit(models.Model):

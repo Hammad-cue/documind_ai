@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Document, DocumentVersion, FieldEdit, RecordField
+from .models import Document, DocumentVersion, FieldEdit, PolicyFinding, RecordField
 
 
 class VersionSerializer(serializers.ModelSerializer):
@@ -9,7 +9,8 @@ class VersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentVersion
         fields = ('id', 'number', 'original_filename', 'file_type', 'file_size', 'page_count', 'marked_handwritten',
-                  'change_note', 'uploaded_by_name', 'uploaded_at', 'status', 'error', 'processing_log', 'processed_at')
+                  'change_note', 'uploaded_by_name', 'uploaded_at', 'status', 'error', 'processing_log', 'processed_at',
+                  'change_summary', 'change_summary_from')
 
     def get_uploaded_by_name(self, v):
         return v.uploaded_by.get_full_name() or v.uploaded_by.username if v.uploaded_by else None
@@ -75,6 +76,15 @@ def _heading_case(text):
                     for i, w in enumerate(words))
 
 
+class PolicyFindingSerializer(serializers.ModelSerializer):
+    policy_document_title = serializers.CharField(source='policy_document.title', default=None, read_only=True)
+
+    class Meta:
+        model = PolicyFinding
+        fields = ('id', 'rule', 'status', 'detail', 'policy_document', 'policy_document_title', 'policy_page',
+                  'policy_quote')
+
+
 class DocumentDetailSerializer(DocumentListSerializer):
     versions = VersionSerializer(many=True, read_only=True)
     current_version_number = serializers.IntegerField(source='current_version.number', default=None, read_only=True)
@@ -84,10 +94,21 @@ class DocumentDetailSerializer(DocumentListSerializer):
     can_edit = serializers.SerializerMethodField()
 
     outline = serializers.SerializerMethodField()
+    policy = serializers.SerializerMethodField()
 
     class Meta(DocumentListSerializer.Meta):
         fields = DocumentListSerializer.Meta.fields + ('kind_locked', 'versions', 'current_version_number',
-                                                       'record_fields', 'clauses', 'allowed_users', 'can_edit', 'outline')
+                                                       'record_fields', 'clauses', 'allowed_users', 'can_edit', 'outline',
+                                                       'use_as_policy', 'policy')
+
+    def get_policy(self, d):
+        """Findings of the policy check for the current version (records only)."""
+        v = d.current_version
+        if d.kind != 'RECORD' or v is None:
+            return None
+        from .pipeline.policy import policy_documents
+        return {'checked_at': v.policy_checked_at, 'has_policies': policy_documents(d.organization_id).exists(),
+                'findings': PolicyFindingSerializer(v.policy_findings.select_related('policy_document'), many=True).data}
 
     def get_outline(self, d):
         """Top-level sections of a reference document (e.g. the chapters of an Act) with the page each starts on.
@@ -145,3 +166,4 @@ class DocumentUpdateSerializer(serializers.Serializer):
     access_level = serializers.ChoiceField(choices=Document.Access.choices, required=False)
     department = serializers.IntegerField(required=False, allow_null=True)
     allowed_user_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
+    use_as_policy = serializers.BooleanField(required=False)

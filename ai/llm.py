@@ -247,7 +247,15 @@ def parse_json(text):
 
 
 def chat_json(messages, **kwargs):
-    return parse_json(chat(messages, json_mode=True, **kwargs))
+    """A chat call that must return JSON. Reasoning models occasionally spend the whole token budget thinking and
+    return nothing, so an empty or non-JSON reply is retried once with a larger budget."""
+    try:
+        return parse_json(chat(messages, json_mode=True, **kwargs))
+    except (LLMError, json.JSONDecodeError) as exc:
+        if 'did not return JSON' not in str(exc) and not isinstance(exc, json.JSONDecodeError):
+            raise                      # provider errors were already retried inside chat()
+        retry = {**kwargs, 'max_tokens': int(kwargs.get('max_tokens', 1500) * 2)}
+        return parse_json(chat(messages, json_mode=True, **retry))
 
 
 def vision_transcribe(image, instructions=None):

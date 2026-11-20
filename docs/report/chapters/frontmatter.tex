@@ -44,10 +44,11 @@ both keyword and semantic search. For records, a language model extracts eleven 
 value carries the page and the exact quote that proves it, and values that cannot be verified go to a
 human review queue.
 
-A query router sends each question down one of three paths: \emph{lookup} questions are answered
+A query router sends each question down one of four paths: \emph{lookup} questions are answered
 directly from the structured records table, \emph{knowledge} questions (for example about the
-Contract Act 1872) are answered from retrieved passages with numbered citations, and
-\emph{search} questions return the matching documents. Every answer opens the source document at
+Contract Act 1872) are answered from retrieved passages with numbered citations,
+\emph{search} questions return the matching documents, and \emph{comparison} questions return a table
+of the same point across several records. Every answer opens the source document at
 the cited page with the evidence highlighted. Role-based access control (Admin, Manager, Employee,
 Auditor) together with department and named-person sharing is enforced \emph{before} any
 retrieval, so the assistant can never quote a document the user may not open. Four kinds of history
@@ -58,7 +59,9 @@ deadlines pass.
 A clause classifier was fine-tuned on the LEDGAR dataset (100 clause types) and the system was
 evaluated on the public CUAD contract dataset. Section-aware chunking with hybrid retrieval raised
 Hit@5 from 82.8\% (the previous fixed-size, semantic-only design) to 93.0\%; field extraction reached a
-micro-F1 of 75.9\% with 99.4\% of evidence quotes found word-for-word on the cited page. Calculating expiry dates from the start date and term raised expiry-date recall from 35.7\% to 64.3\%, and a second check on each value sends five times as many wrong values to human review. Combining the fine-tuned clause model with a TF-IDF model reached 88.5\% accuracy on 100 clause types, above both. The query router chose the correct path for 94\% of 100 labelled questions, and every answer to CUAD questions cited a passage containing the lawyers' answer, while all questions about absent clauses were answered with ``the documents do not say''. All 34
+micro-F1 of 75.9\% with 99.4\% of evidence quotes found word-for-word on the cited page. Calculating expiry dates from the start date and term raised expiry-date recall from 35.7\% to 64.3\%, and a second check on each value sends five times as many wrong values to human review. Combining the fine-tuned clause model with a TF-IDF model reached 88.5\% accuracy on 100 clause types, above both. The query router chose the correct path for 94\% of 100 labelled questions, and every answer to CUAD questions cited a passage containing the lawyers' answer, while all questions about absent clauses were answered with ``the documents do not say''. Records are
+also checked against the organization's own policies, each finding quoting the rule: on 16 labelled cases the
+check flagged every contract that broke a rule and raised no false issues. All 50
 automated tests, which include the full role and access-level matrix, pass, and the whole system was
 deployed and tested with Docker Compose on a clean database.
 

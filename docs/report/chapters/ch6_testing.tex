@@ -19,7 +19,7 @@ labelled set of 100 routing questions and a handwriting set (Section~\ref{sec:ev
 \end{itemize}
 
 \section{Unit Testing}
-All automated tests pass (34 tests, 97 seconds). Table~\ref{tab:unit} lists the unit tests.
+All automated tests pass (50 tests, 138 seconds). Table~\ref{tab:unit} lists the unit tests.
 
 \begin{longtable}{|p{1.15cm}|p{3.1cm}|p{4.1cm}|p{4.5cm}|p{1.2cm}|}
 \caption{Unit Test Cases}\label{tab:unit}\\ \hline
@@ -59,6 +59,22 @@ UT-28 & \code{parse\_term} & ``three (3) years'', ``thirty-six months'', ``90 da
 UT-29 & \code{derive\_expiry} & Effective 1 April 2025, term ``3 years'', no written expiry & Expiry 31 March 2028, quote = the term, status NEEDS\_REVIEW & Pass \\ \hline
 UT-30 & \code{derive\_expiry} & Same, but with a written expiry date & Written date kept, nothing calculated & Pass \\ \hline
 UT-31 & Second check & Governing law (supported) and a notice period quoting a renewal clause (not supported) & Governing law stays AUTO; notice period goes to review with the reason & Pass \\ \hline
+UT-32 & \code{check\_policies} & NDA with a 7-year term; no document marked as policy & No check, nothing stored & Pass \\ \hline
+UT-33 & \code{check\_policies} & Handbook marked as policy; model reply with a correct passage number, a wrong one (``6'') and an invented rule & Two findings saved on handbook page 1 (wrong number found by searching); invented rule dropped; manager notified; register shows 1 policy issue & Pass \\ \hline
+UT-34 & \code{judge} & Two findings quoting the same rule, one OK and one ISSUE & Merged into one ISSUE finding & Pass \\ \hline
+UT-35 & Policy settings API & Mark a record as policy; Employee runs the check & HTTP 400; HTTP 403 & Pass \\ \hline
+UT-36 & Change summary & Upload lease version 2 with a new rent; compare with \code{summary=1} & Version 2 stores the summary (from v1); the prompt holds the removed and added rent lines; compare returns it & Pass \\ \hline
+UT-37 & \code{summarize} & A version compared with itself & ``The two versions are identical.'' without a model call & Pass \\ \hline
+UT-38 & \code{heuristic\_plan} & ``Compare the termination notice in all our NDAs'', ``\dots{} NDAs with Acme and Orion'', ``\dots{} confidentiality obligations \dots'', ``\dots{} in the NDA and the lease'' & COMPARE with field notice\_period; records Acme, Orion; point ``confidentiality obligations''; no single type & Pass \\ \hline
+UT-39 & \code{heuristic\_plan} & ``What is the difference between a void agreement and a voidable contract?''; an Acme signing-date question & KNOWLEDGE; LOOKUP (not comparisons) & Pass \\ \hline
+UT-40 & \code{compare.run} & Notice periods of three NDAs and a lease (one NDA without the field) & Three NDA rows, values and pages from the records table, ``Not stated'' for the missing one; ``shortest \dots{} (7 days), longest \dots{} (30 days)'' & Pass \\ \hline
+UT-41 & \code{describe} & Expiry dates and governing law of three records & Earliest / latest record with citations; ``Pakistan'' and ``pakistan.'' grouped together & Pass \\ \hline
+UT-42 & \code{select\_documents} & Records named ``Acme'' and ``lease''; ``office lease'' and ``Orion NDA'' & Exactly the named records & Pass \\ \hline
+UT-43 & Access control & HR employee compares NDAs, one of them legal-department only & The restricted NDA and its value never appear & Pass \\ \hline
+UT-44 & Reading from text & Model reply with one invented and two real quotes & Invented value dropped (``Not stated''); real ones kept with their page, marked as read from the text & Pass \\ \hline
+UT-45 & Free-text summary & Two records state their purpose & Model sees only the two cells with their citation numbers & Pass \\ \hline
+UT-46 & Streaming ask API & Comparison question & Table arrives with the sources; saved query has intent COMPARE and the columns & Pass \\ \hline
+UT-47 & Fallback & Comparison naming records that do not exist & Answered from document text (KNOWLEDGE) & Pass \\ \hline
 \end{longtable}
 
 \section{Integration Testing}
@@ -82,7 +98,7 @@ IT-06 & Docker Compose: database, backend, worker, nginx web & \code{docker comp
 
 \section{System Testing}
 Black-box tests follow the use cases of Chapter~3, signed in as the demo users of each role. BB-08 to
-BB-11 were run in the user interface; the others were run through the same REST API the interface calls,
+BB-11 and BB-13 to BB-15 were run in the user interface; the others were run through the same REST API the interface calls,
 using a script that only sees requests and responses (no access to the code or database). During BB-10 a
 defect was found: for long passages, every short word of the passage was highlighted all over the page. The
 viewer was changed to locate the passage as a whole in the page text, and the test was repeated.
@@ -106,6 +122,9 @@ BB-09 & UC-4.2 Law book & Ask ``What does the Contract Act say about agreements 
 BB-10 & UC-4.3 Source & Open the first source of a Contract Act answer & Page 22 opens with only the cited passage highlighted (Figure~\ref{fig:scr-source}) & Pass \\ \hline
 BB-11 & UC-4.4 History & Reopen an earlier conversation & Questions, answers and sources shown & Pass \\ \hline
 BB-12 & UC-5.1 Audit & Download a file; Auditor filters the audit log by DOWNLOAD; Employee opens the audit log & Only DOWNLOAD events listed; Employee gets 403 & Pass \\ \hline
+BB-13 & UC-3.3 Policy & Manager marks the Contracts Handbook as company policy; open the Orion NDA (7-year term) and the supply agreement (15 days' notice); select a quoted rule & Both records show ``Does not comply'' with the handbook rule and page; register shows the issue count; the quote opens the handbook page with the rule highlighted (Figure~\ref{fig:scr-policy}) & Pass \\ \hline
+BB-14 & UC-2.2 Versions & Open the versions of the Acme NDA (version 2 extends the term) & Summary lists the new expiry date, term (2 $\rightarrow$ 3 years) and notice period (30 $\rightarrow$ 60 days), each with page 2 (Figure~\ref{fig:scr-versions}) & Pass \\ \hline
+BB-15 & UC-4.5 Compare & Ask ``Compare the confidentiality obligations in the NDAs with Acme and Orion''; select the Acme value & Table with the two NDAs: Acme's obligation (page 2, read from the text), Orion ``Not stated'' (its NDA only defines confidential information); the value opens page 2 with the clause highlighted & Pass \\ \hline
 \end{longtable}
 
 \section{Performance Testing}
@@ -125,7 +144,8 @@ Digital page extraction & -- & About 10 ms per page (65-page Contract Act read i
 Handwritten page reading & -- & 6.8 s for one handwritten receipt (vision model) \\ \hline
 Classification / field extraction & -- & 1.1--1.8 s / 1.4--2.0 s per short document; 38.6 s per long CUAD contract \\ \hline
 Chunking and embedding & -- & 0.1--0.2 s for 1--3 page documents; 26 s for the 65-page Contract Act (190 chunks, CPU) \\ \hline
-Automated test suite & -- & 34 tests in 97 s \\ \hline
+Policy check of one record & -- & 1.4 s on average (16 records, EV-7) \\ \hline
+Automated test suite & -- & 50 tests in 138 s \\ \hline
 \end{tabularx}
 \end{table}
 
@@ -296,7 +316,9 @@ keyword rules, and it chooses the right field for every lookup (100.0\% against
 search requests treated as lookups or knowledge questions (2 and 3 of 25), which still
 return the right documents as sources. During the run, 11 of the 100 calls hit the free-tier rate limit and were
 answered by the keyword fallback, so the LLM figures are a slight underestimate. A routing call takes about
-1.2 s.
+1.2 s. EV-4 was measured before the COMPARE route was added, when the one comparison question in the set
+(``Compare the termination rights in the NDA and the lease'') was labelled KNOWLEDGE; routing of comparison
+questions is measured in EV-8.
 
 \subsection{EV-5: Handwriting Recognition}
 Character and word error rates (lower is better) on 30 pages (synthetic handwriting-style fonts) for Tesseract, the vision
@@ -358,19 +380,89 @@ absent-clause questions with related clauses.) Because the same model graded its
 correctness figures are estimates and should be read together with the citation hit rate, which is measured
 directly against the lawyers' spans.
 
+\subsection{EV-7: Policy Compliance Check}\label{sec:ev-policy}
+No public dataset pairs contracts with an organization's internal rules, so 16 contract fact sheets were
+written by hand and checked against the demo Contracts Handbook, using the same \code{judge()} function as
+the system (Groq \code{gpt-oss-20b}). Fourteen cases target one handbook rule with a known answer: the NDA
+term rule (``standard term two years; longer than five years needs partner approval''), the rule that
+commercial contracts allow at least thirty days' notice, and the ninety-day notice for office leases. The
+terms and notice periods sit on both sides of each limit (2, 3, 5, 7 and 10 years; 7, 15, 30 and 60 days),
+and two cases do not state the fact at all, so the right answer is ``unclear''. Two more cases (an
+employment contract and a payment receipt) break no rule.
+
+\begin{table}[H]\centering
+\caption{Policy Check Results (16 cases)}\label{tab:ev-policy}
+\begin{tabular}{|l|r|}\hline
+\textbf{Measure} & \textbf{Result} \\ \hline
+Expected verdict for the targeted rule & 92.9\% (13/14) \\ \hline
+Contracts that break a rule and are flagged (recall) & 100\% (4/4) \\ \hline
+Flagged contracts that really break a rule (precision) & 100\% (4/4) \\ \hline
+Contracts with a false ``does not comply'' finding & 0 of 16 \\ \hline
+Average time per contract & 1.4 s \\ \hline
+\end{tabular}
+\end{table}
+All four contracts that break a rule (a 7- and a 10-year NDA, 7 and 15 days' notice) were flagged, and no
+contract received a false issue: where the facts did not mention stamp paper, the stamp-duty rule was
+reported as ``unclear'', as instructed. The only miss is the boundary case of exactly five years, which the
+model reported as ``unclear'' (``longer than the standard term but not longer than five years'') instead of
+``complies''; this is cautious rather than wrong, since the person is asked to check by hand. The 30-day
+office lease, judged against ``usually require ninety days'', was flagged; either ``unclear'' or ``does not
+comply'' was accepted there. Before the passages were numbered P1, P2, \dots, the model sometimes cited the
+handbook's own section numbers (``6'', ``7'') and correct findings were lost; searching all passages for the
+quote fixed this (UT-33). The cases are few and written by the authors, so the figures show that the
+check works as designed rather than measure it on real contracts.
+
+\subsection{EV-8: Comparison Questions}\label{sec:ev-compare}
+\textbf{Routing.} 20 comparison questions (``Compare the termination notice in all our NDAs'', ``Contrast the
+confidentiality clauses of the Acme and Orion NDAs'', ``Give me a side-by-side of the expiry dates in our leases
+and NDAs'') and 20 look-alikes that must not be treated as comparisons: differences between legal concepts
+(``Compare void agreements with voidable contracts under the Contract Act''), single-record lookups, lists of
+values and document searches. \textbf{Tables.} Seven comparison questions were asked through the full engine as
+the demo administrator on the demo records, each with the records that should appear and the value each record
+should show for each point (``Not stated'' where the record does not say it): 26 expected cells in total. Points that
+are not stored fields (confidentiality obligations, purpose) and fields a record lacks are read from the text,
+so the cases test both the records table and the grounded reading. Both runs used Groq \code{gpt-oss-20b}.
+
+\begin{table}[H]\centering
+\caption{Comparison Questions: First Run and After the Fixes}\label{tab:ev-compare}
+\begin{tabular}{|l|r|r|}\hline
+\textbf{Measure} & \textbf{First run} & \textbf{After fixes} \\ \hline
+Comparisons routed to COMPARE (LLM router) & 20/20 & 20/20 \\ \hline
+Comparisons routed to COMPARE (keyword rules only) & 19/20 & 20/20 \\ \hline
+Look-alikes wrongly routed to COMPARE (LLM router) & 1/20 & 0/20 \\ \hline
+Tables with exactly the right records & 6/7 & 7/7 \\ \hline
+Cells with the expected value & 24/26 & 26/26 \\ \hline
+Filled cells whose quote is on the cited page & 16/16 & 18/18 \\ \hline
+Median time per question & -- & 4.6 s \\ \hline
+\end{tabular}
+\end{table}
+The first run found two faults, both in the system's own rules rather than in the model. For ``Compare the notice
+periods of the courier agreement and the supply agreement'' the LLM named the two records correctly but also gave
+``courier agreement, supply agreement'' as the document type, and that type filter matched nothing, so the
+question fell back to a written answer; named records now take priority over a type that is not a known one. And
+the keyword override sent ``Compare void agreements with voidable contracts under the Contract Act'' to COMPARE
+because of the words ``agreements'' and ``contracts'', although the LLM had correctly called it a knowledge
+question; generic words now count only with ``our'', ``all'' or ``these''. Both cases were added to the unit
+tests. Earlier, during development, the summary below the table was written by the LLM from the whole table; it
+cited wrong cells and once said the lease had no expiry date, which is why the summary of stored fields is now
+computed. Times range from 1.6 s (stored fields only) to 43.7 s; the slowest questions are those that read text
+from the documents, and the first table question, asked right after the 40 routing calls, most likely waited for
+the free tier's per-minute token limit. As with EV-7, the table cases are few and use the demo records, so they
+show that the feature works as designed rather than measure it at scale.
+
 \section{Testing Summary}
 \begin{table}[H]\centering
 \caption{Test Summary}\label{tab:testsummary}
 \begin{tabular}{|l|r|r|r|}\hline
 \textbf{Test type} & \textbf{Cases} & \textbf{Passed} & \textbf{Failed} \\ \hline
-Unit (automated) & 31 & 31 & 0 \\ \hline
+Unit (automated) & 47 & 47 & 0 \\ \hline
 Integration (3 automated, 3 manual) & 6 & 6 & 0 \\ \hline
-System (black box) & 12 & 12 & 0 \\ \hline
+System (black box) & 15 & 15 & 0 \\ \hline
 Security checks & 9 & 9 & 0 \\ \hline
 \end{tabular}
 \end{table}
 All automated unit and integration tests pass, and the security checks confirm that access rules hold at
 every layer, including retrieval. The evaluation shows that the redesigned retrieval clearly outperforms
 the first version's design and that extracted values are backed by real evidence, while it also
-identifies honest limitations (a small clause model that does not yet beat a strong keyword baseline, and the review rule's blind spot)
+identifies honest limitations (a small clause model that beats a strong keyword baseline only when combined with it, and the review rule's remaining blind spot)
 that are discussed in the next chapter.

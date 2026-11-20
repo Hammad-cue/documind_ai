@@ -15,7 +15,7 @@ from evaluation.common import DATA, save
 from assistant import router  # noqa: E402
 from django.conf import settings  # noqa: E402
 
-INTENTS = ['LOOKUP', 'KNOWLEDGE', 'SEARCH']
+INTENTS = ['LOOKUP', 'KNOWLEDGE', 'SEARCH', 'COMPARE']
 
 
 def score(name, predict, items, pause=0.0):
@@ -29,7 +29,7 @@ def score(name, predict, items, pause=0.0):
         plan = predict(it)
         seconds.append(time.perf_counter() - started)
         got = plan['intent']
-        fallbacks += plan.get('method', 'llm') != 'llm' and name == 'llm'
+        fallbacks += not str(plan.get('method', 'llm')).startswith('llm') and name == 'llm'
         confusion[it['intent']][got] += 1
         if got == it['intent']:
             correct += 1

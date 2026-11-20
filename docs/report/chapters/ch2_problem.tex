@@ -48,6 +48,8 @@ questions (e.g.\ from a 100-page law book) from retrieved passages with citation
 \item Maintain four types of history: query history, document versions, field-edit history and an
 audit log.
 \item Remind responsible people before agreements expire or notice deadlines pass.
+\item Check every record against the organization's own written policies and flag the rules it breaks,
+quoting each rule with its page.
 \item Fine-tune a clause-classification model and evaluate every AI component quantitatively on public
 legal datasets.
 \end{enumerate}
@@ -64,6 +66,8 @@ handwriting.
 \item Record/reference classification, structure-aware chunking, embeddings, clause labelling and record
 field extraction with grounding.
 \item Records register, review queue, verification and correction of fields.
+\item Policy compliance check of records against reference documents marked as company policy, and an
+AI summary of what changed between versions.
 \item Assistant with lookup, knowledge and search answers, citations and conversation history.
 \item Audit log, in-app notifications and expiry / notice reminders.
 \item Fine-tuning and evaluation of the clause classifier; evaluation of retrieval, extraction, routing,
@@ -115,20 +119,25 @@ Validates uploads, stores each file as a numbered version, and queues it for the
 The worker extracts text page by page, chooses between the digital text layer, Tesseract OCR and the
 vision-language model for each page, classifies the document, chunks it by section, computes
 embeddings, labels contract clauses with the fine-tuned classifier, and extracts record fields.
-Users can upload new versions and compare any two versions line by line.
+Users can upload new versions and compare any two versions line by line; each new version also gets a
+short AI-written summary of what changed, with page numbers.
 
 \subsection{Module 3: Records Register and Verification}
 Presents all records of the organization as one register (title, type, parties, dates, status) that
 can be filtered and sorted. Each field shows its evidence quote and page. Fields marked
 \emph{Needs review} appear in a review queue where Managers and Admins verify or correct them; every
-change is stored in the field's edit history.
+change is stored in the field's edit history. Records are also checked against the organization's own
+policies (reference documents such as an internal contracts handbook marked as company policy): each rule
+that applies is shown as complied with, not complied with or unclear, with the rule quoted from the policy
+and its page, and the responsible people are notified of problems.
 
 \subsection{Module 4: Legal Assistant}
 Accepts a question, optionally limited to selected documents. A router (an LLM with a keyword fallback)
-classifies the question as LOOKUP, KNOWLEDGE or SEARCH and extracts filters such as document type,
+classifies the question as LOOKUP, KNOWLEDGE, SEARCH or COMPARE and extracts filters such as document type,
 party, field and date range. Lookups are answered from the records table; knowledge questions are
 answered by an LLM from hybrid-retrieved passages with numbered citations; searches return ranked
-documents. Each conversation is saved.
+documents; comparisons (``Compare the termination notice in all our NDAs'') return a table with one row
+per record, each value linked to its page. Each conversation is saved.
 
 \subsection{Module 5: History, Audit and Notifications}
 Writes an append-only audit event for logins, uploads, views, downloads, searches, field edits, access

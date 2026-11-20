@@ -7,13 +7,15 @@
 \node[act=30mm,right=10mm of d1] (a3) {Keyword-rule plan (fallback)};
 \node[act,below=of d1] (a4) {Restrict scope to documents the user may see};
 \node[dec,below=7mm of a4] (d2) {Intent?};
-\node[act=38mm,below=10mm of d2] (k1) {KNOWLEDGE: hybrid retrieval (dense + full text, RRF), top 8};
-\node[act=38mm,left=6mm of k1] (l1) {LOOKUP: query records table by type, party, field, dates};
-\node[act=38mm,right=6mm of k1] (q1) {SEARCH: rank documents by best passages and clause labels};
-\node[act=38mm,below=5mm of k1] (k2) {LLM writes answer with [n] citations (deadline 35 s, fallback provider)};
-\node[act=38mm] (l2) at (l1 |- k2) {Answer from field values with page evidence};
-\node[act=38mm] (q2) at (q1 |- k2) {Return ranked document list};
-\node[act,below=8mm of k2] (a5) {Save query, plan, sources, latency; log SEARCH};
+\node[act=32mm,below=10mm of d2,xshift=-18.5mm] (k1) {KNOWLEDGE: hybrid retrieval (dense + full text, RRF), top 8};
+\node[act=32mm,left=5mm of k1] (l1) {LOOKUP: query records table by type, party, field, dates};
+\node[act=32mm,right=5mm of k1] (c1) {COMPARE: select matching records; fill table from fields and grounded passages};
+\node[act=32mm,right=5mm of c1] (q1) {SEARCH: rank documents by best passages and clause labels};
+\node[act=32mm,below=5mm of k1] (k2) {LLM writes answer with [n] citations (deadline 35 s, fallback provider)};
+\node[act=32mm] (l2) at (l1 |- k2) {Answer from field values with page evidence};
+\node[act=32mm] (c2) at (c1 |- k2) {Compute differences per field; show table, each value linked to its page};
+\node[act=32mm] (q2) at (q1 |- k2) {Return ranked document list};
+\node[act,below=8mm of k2,xshift=18.5mm] (a5) {Save query, plan, sources, latency; log SEARCH};
 \node[act,below=of a5] (a6) {Show answer; sources open the cited page with highlight};
 \node[endnode,below=of a6] (e) {};
 
@@ -25,14 +27,14 @@
 \draw[flow] (d1) -- node[lbl,right]{yes} (a4);
 \draw[flow] (a4) -- (d2);
 \draw[flow] (d2) -| node[lbl,pos=0.75,left]{lookup} (l1);
-\draw[flow] (d2) -- node[lbl,right]{knowledge} (k1);
+\draw[flow] (d2.south) ++(0,0) -- ++(0,-3mm) -| node[lbl,pos=0.8,left]{knowledge} (k1.north);
+\draw[flow] (d2.south) ++(0,0) -- ++(0,-3mm) -| node[lbl,pos=0.8,right]{compare} (c1.north);
 \draw[flow] (d2) -| node[lbl,pos=0.75,right]{search} (q1);
 \draw[flow] (l1) -- (l2);
 \draw[flow] (k1) -- (k2);
+\draw[flow] (c1) -- (c2);
 \draw[flow] (q1) -- (q2);
-\draw[flow] (l2) |- (a5);
-\draw[flow] (k2) -- (a5);
-\draw[flow] (q2) |- (a5);
+\foreach \b in {l2,k2,c2,q2} \draw[flow] (\b.south) |- ([yshift=3mm]a5.north) -- (a5.north);
 \draw[flow] (a5) -- (a6);
 \draw[flow] (a6) -- (e);
 \end{tikzpicture}

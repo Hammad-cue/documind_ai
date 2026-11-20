@@ -10,7 +10,7 @@ from ai import llm
 from documents.models import Chunk, Document, RecordField
 from documents.schema import DOC_TYPE_ALIASES, FIELD_LABELS, FIELD_PHRASES, FIELD_TYPES
 
-from . import retrieval, router
+from . import compare, retrieval, router
 
 NOT_FOUND = "I couldn't find anything about that in the documents you have access to."
 
@@ -204,7 +204,7 @@ def run_search(user, plan, text, document_ids):
 # Identical questions are answered from a cache to save LLM quota. The key includes everything that can
 # change the answer: organisation, question, scope, recent turns, and the exact documents *and versions* this
 # user may open - so people with different access never share an answer, and a new version invalidates it.
-# Record lookups are not cached because a reviewer can correct a field at any time.
+# Record lookups and comparisons are not cached because a reviewer can correct a field at any time.
 CACHE_SECONDS = 6 * 3600
 
 
@@ -225,7 +225,7 @@ def _cached(key):
 
 
 def _store(key, out):
-    if out['intent'] != 'LOOKUP' and not out['answer'].startswith('The language model is unavailable'):
+    if out['intent'] not in ('LOOKUP', 'COMPARE') and not out['answer'].startswith('The language model is unavailable'):
         cache.set(key, out, CACHE_SECONDS)
 
 
@@ -246,6 +246,12 @@ def _answer(user, text, document_ids=None, history=None):
         out = run_lookup(user, plan, document_ids)
         if out is None:  # no stored record matches -> read the documents instead
             plan['fallback'] = 'no matching record fields; answered from document text'
+            intent = 'KNOWLEDGE'
+            out = run_knowledge(user, plan, text, document_ids)
+    elif intent == 'COMPARE':
+        out = compare.run(user, plan, text, document_ids)
+        if out is None:  # no record matches -> read the documents instead
+            plan['fallback'] = 'no matching records to compare; answered from document text'
             intent = 'KNOWLEDGE'
             out = run_knowledge(user, plan, text, document_ids)
     elif intent == 'SEARCH':
@@ -278,6 +284,31 @@ def _answer_events(user, text, document_ids=None, history=None):
     plan = router.plan_query(text, history)
     intent = plan['intent']
     yield {'type': 'plan', 'intent': intent, 'plan': plan}
+
+    if intent == 'COMPARE':
+        prepared = compare.prepare(user, plan, text, document_ids)
+        if prepared is not None:
+            intro, sources, rows, messages = prepared
+            yield {'type': 'plan', 'intent': intent, 'plan': plan}          # now carries the table's columns
+            yield {'type': 'sources', 'sources': sources, 'results': rows}  # the table appears at once
+            parts = [intro]
+            yield {'type': 'delta', 'text': intro}
+            if messages:
+                try:
+                    first = True
+                    for piece in llm.chat_stream(messages, max_tokens=500, temperature=0.1, deadline=30):
+                        piece = ('\n\n' + piece) if first else piece
+                        first = False
+                        parts.append(piece)
+                        yield {'type': 'delta', 'text': piece}
+                except llm.LLMError:
+                    pass         # the table is the answer; the summary is optional
+            yield {'type': 'final', 'intent': intent, 'plan': plan, 'answer': ''.join(parts).strip(),
+                   'sources': sources, 'results': rows}
+            return
+        plan['fallback'] = 'no matching records to compare; answered from document text'
+        intent = 'KNOWLEDGE'
+        yield {'type': 'plan', 'intent': intent, 'plan': plan}
 
     if intent in ('LOOKUP', 'SEARCH'):
         out = run_lookup(user, plan, document_ids) if intent == 'LOOKUP' else run_search(user, plan, text, document_ids)

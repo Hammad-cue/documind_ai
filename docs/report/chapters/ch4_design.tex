@@ -176,6 +176,7 @@ access\_level & varchar(10) & ORG, DEPARTMENT or RESTRICTED \\ \hline
 uploaded\_by\_id & FK User & Uploader (always allowed to see it) \\ \hline
 current\_version\_id & FK Version & Newest READY version \\ \hline
 is\_archived & boolean & Archived documents are hidden everywhere \\ \hline
+use\_as\_policy & boolean & Reference document whose rules records are checked against \\ \hline
 created\_at, updated\_at & timestamp & Audit timestamps \\ \hline
 \end{tabularx}
 \end{table}
@@ -194,6 +195,24 @@ marked\_handwritten & boolean & Uploader says the document is handwritten \\ \hl
 change\_note & varchar(300) & Reason for the new version \\ \hline
 status & varchar(10) & QUEUED, PROCESSING, READY, FAILED \\ \hline
 processing\_log & JSON & Per-step timings and details (method, page sources, counts) \\ \hline
+change\_summary & text & AI summary of what changed from an earlier version \\ \hline
+change\_summary\_from & integer & Number of the version it was compared with \\ \hline
+policy\_checked\_at & timestamp & When the version was last checked against company policy \\ \hline
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]\centering\small
+\caption{Data Dictionary -- POLICY FINDING Table}\label{tab:dd-policy}
+\begin{tabularx}{\textwidth}{|p{3.2cm}|p{2.6cm}|X|}\hline
+\textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
+version\_id & FK, not null & Record version that was checked \\ \hline
+rule & varchar(300) & Short name of the rule, e.g.\ ``Notice periods'' \\ \hline
+status & varchar(10) & OK, ISSUE or UNCLEAR \\ \hline
+detail & text & One sentence comparing the record's fact with the rule \\ \hline
+policy\_document\_id & FK Document & Policy document that holds the rule \\ \hline
+policy\_page & integer & Page of the rule in that document \\ \hline
+policy\_quote & text & The rule's words, found in the policy text (grounded) \\ \hline
+created\_at & timestamp & When the check ran \\ \hline
 \end{tabularx}
 \end{table}
 
@@ -249,7 +268,7 @@ created\_at & timestamp, indexed & Time of the event \\ \hline
 \textbf{Column} & \textbf{Type} & \textbf{Description} \\ \hline
 conversation\_id & FK & Conversation (owned by one user) \\ \hline
 text & text & The question \\ \hline
-intent & varchar(10) & LOOKUP, KNOWLEDGE or SEARCH \\ \hline
+intent & varchar(10) & LOOKUP, KNOWLEDGE, SEARCH or COMPARE \\ \hline
 plan & JSON & Router output: filters and method (LLM or heuristic) \\ \hline
 scope\_document\_ids & JSON & Documents the user limited the question to \\ \hline
 answer, sources, results & text, JSON, JSON & Answer, cited passages/fields, record rows or hits \\ \hline

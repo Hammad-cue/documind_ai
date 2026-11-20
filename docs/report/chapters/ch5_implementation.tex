@@ -70,11 +70,32 @@ go to the review queue. Every field stores a \code{review\_reason} (``Calculated
 ``Second check: the quote is about renewal, not termination'', ``Read from handwriting''), which the review
 queue shows to the reviewer.
 
+A last step runs after the version is published. For version 2 or later, the function
+\code{changes.\allowbreak{}summarize\_new\_version} compares it with the previous version (changed fields and a line diff of each page, cut to about 8,000
+characters) and asks the LLM for two to six bullet points, each ending with the page, e.g.\ ``Term: two (2)
+years $\rightarrow$ three (3) years (p.\,2)''. The summary is stored on the version; comparing any other two
+versions computes one on request and caches it for 30 days. For records, the policy check below then runs;
+for a policy document, every record of the organization is re-checked. A failure of these optional steps is
+logged and never fails the job.
+
 \subsection{Module 3: Records Register and Verification}
 The records endpoint returns one row per visible RECORD document with its key fields from the current
 version. The review queue returns NEEDS\_REVIEW fields of visible documents. Verifying or correcting a
 field updates its status (and value), and creates a \code{FieldEdit} row and an audit event in the same
 transaction. Users can also add a field the model missed.
+
+\paragraph*{Policy compliance check.} Managers and Admins can mark a reference document as company policy
+(\code{Document.use\_as\_policy}). \code{policy.check\_policies(version)} builds the record's facts from its
+extracted fields and selects policy passages: all of them if there are at most 12, otherwise the 12 closest
+to the record by embedding similarity. The passages are numbered P1, P2, \dots{} (so they cannot be confused
+with the policy's own section numbers) and \code{judge()} asks the LLM, in two steps, to list the
+\emph{specific} rules that apply to this kind of contract and to compare each with the facts, using
+``unclear'' when the facts do not say. Each finding's quote is grounded on its passage
+(Algorithm~\ref{alg:ground}), or searched for in the other passages if the model numbered it wrongly;
+findings whose rule cannot be found are dropped, and two findings quoting the same rule are merged, keeping
+the more serious. Findings are stored as \code{PolicyFinding} rows; if there are issues, the people
+responsible for the record receive a POLICY notification. The same \code{judge()} function is used by the
+evaluation (Section~\ref{sec:ev-policy}).
 
 \subsection{Module 4: Legal Assistant}
 \code{AskView} (throttled to 20 requests per minute) calls \code{engine.answer(user, text,
@@ -89,6 +110,22 @@ the answer takes about a second.
 and asks the LLM to answer only from the numbered sources and cite them as [n].
 \item \textbf{SEARCH} groups retrieved chunks by document, boosts chunks whose clause label matches the
 query, and returns the documents with their best passages.
+\item \textbf{COMPARE} (\code{assistant/compare.py}) selects the visible records that match the type and the
+named records (a party, ``lease'' or ``courier agreement'' is matched against the parties field, the title
+and the type), at most 12, and builds a table with one column per compared point (at most 4; by default
+term, notice period, expiry and governing law). Stored fields are copied from \code{RecordField} with their
+page and quote. Other cells (a free-text point such as ``confidentiality obligations'', or a field the
+extraction missed) are filled in one LLM call that sees, for each record, only its two most relevant
+passages; a value is kept only if its quote is grounded in one of them (Algorithm~\ref{alg:ground}), and
+is marked ``Read from the text''. Below the table, one bullet per stored field says how the records differ;
+it is computed, not generated: dates give the earliest and latest record, durations are parsed with the
+same \code{parse\_term} used for expiry dates to give the shortest and longest, and other values are grouped
+by equal wording. Only a free-text point stated by two or more records is summarized by the LLM, from the
+cells alone. The first version let the LLM summarize the whole table; it cited wrong cells and once said a
+lease had no expiry date, which is why the summary of stored fields is now computed. Explicit comparison
+wording (``compare'', ``side by side'', ``how do our \dots{} differ'') about records is routed to COMPARE even
+when the LLM calls it a lookup, and questions about \emph{versions} of one document are left to the
+version comparison.
 \end{itemize}
 Every LLM call has a deadline. If the main provider fails or reports that its daily quota is used up,
 the gateway switches to the fallback provider and skips the main one until the quota resets; if both
@@ -279,6 +316,11 @@ The main screen. Users ask questions, optionally limited to chosen documents. An
 taken, the time, the written answer with numbered citations, and source cards.
 \screenshot{assistant.jpg}{Assistant -- Answer with Citations}{fig:scr-assistant}
 
+A comparison question is answered with a table, one row per record; each value opens its page, values read
+from the text (not stored fields) are marked, and the differences are listed below
+(Figure~\ref{fig:scr-compare}).
+\screenshot{compare.jpg}{Assistant -- Comparing Expiry Dates and Governing Law across Records}{fig:scr-compare}
+
 \subsubsection{Screen 4: Documents}
 Lists visible documents with kind, type, status, access level and page count, with search, filters and
 upload.
@@ -296,11 +338,19 @@ the first tab instead lists the detected chapters with their names and page numb
 that page.
 \screenshot{document_detail.jpg}{Document Detail: Extracted Facts with the Signing-date Evidence Highlighted}{fig:scr-detail}
 
+Below the facts of a record, the \emph{Policy check} lists each rule of the company policy that applies, with
+its status and the quoted rule; selecting the quote opens the handbook at that page
+(Figure~\ref{fig:scr-policy}). The Versions tab shows, for each new version, what changed from the previous
+one (Figure~\ref{fig:scr-versions}).
+\screenshot{policy_check.jpg}{Policy Check of an NDA with a Seven-year Term against the Contracts Handbook}{fig:scr-policy}
+\screenshot{version_summary.jpg}{Versions Tab with the Summary of What Changed in Version 2}{fig:scr-versions}
+
 Opening a source from an answer shows the cited passage of the reference document highlighted on its page
 (Figure~\ref{fig:scr-source}).
 \screenshot{source_highlight.jpg}{Source of an Answer Opened in the Contract Act with the Passage Highlighted}{fig:scr-source}
 
 \subsubsection{Screen 7: Records Register}
+Records with policy issues or facts waiting for review are marked in the register.
 \screenshot{records.jpg}{Records Register}{fig:scr-records}
 
 \subsubsection{Screen 8: Review Queue}

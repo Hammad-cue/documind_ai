@@ -84,6 +84,30 @@ HANDBOOK = [
 ]
 
 
+ORION_NDA = [
+    'MUTUAL NON-DISCLOSURE AGREEMENT\n\nThis Mutual Non-Disclosure Agreement is made on 2 September 2025 between\n'
+    'Khan & Associates, Lahore ("Company") and Orion Ventures (Private) Limited, Islamabad ("Orion").\n\n'
+    '1. Purpose\nThe parties wish to explore a joint investment in a renewable energy project and will share\n'
+    'financial models and client information for that purpose.\n\n'
+    '2. Confidential Information\nAll business, financial and technical information disclosed by either party.',
+    '3. Term\nThis Agreement takes effect on 2 September 2025 and remains in force for seven (7) years.\n\n'
+    '4. Governing law\nThis Agreement is governed by the laws of Pakistan.\n\n'
+    'IN WITNESS WHEREOF the parties have signed this Agreement on 2 September 2025.\n\n'
+    'For Khan & Associates: Ali Khan, Managing Partner\nFor Orion Ventures (Private) Limited: Kamran Shah, Director',
+]
+
+SUPPLY_AGREEMENT = [
+    'STATIONERY SUPPLY AGREEMENT\n\nThis Supply Agreement is made on 10 June 2025 between Khan & Associates, Lahore\n'
+    '("Buyer") and Delta Traders, Lahore ("Supplier").\n\n'
+    "1. Supply\nThe Supplier shall deliver office stationery and printer consumables to the Buyer's Lahore office\n"
+    'every month as ordered.\n\n2. Price\nThe Buyer shall pay PKR 40,000 per month, within 15 days of each invoice.',
+    '3. Term\nThis Agreement takes effect on 1 July 2025 and continues for two (2) years.\n\n'
+    '4. Termination\nEither party may terminate this Agreement by giving fifteen (15) days written notice.\n\n'
+    '5. Governing law\nThis Agreement is governed by the laws of Pakistan.\n\n'
+    'Signed on 10 June 2025.\nFor Khan & Associates: Sana Riaz\nFor Delta Traders: Imran Butt, Proprietor',
+]
+
+
 def courier_agreement(today):
     """A contract whose dates are relative to the seeding day, so expiry / notice reminders always show in a demo."""
     from datetime import timedelta
@@ -186,11 +210,18 @@ class Command(BaseCommand):
     def add_extras(self, org):
         """Documents added after the first demo release; safe to run again (adds only what is missing)."""
         from django.utils import timezone
-        title = 'Courier Services Agreement - FastTrack Logistics'
-        if Document.objects.filter(organization=org, title=title).exists():
-            return
         manager = User.objects.filter(username='demo_manager').first()
         legal = org.departments.filter(name='Legal').first()
-        self.add_document(org, title, 'courier_agreement.pdf', make_pdf(courier_agreement(timezone.localdate())),
-                          Document.Access.ORG, legal, None, False, manager)
+        # the handbook's rules are what records are checked against
+        Document.objects.filter(organization=org, title='Contracts Handbook').update(use_as_policy=True)
+        extras = [
+            ('Courier Services Agreement - FastTrack Logistics', 'courier_agreement.pdf',
+             lambda: make_pdf(courier_agreement(timezone.localdate()))),
+            # these two break handbook rules, so the policy check has something to find
+            ('NDA - Orion Ventures', 'nda_orion.pdf', lambda: make_pdf(ORION_NDA)),
+            ('Supply Agreement - Delta Traders', 'supply_delta.pdf', lambda: make_pdf(SUPPLY_AGREEMENT)),
+        ]
+        for title, filename, content in extras:
+            if not Document.objects.filter(organization=org, title=title).exists():
+                self.add_document(org, title, filename, content(), Document.Access.ORG, legal, None, False, manager)
 

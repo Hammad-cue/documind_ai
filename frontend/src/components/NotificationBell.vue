@@ -41,7 +41,7 @@
 </template>
 
 <script setup>
-import { Bell, BellOff, CalendarClock, CircleCheck, FileCheck, Hourglass, TriangleAlert } from '@lucide/vue'
+import { Bell, BellOff, CalendarClock, CircleCheck, FileCheck, Hourglass, ShieldAlert, TriangleAlert } from '@lucide/vue'
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -53,6 +53,7 @@ const KIND = {
   PROCESSED: { icon: FileCheck, cls: 'bg-ok-soft text-ok' },
   FAILED: { icon: TriangleAlert, cls: 'bg-bad-soft text-bad' },
   REVIEW: { icon: CircleCheck, cls: 'bg-accent-soft text-accent' },
+  POLICY: { icon: ShieldAlert, cls: 'bg-bad-soft text-bad' },
 }
 const router = useRouter()
 const open = ref(false)
